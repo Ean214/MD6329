@@ -1,7 +1,8 @@
 # 合规核对表（Compliance Audit）— MD6329 Final Course Project
 
 > 对账日期：2026-10-13。依据：封面页 docx 原文 + 用户提供的 "Last Reminder" mandatory 段落 + 我方的 brief 解析记录。
-> **注意：brief 完整原文未留档（当时贴入对话）。若课程系统中有额外条款（页数上限、命名规则、是否需答辩），本表未覆盖。**
+> 2026-10-13 晚：用户提供了 brief 完整原文，已按全文复核并补充 F 段。
+> 早期版本的这句提示已作废：。若课程系统中有额外条款（页数上限、命名规则、是否需答辩），本表未覆盖。**
 
 ## A. Mandatory（原文明确要求）
 
@@ -55,3 +56,69 @@
 ## E. 结论
 
 **Mandatory 项全部满足**（A3 考勤与 push 属用户手工动作）。报告六节与权重全覆盖，16 条引用中已含课程录像与课程作业代码。交付三件套齐备。
+
+
+---
+
+## F. 按 brief 完整原文的复核（2026-10-13 第二轮）
+
+### F1. 主题判定 ✅ 合规
+
+brief 允许三类选题，我们的项目落在前两类：
+
+| brief 的选题类型 | 我们对应的地方 |
+|---|---|
+| **Novel problem**：新问题/新任务 | 提出"去掉光学血容量传感器后，仅用常规机器数据能否支撑超滤闭环"——这是新任务形式，不是复现 |
+| **Novel analysis**：重新实现并批判分析、比较算法变体、考察不同输入表示、解释已有模型、预测不同结局 | 五模型对照（算法变体）+ 模态消融（输入表示）+ pyvene 干预（模型解释）+ 视野与容差敏感性 |
+
+关键反证："Simply re-running an existing implementation is not sufficient" —— 我们不是复跑：
+问题是我们自己重新定义的（并且**推翻了毕设原有的"预测优于 PID"框架**），控制权衡表是本项目首次量化，混杂诊断是本项目首次提出。
+
+**必须满足的四项能力，逐项对照**：
+
+| brief 要求 | 现状 |
+|---|---|
+| thoughtful problem formulation | ✅ 三代方案谱系 + 三个可检验子问题 |
+| model design | ✅ 四种神经网络（含从零 Transformer）+ 一组树模型基线 |
+| **training and hyperparameter selection** | ✅ **本轮补齐**：Approach 新增 Training procedure 段（loss/优化器/lr/batch/epoch/早停/种子）；Experiments 新增 **E7 超参数研究**（XGBoost 深度×树数网格 + CNN+MLP 学习率/类别权重扫描，见 Fig. 6） |
+| empirical analysis | ✅ E1–E7 共 7 个实验、7 表 9 图 |
+
+### F2. 本轮补齐的 5 处（原文逐字点名，此前未覆盖）
+
+| # | 原文要求 | 此前 | 处理 |
+|---|---|---|---|
+| F2-1 | Approach 须含 "loss function, optimization, and relevant hyperparameters" | 报告 0 处 loss/Adam/lr/epoch | 新增 Training procedure 段（binary cross-entropy + `pos_weight` 17.1:1、Adam lr 1e-3、batch 256、≤10 epochs、patience 2、seed 42、dropout、Transformer d=64/4 heads/2 layers、XGBoost 全参数） |
+| F2-2 | Goal 段要求 "training and hyperparameter selection" | "hyperparameter" 出现 0 次 | 新增 **E7**：XGBoost 深度 3/6/9 × 树数 200/600/1200 网格 + CNN+MLP lr 3 档 × 类别权重 2 档；发现树深主导（0.1904 vs 0.1520），调参后 E1 排序边际收窄 |
+| F2-3 | Problem Formulation 须 "Discuss how Software 3.0 ... may have helped with problem formulation" | Software 3.0 仅在 Approach | Problem Formulation 末补：GenAI 用于文献普查 + 检验"预测优于 PID"框架是否成立（结论：不成立，且改变了研究问题本身） |
+| F2-4 | Experiments 须 "Discuss how Software 3.0 or Gen-AI contributed to coding and experimental evaluation" | 无 | Experiments 末补 "Software 3.0 in the experimental workflow" 段（两个实验源于 AI 提出的检查；同时说明 AI 首版会话构建失败、验证仍需人工） |
+| F2-5 | Data 须含 "qualitative examples where appropriate" | 无 | 补一个真实样本：IDWG 1.88 L / 已脱 0.46 L / 余 2.42 h / 临床 UFR 0.48 L/h → 残余 266 mL 且未发生 IDH，说明边界样本的标签噪声 |
+
+### F3. Honor Code 细化项
+
+| 原文 | 处理 |
+|---|---|
+| "disclose substantial use of Generative AI **in your code and writeup**" | ✅ 本轮为 `src/*.py` 与 `lectrace/*.py` **全部 14 个脚本**加了 disclosure docstring |
+| "Any code used as a basis ... must be referenced and cited in the body" | ✅ 已引课程作业代码与 pyvene |
+| "may not provide another group's code to an AI system" | ✅ 无外部小组代码；仅用本人作业 2 代码与公开库 |
+| "If you combine this course project with a project from another class" | ⚠️ 说明：本项目**取材于**用户 2026 年 5 月已完成答辩的本科毕设（郑州大学，非并行课程），数据、模型、实验全部重做，非同一份作业的复用；毕设本身在报告中未作为课程作业提交 |
+
+### F4. Lectrace 呈现要求 ✅
+
+原文：2–3 min 问题/动机/方法 → **3–5 个精选 execution state**（每个说明发生了什么、什么变了、为什么重要）→ 不要整条 trace → 结尾给关键结果与医疗解读。
+现状：`lectrace/md6329_idh_control.py` 恰好 5 个 state（会话重建 / 泄漏边界 / 患者切分 / 控制决策点 / 干预消融），前后各有一段开场与收尾（含临床解读）。✅
+
+### F5. 提交三件套 ✅
+
+(i) 报告 PDF `report/MD6329_Final_Project_Report.pdf`（12 页）✅
+(ii) Lectrace Python 脚本 ✅
+(iii) 单 ZIP `zip/MD6329_FinalProject_LE_YI.zip`（121 文件 / 19.4 MB）✅
+
+### F6. 仍未覆盖 / 待用户
+
+- NTU Learn 点开录像（考勤，只能本人操作）
+- GitHub push（远端已配，需用户凭据）
+- 封面 "Demo or presentation video" 与 "Overleaf / report link" 两栏留空；若课程期望演示视频需补录
+
+## G. 结论（第二轮）
+
+按 brief **完整原文**逐字复核：主题判定合规（Novel problem + Novel analysis），"四项能力"全部满足（超参数选择为本轮补齐），7 处原文点名要求中 5 处此前未覆盖、现已补齐，Honor Code 的代码侧披露已加。交付三件套齐备，报告 12 页、16 条引用、34 处数字引用、0 处内部标记。
