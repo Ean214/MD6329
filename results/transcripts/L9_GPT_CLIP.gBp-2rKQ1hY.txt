@@ -1,0 +1,1142 @@
+[00:03] Welcome back. Lecture nine of MD6329.
+[00:05] Today's lecture completes our tour of
+[00:07] the transformer. In lecture seven, we
+[00:09] introduced the transformer encoder and
+[00:12] BERT. In lecture eight, we extended
+[00:14] self-supervised learning to multimodal
+[00:17] data with clip.
+[00:19] Today we widened the lens. We will see
+[00:23] that BERT encoder only is one of three
+[00:25] flavors of transformer architecture and
+[00:28] we will examine the other two. We will
+[00:31] work through GPT decoder only auto
+[00:35] reggressive generative because GPT and
+[00:37] its descendants now dominate so much of
+[00:39] the application landscape that you
+[00:41] cannot do healthcare AI work today
+[00:44] without engaging with them. We will
+[00:46] introduce the vision transformer which
+[00:48] applies the same transformer machinery
+[00:51] to images instead of text. We will
+[00:53] revisit clip with the architectural
+[00:56] details filled in and we will close with
+[00:58] a tour of transformer-based models in
+[01:01] biomedical applications.
+[01:04] Agenda one three transformer variants
+[01:07] with positional encoding clinical birth
+[01:11] in fine-tuning two GPT and a decoder
+[01:14] only family three vision transformers
+[01:19] including VIT swin DR and transformers
+[01:22] for video. Four, clip revisited with
+[01:24] architectural detail and the path to
+[01:27] text to image generation and multimodal
+[01:29] language models.
+[01:31] Five, biomedical applications of the
+[01:33] transformer architecture across imaging
+[01:36] and clinical text.
+[01:39] Recap from lecture seven bird
+[01:41] birectional encoder representations from
+[01:45] transformers devel 2018. A stack of
+[01:48] transformer encoder layers pre-trained
+[01:50] with two self-supervised objectives.
+[01:52] Masked language modeling and next
+[01:54] sentence prediction pre-trained on
+[01:57] Wikipedia plus book corpus fine-tuned on
+[02:01] downstream tasks. State-of-the-art on 11
+[02:03] different benchmarks at once with the
+[02:06] same recipe. The clinical descendants
+[02:10] biobbert clinical pupmet bring the same
+[02:13] machinery into medicine.
+[02:15] The bird architecture in pictures, a
+[02:19] stack of identical encoder layers.
+[02:21] Each layer has two sub layers,
+[02:24] multi-head self attention, then a
+[02:26] position-wise feed forward layer with
+[02:28] residual connections and layer
+[02:30] normalization.
+[02:32] Input is a sequence of token embeddings
+[02:35] plus positional encodings.
+[02:37] Output is a sequence of contextual
+[02:40] embeddings, one per input token,
+[02:42] capturing how that token relates to
+[02:45] every other token in the sequence. Scale
+[02:49] of B. Bird base has 12 layers, 12
+[02:52] attention hits per layer. Embedding
+[02:55] dimension 768.
+[02:59] BRA has 24 layers, 16 hits. Embedding
+[03:02] dimension 1,024.
+[03:04] Transformerbased architectures come in
+[03:07] three flavors. Encoder only, BERT,
+[03:11] Robert, Bowurt, clinical BERT with
+[03:13] birectional attention used for
+[03:17] understanding tasks. Decoder only, GPT,
+[03:23] GPT2, GPT3, Llama, Claude, Gemini with
+[03:27] causal attention used for generation.
+[03:32] Encoder decoder T5 BART DER
+[03:35] the original Vaswani transformer with
+[03:37] birectional encoder causal decoder and
+[03:39] cross attention used for
+[03:42] sequenceto-sequence tasks.
+[03:44] Quick refresher on the attention
+[03:47] mechanism. For each input position, the
+[03:50] network computes three vectors, a query,
+[03:53] a key, and a value. Each obtained from
+[03:56] the input by a linear projection.
+[03:58] The attention output at each position is
+[04:01] a weighted sum of all value vectors
+[04:02] where the weights come from the softmax
+[04:05] of the dotproducts of the current query
+[04:08] with all the keys divided by the square
+[04:10] root of the key dimension. The square
+[04:13] root scaling stabilizes gradients. The
+[04:15] softmax normalizes the weights to sum to
+[04:18] one across each query.
+[04:21] Encoder. The encoder processes the
+[04:23] source sentence with birectional self
+[04:25] attention. The decoder generates the
+[04:27] target sentence one token at a time with
+[04:29] causal self attention plus cross
+[04:32] attention to the encoder output.
+[04:35] Bird uses only the encoder. Encoder only
+[04:37] is appropriate when you have the input
+[04:40] available all at once and want to
+[04:43] produce a fixed size representation or
+[04:45] per token labeling for classification
+[04:47] retrieval.
+[04:51] Decoder mass self attention GPT uses
+[04:53] only the decoder. Decoder only is
+[04:55] appropriate when you produce output one
+[04:57] token at a time condition on prior
+[05:00] tokens generation dialogue code
+[05:02] synthesis
+[05:05] encoder decoder is appropriate when you
+[05:07] have a separate input modality that gets
+[05:09] summarized and then conditions output
+[05:13] generation translation summarization
+[05:15] object detection with query tokens cross
+[05:18] attending to image features
+[05:21] T5 uses the full encoder decoder the
+[05:23] transformer Former architecture diagrams
+[05:25] in this lecture are adapted from J
+[05:28] Alamar's illustrated transformer blog
+[05:31] post. It is freely available online. The
+[05:34] same block has companion posts on BERT
+[05:37] and GPT that are equally good. A puzzle
+[05:40] worth solving cleanly. The attention
+[05:43] computation is permutation equivarian.
+[05:45] If you shuffle the input tokens, the
+[05:48] output tokens shuffle in the same way,
+[05:50] but the per token outputs do not depend
+[05:52] on the original positions.
+[05:54] How then does the transformer know that
+[05:56] the subject of a sentence comes before
+[06:00] the verb or that 80 mg of metal prolo
+[06:03] came before the patient's hypotension?
+[06:11] Returning to the bird diagram,
+[06:14] the input tokens are first embedded and
+[06:16] positional encodings are added to each
+[06:18] token embedding before the first
+[06:20] attention layer. The combined input
+[06:23] encodes both what the token is and where
+[06:26] it is. The transformer can then learn
+[06:29] position aware patterns through its
+[06:31] attention computation.
+[06:33] Without positional encoding, the
+[06:35] attention layers would treat the
+[06:38] sequence as a bag of tokens.
+[06:40] Two flavors of positional encoding in
+[06:43] common use. Sinosoidal. At position P,
+[06:46] you add a vector whose entries are signs
+[06:48] and cosiness of P at various
+[06:51] frequencies. Fixed deterministic no
+[06:53] learnable parameters. Used in the
+[06:57] original Vaswani transformer. learned a
+[06:59] separate embedding table index by
+[07:01] position with one learnable vector per
+[07:03] position up to some maximum sequence
+[07:07] length used in BERT and GPT both work.
+[07:11] The difference is small in practice.
+[07:12] Looking at the three architectures side
+[07:15] by side,
+[07:17] encoder only and decoder only both rely
+[07:20] entirely on self attention. The
+[07:22] difference is the attention mass.
+[07:25] Encoder only is fully birectional. Every
+[07:28] token attends to every other token.
+[07:31] Decoder only is causal. The future is
+[07:33] masked out. So each token attends only
+[07:36] to previous tokens.
+[07:38] Most modern frontier models you will
+[07:42] encounter are decoder only, GPT4, Claud,
+[07:45] Gemini, Llama, Mistrol.
+[07:48] The decoder only design has one at scale
+[07:50] because it unifies many tasks under a
+[07:52] single auto reggressive generation
+[07:54] objective and because it scales cleanly
+[07:56] with compute.
+[07:58] Encoder only models remain dominant for
+[08:00] fast inference on classification and
+[08:03] retrieval tasks.
+[08:05] Encoder decoder has both birectional
+[08:08] self attention in the encoder, causal
+[08:10] self attention in the decoder, plus a
+[08:12] cross attention mechanism that lets the
+[08:15] decoder attend to the encoder's output.
+[08:18] Conceptually, the choice between varants
+[08:20] reflects whether you have the full input
+[08:23] available before producing the output.
+[08:27] If yes, classification, retrieval, even
+[08:29] some kinds of generation where the whole
+[08:31] context is given, encoder only is
+[08:33] appropriate. If you are producing the
+[08:36] output one token at a time condition on
+[08:39] prior tokens, decoder only. If you have
+[08:41] a separate input modality that gets
+[08:43] summarized and then conditions output
+[08:47] generation encoder decoder encoder
+[08:49] decoder models remain dominant in
+[08:51] machine translation and a few
+[08:54] specialized domains. For clinical work
+[08:56] you will encounter all three recognize
+[08:59] them when you see them.
+[09:01] Back to B for the fine-tuning
+[09:03] discussion. Recall the two pre-training
+[09:06] objectives. Masked language modeling.
+[09:09] 15% of tokens are masked. The model
+[09:11] predicts the originals from surrounding
+[09:13] context.
+[09:15] Next sentence prediction. Given two
+[09:18] sentences A and B, predict whether B is
+[09:21] the actual continuation of A. The
+[09:23] pre-training is done on a large
+[09:25] unlabeled corpus. The downstream
+[09:28] fine-tuning is done on a small labeled
+[09:31] task specific data set.
+[09:33] Output embedding at start token position
+[09:35] can be used as sequence representation
+[09:37] for downstream tasks.
+[09:40] Of the 15% of tokens selected for
+[09:45] masking, 80% are replaced with mask, 10%
+[09:49] with a random token, 10% left unchanged.
+[09:51] This trick, sometimes called the 801010
+[09:53] heristic, prevents the model from
+[09:56] becoming over reliant on the mask token
+[09:58] at inference. The model has to learn to
+[10:01] predict the original word regardless of
+[10:04] whether the input contains mask or not
+[10:06] which produces a more robust
+[10:08] representation.
+[10:11] A concrete clinical example clinical
+[10:16] bird hanged al 2019 was trained with the
+[10:18] standard bird objectives but on a corpus
+[10:21] of clinical notes from mimic 3 instead
+[10:24] of Wikipedia and book corpus. After
+[10:27] pre-training, the authors fine-tuned for
+[10:31] 30-day hospital readmission prediction.
+[10:33] They took the hidden state at the CLS
+[10:35] start token position at the final
+[10:37] encoder layer, passed it through a
+[10:40] linear classifier, trained on labeled
+[10:43] readmission outcomes, fine-tuning
+[10:46] clinical bird for 30-day readmission.
+[10:49] The clinical question is binary. Will
+[10:51] this patient be readmitted within 30
+[10:53] days of discharge?
+[10:54] The model takes the full discharge
+[10:58] summary as input. The CLS token's final
+[11:00] hidden representation is fed through a
+[11:03] small linear hit to produce a logit
+[11:05] binary cross entropy loss against the
+[11:08] readmission label.
+[11:10] When performing prediction from long
+[11:12] sequences, obtain predictions for each
+[11:16] sentence separately and then combine.
+[11:18] Result: Clinical BERT outperformed
+[11:22] general domain BERT outperform bag of
+[11:24] words baselines outperformed strong
+[11:28] feature engineered models. The in-domain
+[11:29] pre-training matters because clinical
+[11:31] notes are not English in the
+[11:33] journalistic sense. They have their own
+[11:36] vocabulary, their own grammar, their own
+[11:39] structure. A model pre-trained on news
+[11:41] articles does not know what ICD pocket
+[11:44] infection mean. A model pre-trained on
+[11:47] clinical notes does
+[11:49] cross reference to lecture 8. Convert
+[11:52] and Gloria the medical multimodal
+[11:54] contrastive learning models both use
+[11:56] birdbased text encoders.
+[11:59] The radiology report side of each model
+[12:02] is encoded with a clinical bird variant.
+[12:05] The image text contrastive training then
+[12:07] aligns image embeddings with these bird
+[12:10] derived report embeddings.
+[12:12] This is one of many examples of how the
+[12:15] bird family is reused as a component of
+[12:18] larger systems rather than always being
+[12:20] the end-to-end model.
+[12:23] Now to GPT, generative pre-trained
+[12:28] transformer from Open AI, GPT1 in 2018,
+[12:34] GPT2 in 2019, GPT3 in 2020, GPT4 in
+[12:38] 2023. The line continues.
+[12:41] The GPT architecture is decoder only. A
+[12:43] stack of transformer decoder layers with
+[12:46] causal self attention. The pre-training
+[12:48] objective is next token prediction.
+[12:51] Given a sequence of tokens, predict the
+[12:53] next one. That is the entire
+[12:56] pre-training objective. No mass language
+[12:59] modeling, no next sentence prediction.
+[13:02] Just predict what comes next.
+[13:04] Inference is auto reggressive. To
+[13:06] generate a sequence, you feed in the
+[13:08] prompt, sample the next token from the
+[13:11] model's predicted distribution, append
+[13:13] it to the input, predict the next, and
+[13:16] so on. This is computationally
+[13:19] expensive. Each new token requires
+[13:22] another pass through the model, but it
+[13:24] produces coherent generation.
+[13:27] B and GPT differ fundamentally in
+[13:30] architecture and training objectives.
+[13:32] Bird uses a birectional encoder with
+[13:34] self attention that sees full context
+[13:38] from both left and right simultaneously
+[13:41] making it ideal for understanding tasks.
+[13:43] It is trained with mast language
+[13:47] modeling that is predicting mass tokens
+[13:49] and next sentence prediction.
+[13:53] In contrast, GPT uses a unidirectional
+[13:55] causal decoder that only sees past
+[13:58] context when predicting the next token,
+[14:00] making it better suited for generation
+[14:01] tasks.
+[14:04] GPT is trained solely with next token
+[14:07] prediction. Thus, BERT excels at natural
+[14:10] language understanding, for example,
+[14:12] classification, question answering,
+[14:15] while GPT excels at natural language
+[14:18] generation, for example, text completion
+[14:20] dialogue.
+[14:24] GPT2 released in 2019 had 1.5 billion
+[14:27] parameters and was trained using Next
+[14:29] token prediction on the web text data
+[14:31] set. It demonstrated strong text
+[14:33] generation capabilities and was
+[14:36] initially withheld due to concerns about
+[14:38] potential misuse.
+[14:44] GPT3 released in 2020 scaled up to 175
+[14:47] billion parameters, roughly 100 times
+[14:50] larger than GPT2 and was trained on 500
+[14:53] billion tokens drawn from five data
+[14:54] sets.
+[14:57] It exhibited remarkable zeroshot and few
+[15:00] short capabilities, enabling it to
+[15:02] perform new tasks based solely on
+[15:04] natural language instructions or a
+[15:06] handful of examples without gradient
+[15:08] updates.
+[15:10] This sparked broader efforts in large
+[15:13] language models, LLMs,
+[15:15] with multiple labs training very large
+[15:20] models. Notably, Meta released OPT
+[15:24] 175B drang at al 2022
+[15:27] and open-source equivalent to GPT3.
+[15:29] The landscape continues to evolve
+[15:33] rapidly. Key inference settings include
+[15:36] zero shot, no task examples, model
+[15:38] relies solely on pre-training and the
+[15:40] task description,
+[15:42] one shot, a single input output example
+[15:45] provided before the query, and few
+[15:48] short, a handful, for example, 5 to 100
+[15:51] examples included in the prompt. The
+[15:53] most striking is in context learning.
+[15:55] You give the model a prompt that
+[15:58] demonstrates a task with a few examples.
+[16:02] English. Hello, Spanish. Hola, English.
+[16:05] Dog, Spanish, pero,
+[16:09] English, cat, Spanish. Oh, and the model
+[16:12] completes the pattern. It has not been
+[16:15] trained to translate. It was trained to
+[16:17] predict next tokens. But because
+[16:19] translation pairs appear in its training
+[16:22] corpus, predicting the next token after
+[16:24] a demonstrated translation pattern
+[16:27] produces a correct translation. This is
+[16:29] few short learning without parameter
+[16:31] updates.
+[16:34] Architecturally, GPT is a stack of
+[16:36] transformer decoder blocks. Each block
+[16:39] has mass self attention. Every token
+[16:41] attends only to itself and previous
+[16:44] tokens, never to future tokens.
+[16:46] This causal masking is enforced by
+[16:48] adding a large negative number to the
+[16:50] attention scores for future positions
+[16:53] before the soft max, which drives those
+[16:55] weights to zero.
+[16:57] Masked self attention computes attention
+[16:59] weighted output only over current and
+[17:03] past positions not future positions. The
+[17:05] result is a model that can be trained on
+[17:07] next token prediction without
+[17:10] information leakage from future tokens.
+[17:13] The training objective of a GPT decoder
+[17:15] does next token prediction. A standard
+[17:17] language modeling objective and contrast
+[17:21] this with birectional bird objective.
+[17:23] After the mast self attention, each
+[17:25] block has a position-wise feed forward
+[17:28] sub layer, the same as in the encoder.
+[17:31] The full GPT model is just a stack of n
+[17:34] such blocks with input tokens embedded
+[17:37] positional encodings added and a final
+[17:39] linear layer plus softmax over the
+[17:42] vocabulary to produce next token
+[17:43] probabilities.
+[17:46] Several sampling strategies exist for
+[17:49] selecting one. greedy. Pick the most
+[17:52] likely. Beam search. Keep the top K
+[17:55] candidate sequences. Random sampling
+[17:57] with temperature. Sample from the
+[17:59] distribution with temperature
+[18:00] controlling how concentrated the
+[18:03] sampling is. Different strategies give
+[18:06] different generation qualities. Modern
+[18:08] systems often use top P with a
+[18:13] temperature in the range of 0.7 to 1.0.
+[18:16] Conceptually simple and beautiful.
+[18:19] Here's an example for GPT3.
+[18:22] Natural text generation capabilities.
+[18:24] With a sufficiently large GPT trained on
+[18:27] a sufficiently large text corpus, the
+[18:29] model can produce coherent paragraphs,
+[18:32] essays, code, dialogue. The text is
+[18:34] statistically consistent with the
+[18:37] training distribution.
+[18:39] The model is not in any explicit sense
+[18:42] planning or reasoning. It is computing
+[18:44] the most probable next token at each
+[18:46] step. The fact that this simple
+[18:49] procedure produces text that is often
+[18:52] indistinguishable from human writing is
+[18:54] one of the genuinely surprising
+[18:57] empirical facts of the last decade.
+[19:00] Fine-tune GPT on downstream tasks by
+[19:02] reformatting data for task into
+[19:05] sequences for completion.
+[19:08] The original recipe pre-trained on raw
+[19:12] text fine-tuned on labeled task data was
+[19:14] demonstrated in GPT1.
+[19:17] With GPT3 and onward, fine-tuning was
+[19:20] largely replaced by incontext learning.
+[19:22] Prompt the model with examples of the
+[19:25] task and let it pattern match.
+[19:28] The fine-tuning paradigm has come back
+[19:30] in the form of instruction tuning and
+[19:31] reinforcement learning from human
+[19:34] feedback which is how chat GPT and
+[19:37] claude are trained but the underlying
+[19:39] base model is still trained on next
+[19:41] token prediction.
+[19:44] Zeroshot prompting give the model a task
+[19:46] instruction in plain English. Summarize
+[19:49] the following article in three sentences
+[19:52] and the model attempts the task.
+[19:54] performance varies with the task and the
+[19:56] prompt phrasing, but the fact that this
+[19:59] works at all is in retrospect an
+[20:02] extraordinary outcome of scaling. The
+[20:05] model has internalized so much of the
+[20:07] pattern of language and task structure
+[20:09] during pre-training that it can attempt
+[20:11] many tasks without ever having seen
+[20:14] labeled examples of them. The trained
+[20:17] GPT model is effective in zeroshot,
+[20:21] oneshot, and few short task settings.
+[20:24] Here's an example of GPT3 performing a
+[20:26] oneshot task of using a new word in a
+[20:29] sentence. Gray text is user provided.
+[20:33] Black text is GPT3 output. Prompting the
+[20:36] model to think step by step before
+[20:38] producing its final answer substantially
+[20:40] improves accuracy.
+[20:42] This shifted the field toward viewing
+[20:44] model outputs as multi-step
+[20:47] deliberations rather than singleshot
+[20:49] completions and underlies the chain of
+[20:52] thought style of medical AI assistants
+[20:54] that explain their reasoning.
+[20:58] GPT2 had 1.5 billion parameters while
+[21:02] GPT3 scaled up to 175 billion
+[21:05] parameters, a 100fold increase in model
+[21:09] size. GPT3 was trained on 500 billion
+[21:13] tokens drawn from five diverse data sets
+[21:15] providing it with broad linguistic and
+[21:18] factual knowledge. The model was made
+[21:21] accessible to users via an API with a
+[21:24] playground available at OpenAI website.
+[21:28] While GPT originates from open AI,
+[21:30] numerous large laboratories,
+[21:32] particularly in industry, have also been
+[21:34] training their own very large language
+[21:36] models and other transformer-based
+[21:38] architectures.
+[21:41] Recently, Meta AI released OPT
+[21:43] 175B
+[21:46] and LLM similar to GPT3
+[21:48] with the same number of parameters
+[21:52] 175 billion. But crucially, it is open
+[21:56] source. Jang ATL 2022
+[22:00] domain specific clinical LLM meditatron
+[22:03] 70B from EPFL
+[22:08] clinical camel Matt 42 from M42 health
+[22:12] PMC Llama fine-tuned on Pupmat central
+[22:14] the pattern is to take an open-source
+[22:17] large language model continue
+[22:19] pre-training on biomedical text and
+[22:22] fine-tune with instruction data these
+[22:24] models models are now competitive with
+[22:26] or exceed generalpurpose models on
+[22:29] medical specific benchmarks.
+[22:32] Now to vision. The vision transformer
+[22:36] VIT was introduced by Dosovitzki at AL
+[22:39] 2020 from Google Brain. The paper with a
+[22:43] memorable title, an image is worth 16 by
+[22:45] 16 words, demonstrated that the
+[22:47] transformer architecture with
+[22:50] essentially no convolution could match
+[22:52] or exceed convolutional networks on
+[22:55] imageet classification given enough
+[22:58] data. This was a striking architectural
+[23:00] inversion of the dominant paradigm in
+[23:03] computer vision. The VIT key idea is
+[23:06] straightforward. Convert image into a
+[23:09] sequence of fixed sixths size patches.
+[23:13] Then apply standard transformer encoder.
+[23:15] You take an image and split it into
+[23:18] non-over overlapping patches. 16x6
+[23:20] pixels each is the canonical choice for
+[23:25] a 224x 224 input. Flatten each patch
+[23:28] into a vector. Apply a linear projection
+[23:30] to each patch vector to produce a patch
+[23:32] embedding.
+[23:35] Add positional encodings. Add a special
+[23:38] CLS classification token at the start of
+[23:40] the sequence. Feed the resulting
+[23:42] sequence through a transformer encoder
+[23:46] stack. The CLS tokens final layer
+[23:48] embedding goes into a classification
+[23:51] head. The architecture is essentially
+[23:54] bird with image patches as tokens
+[23:56] instead of words.
+[23:58] Does it work? The empirical answer is
+[24:01] nuance. On imageet with standard
+[24:03] training, vit underperformed a
+[24:07] well-tuned restnet. On imageet 21K with
+[24:12] 14 million images, VIT matched RestNet.
+[24:16] On JFT 300M, Google's internal 300
+[24:19] million image data set. VIT clearly
+[24:21] exceeded RestNet.
+[24:23] The interpretation VIT lacks the
+[24:27] inductive biases that CNN's built in
+[24:29] translation equivariance locality
+[24:31] hierarchy of features and needs more
+[24:33] data to learn the equivalent structure
+[24:35] from scratch.
+[24:38] Given enough data, it learns a richer
+[24:41] representation than CNN inductive biases
+[24:43] would allow.
+[24:48] Swin transformer Lu Adal ICV 2021
+[24:51] Microsoft Research Asia a response to
+[24:54] the data hunger of plain VIT
+[24:56] Swin reintroduces some of the
+[24:59] convolutional inductive biases locality
+[25:01] and hierarchy while keeping the
+[25:04] transformer machinery. The result is an
+[25:06] architecture that trains efficiently on
+[25:09] standard image data sets and beats VIT
+[25:13] on most benchmarks. Swin has become a
+[25:14] standard backbone in modern computer
+[25:17] vision pipelines including many medical
+[25:20] imaging applications.
+[25:23] The key swin idea instead of applying
+[25:25] self attention across the entire image
+[25:28] at once partition the image into local
+[25:30] windows and apply self attention within
+[25:33] each window separately.
+[25:35] This reduces computational cost from
+[25:37] quadratic in the number of patches to
+[25:41] linear and it imposes locality.
+[25:43] The trade-off is that information cannot
+[25:46] directly propagate between windows in a
+[25:48] single layer. This is suitable for
+[25:51] denser vision tasks.
+[25:53] The trick that recovers crosswind
+[25:55] information between successive
+[25:57] transformer layers. The window
+[25:59] partitioning is shifted. Patches that
+[26:02] were in one window in layer n are in
+[26:05] different windows in layer n plus one.
+[26:07] This lets information propagate across
+[26:09] the original window boundaries through
+[26:12] the layer stack while keeping each
+[26:14] individual attention computation local
+[26:16] and cheap.
+[26:19] Increasing patch size through merging.
+[26:21] Earlier layers allow more localized
+[26:22] features that can be useful for dense
+[26:25] prediction tasks. The shifted window
+[26:29] mechanism is what gives swin its name.
+[26:32] The other swin idea hierarchy.
+[26:35] Between successive stages, neighboring
+[26:37] patches are merged into larger patches
+[26:39] with deeper channel dimension. The
+[26:41] spatial resolution halves and the
+[26:43] channel count doubles, mimicking the
+[26:46] pyramid pattern of CNN ends.
+[26:48] The result is a multiscale feature
+[26:51] hierarchy that is well suited to dense
+[26:55] prediction tasks segmentation detection
+[26:56] which need features at multiple
+[26:58] resolutions.
+[27:00] The Swin transformer architecture
+[27:02] alternates between two types of
+[27:04] consecutive multi-it self-attention
+[27:06] modules.
+[27:09] Those with regular windows, WMSA,
+[27:14] and those with shifted windows, SWMSA.
+[27:16] The WMSA partitions the image into
+[27:19] non-over overlapping local windows for
+[27:23] efficient computation while the SWMSA
+[27:25] shifts the window partitions between
+[27:29] layers enabling crosswind connections.
+[27:31] This alternating design allows the model
+[27:33] to capture both local and global
+[27:36] contextual information while maintaining
+[27:39] linear computational complexity relative
+[27:42] to image resolution.
+[27:44] As a replacement backbone for denser
+[27:46] vision tasks such as object detection
+[27:49] and instance segmentation, the Swin
+[27:51] transformer consistently outperformed
+[27:53] previous state-of-the-art models,
+[27:56] including CNNbased architectures like
+[27:59] RestNet and efficient net. Its
+[28:01] hierarchical feature maps and shifted
+[28:04] window attention mechanism enable
+[28:06] efficient handling of high resolution
+[28:08] inputs while capturing both local
+[28:12] details and long range dependencies.
+[28:17] DR detection transformer carryon ed
+[28:20] published in ECCV 2020 the work by
+[28:24] Facebook AI research an encoder decoder
+[28:27] transformer applied to object detection
+[28:29] the architecture eliminates several
+[28:30] engineering components that classical
+[28:33] object detectors require anchor boxes
+[28:36] non-maximum suppression and replaces
+[28:38] them with a clean transformer-based
+[28:40] design
+[28:43] is conceptually elegant. Its training is
+[28:45] famously slow to converge which is the
+[28:49] main reason adoption has been gradual.
+[28:52] DR detection transformer uses a
+[28:54] transformer encoder decoder architecture
+[28:56] to perform object detection and
+[28:58] segmentation in a single endtoend
+[29:01] manner. It is trained directly to
+[29:03] predict all objects in an image at once
+[29:06] using a set loss function that performs
+[29:08] bipartite matching between predictions
+[29:10] and ground truth objects.
+[29:12] This approach eliminates the need for
+[29:14] many handdesigned components of
+[29:17] traditional detection models such as
+[29:20] spatial anchors, region proposals, and
+[29:23] non-maximal suppression.
+[29:26] The architecture works as follows. A CNN
+[29:29] backbone, typically RestNet, extracts
+[29:32] image features, which are then flattened
+[29:34] into a sequence of position encoded
+[29:36] tokens and pass through a transformer
+[29:39] encoder to produce context mix features.
+[29:42] A transformer decoder then takes a fixed
+[29:44] set of learned object queries, typically
+[29:47] 100, and allows them to cross attend to
+[29:50] the encoder features. Each object query
+[29:53] independently becomes one detection,
+[29:55] predicting both a class label and a
+[29:58] bounding box. At inference, each query
+[30:01] produces one detection. If there are
+[30:03] fewer objects than queries, the extra
+[30:05] queries learn to output a special no
+[30:07] object class.
+[30:09] The number of queries is a fixed
+[30:12] hyperparameter kept at the maximum
+[30:15] number of objects you expect per image.
+[30:17] Let's walk through the pipeline. First,
+[30:21] extract image features with a CNN.
+[30:23] Transformer encoder decoder part of the
+[30:25] model is used for predicting a set of
+[30:29] objects from the image features.
+[30:31] Image features are converted to sequence
+[30:34] and input to encoder.
+[30:37] In DER, the decoder produces output
+[30:39] embeddings that are each fed into a
+[30:42] simple feed forward network to predict
+[30:44] bounding box coordinates and class
+[30:46] labels.
+[30:48] The input to the decoder is a set of
+[30:51] learned positional encodings interpreted
+[30:53] as object queries.
+[30:55] Each query will correspond to one
+[30:58] predicted box at the output. Since
+[31:00] different images contain different
+[31:03] numbers of objects, the model uses n
+[31:05] object queries where n is larger than
+[31:08] the maximum number of objects expected
+[31:10] in any image.
+[31:12] The classifier output includes a special
+[31:15] no object category, allowing the model
+[31:17] to leave unused queries empty and
+[31:19] thereby predict a variable number of
+[31:22] objects per image.
+[31:24] In the transformer architecture, the
+[31:26] encoder decoder attention mechanism
+[31:27] allows the decoder to attend to the
+[31:30] encoder's output sequence. As with any
+[31:33] transformer attention, it can be defined
+[31:35] between any two sequences. Queries come
+[31:38] from the decoder's previous layer, while
+[31:40] keys and values come from the encoder's
+[31:43] output. This cross attention enables the
+[31:45] decoder to selectively focus on relevant
+[31:47] parts of the input sequence when
+[31:52] generating each output token. In DER,
+[31:54] for example, object queries in the
+[31:56] decoder cross attend to image features
+[31:59] from the encoder, allowing each query to
+[32:02] aggregate visual information needed to
+[32:05] predict a bounding box and class.
+[32:07] The flexibility of defining attention
+[32:10] between arbitrary sequences is a core
+[32:11] strength of the transformer
+[32:13] architecture.
+[32:15] Transformers for video. The natural
+[32:17] extension is to treat video as a
+[32:19] sequence of frame patches with both
+[32:21] spatial and temporal positional
+[32:26] encoding. Times former Bashes at al 2021
+[32:29] was one of the early demonstrations.
+[32:31] The key design choice is how attention
+[32:34] is structured. Full spatial temporal
+[32:36] attention is computationally
+[32:39] prohibitive. Quadratic in the number of
+[32:41] all space-time patches across all
+[32:42] frames.
+[32:45] Times former factorizes attention into
+[32:47] separate spatial and temporal components
+[32:49] per layer which is much cheaper and
+[32:52] works almost as well.
+[32:57] The times former model Basius at al 2021
+[32:59] extends the standard transformer to
+[33:01] video by factorizing attention across
+[33:05] space and time. In this architecture, a
+[33:07] query position, for example, a blue
+[33:10] patch, can attend to sequences
+[33:11] corresponding to different
+[33:14] neighborhoods, other colored patches
+[33:15] across both spatial and temporal
+[33:17] dimensions.
+[33:19] Instead of computing full joint
+[33:21] attention over all patches and all
+[33:23] frames, which would be computationally
+[33:26] prohibitive, times former uses an
+[33:29] alternating factorized attention scheme.
+[33:32] In one block, attention is computed
+[33:35] spatially within each frame. Each patch
+[33:36] attends to other patches in the same
+[33:39] frame. In the next block, attention is
+[33:42] computed temporally across frames at the
+[33:45] same spatial location. Each patch
+[33:46] attends to patches at the same
+[33:49] coordinate in adjacent frames.
+[33:51] By alternating these two attention
+[33:53] patterns through successive layers of
+[33:55] the stack, the model gradually
+[33:57] integrates information across both space
+[34:00] and time, achieving strong video
+[34:02] understanding performance at a much
+[34:05] lower computational cost than full joint
+[34:07] spacetime attention.
+[34:09] Returning to clip with architectural
+[34:12] detail filled in. We introduced clip at
+[34:14] a high level in lecture 8 contrastive
+[34:17] language image pre-training 400 million
+[34:22] image text pairs open AI ratoot at al
+[34:24] 2021.
+[34:26] Today we fill in the architecture and
+[34:28] walk through the implications because
+[34:31] clip is the conceptual foundation of
+[34:33] essentially every multimodal model that
+[34:35] has followed it.
+[34:37] Clip operates in three main stages.
+[34:39] First, contrastive pre-training is
+[34:42] performed on a large data set of image
+[34:44] text pairs where the model learns to
+[34:47] align image and text representations by
+[34:49] pulling match pairs together and pushing
+[34:52] mismatch pairs apart.
+[34:55] Second, to create a data set classifier,
+[34:58] the model takes the set of target class
+[35:02] labels, for example, cat, dog, car, and
+[35:05] converts each label into a text prompt,
+[35:09] eg a photo of a cat. These prompts are
+[35:10] passed through the text encoder to
+[35:13] generate a fixed set of text embeddings
+[35:15] that serve as the classifier's weight
+[35:17] vectors.
+[35:20] Third, for zeroshot prediction, an input
+[35:21] image is passed through the image
+[35:24] encoder and its embedding is compared
+[35:26] against all text embeddings via cosign
+[35:28] similarity.
+[35:29] The class whose prompt yields the
+[35:32] highest similarity is returned as the
+[35:35] prediction all without any task specific
+[35:38] training examples.
+[35:42] First stage contrastive pre-training.
+[35:44] The data set was constructed by
+[35:46] searching the web for image text pairs
+[35:48] where the text site was sourced from a
+[35:52] base query list of 500,000 queries. This
+[35:54] list comprise every word that appeared
+[35:57] at least 100 times in the English
+[35:59] version of Wikipedia.
+[36:01] The queries were then augmented and
+[36:03] processed through various techniques
+[36:05] such as paraphrasing, filtering, and
+[36:08] dduplication out to generate a diverse
+[36:10] set of textual descriptions paired with
+[36:12] corresponding images.
+[36:14] For full details on the data collection
+[36:17] and processing pipeline, readers are
+[36:20] referred to the original paper.
+[36:22] The model is transformer-based and
+[36:25] trained entirely from scratch without
+[36:27] relying on pre-trained backbones. For
+[36:30] the image encoder, different variants
+[36:32] were explored using both RestNet and
+[36:36] vision transformer VIT architectures.
+[36:38] The restnet variant processes images
+[36:41] through a series of convolutional layers
+[36:43] while the VIT variant divides the image
+[36:46] into patches and applies multi-head self
+[36:48] attention directly.
+[36:50] Both encoders are trained jointly with a
+[36:53] text encoder via the contrastive loss.
+[36:55] And the choice of backbone affects the
+[36:57] model's ability to capture local versus
+[37:00] global visual features.
+[37:03] Next, create data set classifier from
+[37:06] label text. In the second stage, the
+[37:08] train model can be directly applied to
+[37:11] zeroshot prediction tasks.
+[37:13] This involves taking the target class
+[37:16] labels, for example, cat, dog, and
+[37:19] converting each into a text prompt, for
+[37:23] example, a photo of a cat. These prompts
+[37:25] are passed through the text encoder to
+[37:28] generate a fixed set of text embeddings.
+[37:30] For any new input image, the image
+[37:33] encoder produces an embedding and the
+[37:36] model computes its similarity, typically
+[37:38] cosign similarity, with each text
+[37:40] embedding.
+[37:42] The class whose prompt yields the
+[37:44] highest similarity is output as the
+[37:47] prediction or without any task specific
+[37:49] training examples.
+[37:52] Zeroshot classification performs nway
+[37:54] classification without any paired input
+[37:58] class examples for the end classes.
+[38:00] Clip's most striking capability is
+[38:03] zeroot classification. Given an image
+[38:06] and candidate class names, it embeds
+[38:08] each class as a text description. For
+[38:12] example, a photo of a cat, embeds the
+[38:14] image, and ranks classes by cosign
+[38:16] similarity in the shared embedding
+[38:19] space, selecting the top class as the
+[38:21] prediction without fine-tuning.
+[38:24] At release, clip's zeroot performance
+[38:26] approached or matched fully supervised
+[38:29] models on many benchmarks.
+[38:31] Steps to perform zeroot image
+[38:33] classification given a trained clip
+[38:36] model are as follows.
+[38:38] Generate text prompts corresponding to
+[38:41] each of the end classes.
+[38:43] Using the clip text encoder to obtain
+[38:47] embedding vectors for each text prompt.
+[38:49] Using the clip image encoder to obtain
+[38:51] an embedding vector for the image to
+[38:53] classify.
+[38:55] Compare similarity of the image
+[38:57] embedding with each of the text prompt
+[38:59] embeddings.
+[39:01] Assign the image class label to the one
+[39:03] associated with the most similar text
+[39:06] prompt. The downstream capabilities
+[39:09] zeroshot classification retrieval
+[39:12] robustness transferability are direct
+[39:16] consequences of the training objective.
+[39:18] Deli builds on clip to enable text to
+[39:21] image generation. The natural next step
+[39:24] from contrastive pre-training.
+[39:26] Clip provides a shared embedding space
+[39:28] where text and image embeddings are
+[39:31] aligned. Text to image models invert
+[39:34] this process. Given a text description,
+[39:36] they generate an image whose clip
+[39:39] embedding matches that description.
+[39:45] D E D E2 IGEN stable diffusion party and
+[39:47] muse each represent different
+[39:49] architectural realizations of this
+[39:50] inversion.
+[39:52] Most modern textto-image models are
+[39:54] diffusion models conditioned on clip
+[39:57] style text embeddings using the aligned
+[39:59] representation to guide the iterative
+[40:02] denoising process from random noise
+[40:04] toward a coherent image that matches the
+[40:06] input text.
+[40:09] Given a pre-trained clip model, a textto
+[40:11] image generation model is trained along
+[40:14] a bottom pathway. A text input first
+[40:17] passes through the clip text encoder to
+[40:19] produce a text embedding.
+[40:21] A prior network, for example, a
+[40:24] diffusion model or transformer learns to
+[40:26] map this text embedding to a
+[40:29] corresponding clip image embedding.
+[40:31] Finally, a generative model decodes from
+[40:33] that image embedding to produce the
+[40:37] actual generated image. Dal E by Ramsh
+[40:41] at alal 2021. Open AI was the first
+[40:44] widely known textto image model using a
+[40:48] discrete V AE to tokenize images into a
+[40:51] vocabulary of image tokens followed by
+[40:53] an auto reggressive transformer trained
+[40:56] on the concatenated sequence of text and
+[41:01] image tokens. DAL E2 Romesh Atal 2022
+[41:03] replaced the auto reggressive backbone
+[41:06] with a diffusion model condition on clip
+[41:09] text embeddings dramatically improving
+[41:10] image quality.
+[41:15] DAL E3 integrated with GPT4 in 2023
+[41:19] further refined text image alignment.
+[41:22] Active research in text to image. The
+[41:23] diffusion model paradigm has become
+[41:26] dominant with stable diffusion, imagen
+[41:29] and the proprietary models from open AI,
+[41:32] Anthropic and Google all using
+[41:35] variations of the same recipe. Medical
+[41:37] applications are limited but growing.
+[41:39] Synthetic medical imaging for data
+[41:42] augmentation. Anatomy generation for
+[41:44] surgical planning. Image translation
+[41:47] across modalities.
+[41:49] Significant ethical and governance
+[41:51] considerations attached to medical use
+[41:54] of generative image models.
+[41:57] Ali Adal 2022
+[42:00] at deep mind introduced flamingo a model
+[42:02] designed for few short visual question
+[42:04] answering from interled image text
+[42:08] input. Flamingo represents the next
+[42:10] conceptual step beyond separate image
+[42:12] and text encoders.
+[42:15] It is a single large language model that
+[42:17] directly takes interleafd multimodal
+[42:21] sequences text image text text image
+[42:24] text text and produces text output
+[42:26] condition on the full multimodal
+[42:29] context. This architecture unifies
+[42:31] multimodal understanding and language
+[42:34] generation within one model, enabling it
+[42:36] to answer questions about images based
+[42:40] on a few incontext examples without task
+[42:42] specific fine-tuning.
+[42:45] Flamingo excels at visionto text task
+[42:48] and visual question answering VQA by
+[42:50] leveraging its ability to process
+[42:53] interleaf multimodal inputs in a few
+[42:56] short setting. For visionto text tasks
+[42:59] such as image captioning, the model is
+[43:01] given an image followed by a prompt like
+[43:05] a photo of and generates a descriptive
+[43:07] text output condition on the visual
+[43:10] content. For visual question answering,
+[43:12] Flamingo receives a sequence containing
+[43:14] an image and a text question, for
+[43:17] example, what color is the car? And
+[43:20] produces a natural language answer. What
+[43:22] makes Flamingo particularly powerful is
+[43:25] its few short capability.
+[43:27] By providing a handful of example image
+[43:29] question answer pairs in the prompt
+[43:31] before the test query, the model can
+[43:34] adapt to new VQA tasks or formatting
+[43:36] requirements without any gradient
+[43:38] updates or fine-tuning.
+[43:41] This allows Flamingo to outperform many
+[43:44] fully supervised models on standard VQA
+[43:47] benchmarks despite using only a few in
+[43:50] context examples. The same architecture
+[43:52] works seamlessly across captioning,
+[43:56] closedended VQA, for example, yes/ no,
+[44:00] and open-ended VQA, unifying multimodal
+[44:02] understanding and generation in a single
+[44:05] auto reggressive language model.
+[44:07] Flamingo's architecture cleverly
+[44:09] combines two powerful pre-trained and
+[44:12] frozen components. A vision encoder and
+[44:15] FNET for perceiving visual scenes and a
+[44:18] large language model based on chinchilla
+[44:21] for language reasoning to connect them
+[44:23] without degrading existing capabilities.
+[44:25] Flamingo introduces two trainable
+[44:27] modules.
+[44:29] First, a perceiver resampler compresses
+[44:32] variablesiz visual features into a small
+[44:36] fixed set of tokens for efficiency.
+[44:39] Second, gated XA10 dense layers are
+[44:42] inserted between frozen LM blocks using
+[44:45] a TNH gating mechanism to allow cross
+[44:47] attention to visual tokens when an image
+[44:50] placeholder appears in text.
+[44:52] Ensuring the model's initial behavior
+[44:56] matches the frozen LM.
+[44:58] These are the pre-trained vision and
+[45:00] language encoders.
+[45:03] Here, the gated XR10 dense layers learn
+[45:05] new attention layers that merge visual
+[45:08] and language information.
+[45:11] Flamingo takes an interleafd multimodal
+[45:13] prompt such as an image followed by the
+[45:16] text a photo of and then generates a
+[45:19] completion auto reggressively producing
+[45:21] a descriptive caption like a dog playing
+[45:23] in the park.
+[45:25] The output is natural language text
+[45:27] condition on the full visual and textual
+[45:29] context.
+[45:32] For visual question answering the prompt
+[45:35] might consist of an image the text
+[45:38] question what color is the car answer
+[45:41] and the model completes with red. Thus
+[45:43] the input prompt sets the task and
+[45:46] provides visual content. The completion
+[45:48] is the model's generated response and
+[45:51] the output is the final text answer.
+[45:54] In medical NLP bird-based models are
+[45:57] already widespread. BioBird is
+[45:59] pre-trained on PMAT biomedical
+[46:01] literature while clinical bird is
+[46:04] pre-trained on mimic clinical notes.
+[46:07] These models serve as text encoders in
+[46:10] multimodal systems like convert and
+[46:14] Gloria and have broad applications
+[46:16] including clinical named entity
+[46:17] recognition,
+[46:21] neer, ICD coding, summarization and
+[46:24] question answering in medical computer
+[46:26] vision. Transformerbased models are
+[46:29] seeing increasing usage particularly in
+[46:31] segmentation.
+[46:34] Swin unu nehatamizade
+[46:37] atl 2022
+[46:39] applies the swin transformer as the
+[46:41] encoder in a unit style architecture for
+[46:44] 3D medical image segmentation.
+[46:46] The swin transformers hierarchical
+[46:48] features and shifted windows make it
+[46:51] well suited for dense prediction tasks
+[46:53] in medical imaging.
+[46:56] Open questions remain. Can GPT3 perform
+[46:58] zero short or few short medical
+[47:00] reasoning depending on how much
+[47:02] biomedical text is included in its
+[47:05] training data? Can clip be effectively
+[47:07] fine-tuned for biomedical image text
+[47:09] tasks?
+[47:11] And what biases are captured in large
+[47:14] model training data? And how do those
+[47:17] biases affect downstream clinical use?
+[47:20] In medical NLP, transformer-based models
+[47:23] like bird are already widespread as
+[47:26] covered in the previous lecture. In
+[47:27] medical computer vision,
+[47:29] transformer-based models are seeing
+[47:31] increasing usage and success across
+[47:34] various tasks particularly in
+[47:37] segmentation with examples such as swing
+[47:39] unratami
+[47:43] zade at al 2022.
+[47:45] Many open questions remain at the
+[47:46] intersection of large-scale models and
+[47:50] biio medicine. For instance, can GPT3 be
+[47:53] used to perform zeros or few short
+[47:55] medical reasoning tasks?
+[47:57] A related question is how much
+[47:59] biomedical information is actually
+[48:00] represented in the training data of
+[48:04] these models which remains unclear.
+[48:06] Similarly, can we effectively fine-tune
+[48:09] clip for biomedical domains given the
+[48:11] differences between natural images and
+[48:13] medical imaging?
+[48:16] Finally, do current text to image
+[48:18] generation models such as stable
+[48:21] diffusion or DAL E work for biomedical
+[48:24] prompts, for example, a chest X-ray
+[48:26] showing pneumonia, or can we effectively
+[48:29] adapt them to do so? These questions are
+[48:32] active areas of research.
+[48:34] Another major open question and
+[48:36] challenge surrounding large language and
+[48:38] vision models more generally concerns
+[48:40] the biases captured in their training
+[48:43] data and model representations
+[48:45] and how these biases affect downstream
+[48:49] ethical use in real world applications.
+[48:51] Issues such as demographic bias,
+[48:54] stereotyping, and under representation
+[48:57] can propagate or even amplify existing
+[49:00] disparities particularly in sensitive
+[49:03] domains like healthcare. We will discuss
+[49:05] bias and fairness in more depth in a
+[49:07] later lecture.
+[49:09] Summary. Today we completed the
+[49:11] transformer story. The three
+[49:14] architectural variants encoder only,
+[49:17] decoder only, encoder decoder with
+[49:20] examples and use cases. Positional
+[49:22] encoding as the architectural ingredient
+[49:24] that gives the transformer its sense of
+[49:28] order. GPT and the decoder only family
+[49:30] with emergent incontext learning at
+[49:33] scale. Vision transformer, Swin
+[49:36] transformer, DR and the video
+[49:38] transformers. The transformer
+[49:40] architecture adapted to image and video
+[49:43] data. Clip revisited with full
+[49:46] architectural detail. Text to image
+[49:48] generation through DAL E and the
+[49:51] diffusion model paradigm. Flamingo style
+[49:54] large multimodal language models and a
+[49:56] final tour of transformer applications

@@ -1,0 +1,48 @@
+{
+  "xgboost": {
+    "T30": {
+      "auprc": 0.1662,
+      "auroc": 0.7241,
+      "lift_vs_prevalence": 2.68
+    },
+    "T60": {
+      "auprc": 0.1675,
+      "auroc": 0.733,
+      "lift_vs_prevalence": 2.86
+    },
+    "T90": {
+      "auprc": 0.2018,
+      "auroc": 0.771,
+      "lift_vs_prevalence": 3.88
+    },
+    "T120": {
+      "auprc": 0.1965,
+      "auroc": 0.7864,
+      "lift_vs_prevalence": 4.14
+    }
+  },
+  "cnnmlp": {
+    "T30": {
+      "auprc": 0.1963,
+      "auroc": 0.757
+    },
+    "T60": {
+      "auprc": 0.1837,
+      "auroc": 0.7683
+    },
+    "T90": {
+      "auprc": 0.2395,
+      "auroc": 0.8068
+    },
+    "T120": {
+      "auprc": 0.2266,
+      "auroc": 0.8237
+    }
+  },
+  "prevalence": {
+    "T30": 0.0621,
+    "T60": 0.0586,
+    "T90": 0.052,
+    "T120": 0.0475
+  }
+}

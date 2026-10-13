@@ -1,0 +1,1345 @@
+[00:02] Welcome back everyone. Lecture 4 of
+[00:04] MD6329.
+[00:06] We have covered image classification
+[00:08] across two lectures and we have covered
+[00:11] semantic segmentation through UNET.
+[00:14] Today we go further into object
+[00:17] detection, instance segmentation,
+[00:19] three-dimensional volutric data and
+[00:22] video. Each of these adds a dimension to
+[00:24] what the network has to handle.
+[00:26] Detection adds the question of where
+[00:29] instances are. Instance segmentation
+[00:31] adds the question of which pixels belong
+[00:34] to which instance. 3D CNN ends at the
+[00:37] depth axis through volumes. Video adds
+[00:39] the time axis. By the end of this
+[00:40] lecture, you will have seen the
+[00:42] architectures that handle each of these
+[00:48] in turn. Faster R, CNN, mask R, CNN,
+[00:53] 3DU, NET, I3D, and the CNN plus RNN
+[00:56] approach to video. and you will
+[00:57] recognize the application landscape
+[01:00] across surgical video, lung nodule
+[01:03] detection, brain lesion segmentation and
+[01:06] echoc cardiography.
+[01:08] A quick review of what you are expected
+[01:11] to know. Conceptual understanding of how
+[01:13] the main components of different neural
+[01:15] networks work. The framework of training
+[01:18] a deep learning model. Trade-offs among
+[01:20] design choices. Good practices for
+[01:23] biomedical tasks. What you are not
+[01:25] expected to do is derive back
+[01:27] propagation by hand or memorize the
+[01:30] exact formula for the atom optimizer.
+[01:33] Conceptual understanding trade-offs
+[01:36] sound choices that is the level we are
+[01:38] pitching at. If you want a deeper
+[01:40] mathematical treatment, take Andrew
+[01:42] Ang's deep learning specialization or
+[01:44] Stanford CS231N
+[01:48] as complements to this course.
+[01:50] The objective of this course is to
+[01:52] establish a strong conceptual foundation
+[01:55] for developing AI models in healthcare.
+[01:57] The assignments represent what you
+[01:59] should be able to implement and know in
+[02:02] detail. The lectures teach what you need
+[02:04] to know for the assignments and
+[02:06] sometimes go a little deeper to give you
+[02:08] the conceptual grounding to explore
+[02:10] further on your own. For your class
+[02:13] project, read papers, try the code.
+[02:15] Nothing is more valuable than hands-on
+[02:17] learning.
+[02:21] Agenda one, object detection, faster R,
+[02:24] CNN, anchor boxes, region of interest
+[02:26] pooling, mean average precision as an
+[02:29] evaluation metric, and a case study in
+[02:31] surgical instrument detection.
+[02:35] Two, instance, segmentation, mask R,
+[02:38] CNN, region of interest, alignment,
+[02:40] evaluation, and applications to cell
+[02:44] nuclear and lung nodules. Three,
+[02:47] three-dimensional volutric models, how
+[02:50] 3D convolutions work, 3D unit, and the
+[02:52] application to brain lesion
+[02:54] segmentation.
+[02:58] Four, video analysis, I3D two stream
+[03:01] networks and the CNN plus RNN
+[03:04] combination. Five clinical video
+[03:07] applications including ICU patient
+[03:08] activity monitoring and echo
+[03:10] cardiographic ejection fraction
+[03:12] estimation.
+[03:15] Recap from lectures 2 and three. We have
+[03:17] built up the standard supervised
+[03:19] learning pipeline for medical image
+[03:20] classification.
+[03:23] CNN architectures from AlexNet through
+[03:26] ResNet. The convolutional layer,
+[03:28] pooling, fully connected classifier
+[03:31] heads, loss functions, training tricks
+[03:34] like data augmentation and transfer
+[03:37] learning, evaluation via AU,
+[03:42] sensitivity, specificity, ROC curves,
+[03:44] and the UNET architecture for pixel
+[03:47] level semantic segmentation with skip
+[03:49] connections that pass spatial detail
+[03:52] from encoder to decoder. Today's lecture
+[03:54] builds on all of this.
+[03:57] What we add today? Detection sits
+[04:00] between classification and segmentation.
+[04:02] The output is not a single class label
+[04:05] nor a per pixel label map. It is a set
+[04:08] of bounding boxes with class labels, one
+[04:10] per object instance.
+[04:13] Instance segmentation goes further per
+[04:16] pixel mass but separated by instance.
+[04:18] Then we extend along the depth axis with
+[04:23] 3D CNN's and 3D unit. then along the
+[04:26] time axis with video models.
+[04:28] Each of these is a relatively small
+[04:29] addition to the architectural template
+[04:32] we have built, but each one opens up
+[04:35] substantial new application areas.
+[04:39] Object detection. The task is given an
+[04:41] image output a set of bounding boxes
+[04:43] each labeled with a class and a
+[04:46] confidence score. The image can contain
+[04:49] zero objects, one object, or many
+[04:52] objects. We do not know in advance how
+[04:54] many the classifier must produce a
+[04:58] variable length output.
+[05:03] Faster R CNN Ren he Gershik and Sun in
+[05:06] NeuroIPS 2015 the same group at
+[05:09] Microsoft research that produced ResNet
+[05:13] that year. Faster RCNN is the canonical
+[05:16] two-stage detector. Stage one, a region
+[05:18] proposal network looks at the image and
+[05:21] proposes regions of interest, places
+[05:25] where objects might be. Stage two, a
+[05:27] classifier examines each proposed
+[05:30] region, refineses the bounding box, and
+[05:32] assigns a class label plus a confidence
+[05:34] score.
+[05:36] We will walk through both stages over
+[05:39] the next several slides.
+[05:42] Two key concepts in faster are CNN
+[05:46] anchor boxes. At each spatial position
+[05:48] in the convolutional feature map, the
+[05:50] region proposal network predicts whether
+[05:52] each of a small set of predefined box
+[05:55] shapes, different scales and aspect
+[05:58] ratios, is likely to contain an object.
+[06:00] The anchor boxes give the proposal
+[06:02] network something concrete to predict
+[06:06] against. Region of interest pooling.
+[06:08] Once a region is proposed, we need to
+[06:10] extract a fixed size feature
+[06:12] representation of it for the classifier
+[06:15] head. ROI pooling does this by dividing
+[06:18] the proposed region into a fixed grid
+[06:21] and max pooling within each cell.
+[06:24] Detection evaluation introduces a new
+[06:28] metric mean average precision map. For
+[06:31] each class, compute the precision recall
+[06:33] curve across detection confidence
+[06:35] thresholds.
+[06:37] The area under that curve is the average
+[06:39] precision for that class.
+[06:42] Average across all classes. Mean average
+[06:45] precision. The metric was introduced in
+[06:48] the Pascal VOC challenge and adopted by
+[06:50] KCO and most subsequent detection
+[06:52] benchmarks.
+[06:54] It is the single number that tells you
+[06:57] how well a detector is doing. We will
+[06:59] work through it in detail in the next 10
+[07:03] slides or so. Here is a faster RCNN
+[07:05] diagram.
+[07:08] input image at the bottom. A backbone
+[07:11] CNN, typically a ResNet, extracts a
+[07:14] feature map. The region proposal network
+[07:17] branches off the feature map, slides a
+[07:19] small network across spatial positions,
+[07:21] and at each position predicts which
+[07:23] anchor boxes are likely to contain
+[07:27] objects. Output of stage one, a few
+[07:30] hundred candidate region proposals, each
+[07:32] with a confidence score.
+[07:36] Stage two, for each proposed region, ROI
+[07:38] pooling extracts a fixed size feature
+[07:41] vector from the backbone feature map.
+[07:44] That vector is fed through two heads, a
+[07:46] classification head that assigns a class
+[07:49] label and a bounding box regression head
+[07:51] that refineses the box coordinates
+[07:54] relative to the proposal. Each head has
+[07:57] its own loss. The full network is
+[07:59] trained jointly with a multitask loss
+[08:01] that combines the proposal loss, the
+[08:04] classification loss and the box
+[08:06] regression loss.
+[08:09] The faster in faster RCNN refers to the
+[08:12] speed gain over earlier detectors. The
+[08:16] original RCNN by Gershik in 2014 use
+[08:19] selective search, a non-learn region
+[08:21] proposal algorithm, and ran the CNN
+[08:23] classifier independently on each
+[08:29] proposal. slow fast R CNN in 2015 shared
+[08:32] the CNN computation across proposals
+[08:34] faster but still relied on selective
+[08:36] search
+[08:40] faster R CNN later in 2015 replaced
+[08:42] selective search with a learn region
+[08:44] proposal network that shares the same
+[08:47] backbone features end to end trainable
+[08:50] much faster and more accurate the
+[08:53] natural endpoint of that line of work
+[08:54] credit slide
+[08:59] Gershik's fast RCNN paper at ICCV 2015
+[09:01] was the intermediate milestone in the
+[09:04] RCNN family. Worth reading if you want
+[09:06] the conceptual progression. The figures
+[09:08] in our slides for the architecture come
+[09:10] from his paper and from the later faster
+[09:14] RCNN paper.
+[09:17] Standard output for a single input
+[09:20] image. A train detector produces a list
+[09:23] of detections. Each detection has four
+[09:26] bounding box coordinates, a class label,
+[09:28] and a confidence score between zero and
+[09:30] one. The number of detections is not
+[09:34] fixed. An image with no objects might
+[09:37] produce zero high confidence detections.
+[09:39] An image with many objects might produce
+[09:42] dozens or hundreds. This is what makes
+[09:45] evaluation interesting. We cannot just
+[09:47] compute accuracy across a fixed set of
+[09:49] outputs.
+[09:52] Two things we need to evaluate. First,
+[09:55] are we detecting the right things? Are
+[09:57] the boxes around real objects of the
+[10:00] right class? Second, are we not
+[10:03] detecting wrong things? Are we avoiding
+[10:05] false alarms?
+[10:07] These two questions translate naturally
+[10:10] into precision and recall. A correct
+[10:12] detection is a box that overlaps a
+[10:15] ground truth object of the same class
+[10:17] above some threshold of intersection
+[10:19] over union.
+[10:22] typically 0.5.
+[10:25] Brief recap from lecture two. The ROC
+[10:27] curve plots true positive rate against
+[10:29] false positive rate as you sweep the
+[10:31] decision threshold.
+[10:33] The precision recall curve plots
+[10:35] precision against recall as you sweep
+[10:37] the threshold.
+[10:39] For balance classification problems with
+[10:42] comparable class sizes, ROC is
+[10:43] informative.
+[10:46] For imbalance problems and object
+[10:48] detection is heavily imbalanced because
+[10:50] there are far more possible boxes than
+[10:52] objects. Precision recall is more
+[10:54] diagnostic.
+[10:57] Detection uses precision recall, not
+[10:59] ROC.
+[11:01] A practical implication. When you sweep
+[11:03] the detection confidence threshold from
+[11:06] one down to zero, you start with very
+[11:09] few high confidence detections, high
+[11:12] precision, low recall, and end with many
+[11:14] detections, including most ground truth,
+[11:17] but with many false positives, lower
+[11:20] precision, high recall. The curve traces
+[11:23] the trade-off. The area under the curve
+[11:25] summarizes the detector's overall
+[11:28] ability to balance precision and recall.
+[11:30] The mathematical relationships among
+[11:34] these curves. At any decision threshold,
+[11:36] precision equals true positives over
+[11:39] true positives plus false positives.
+[11:41] Recall equals true positives over true
+[11:44] positives plus false negatives. Same as
+[11:48] sensitivity, just renamed. In detection,
+[11:49] recall is sometimes called detection
+[11:52] rate. Precision is sometimes called
+[11:54] positive predictive value. Different
+[11:57] vocabularies, same quantities.
+[12:00] The shape of the precision recall curve
+[12:02] matters. A good detector has a curve
+[12:04] that stays high in precision across most
+[12:07] of the recall range.
+[12:09] A poor detector drops in precision as
+[12:11] soon as recall starts to grow. Meaning
+[12:14] that to find the next true detection,
+[12:16] you have to wait through many false
+[12:18] positives. The shape can be summarized
+[12:21] by a single number. The area under the
+[12:24] curve, the average precision.
+[12:26] Average precision is computed by
+[12:28] integrating precision over recall from
+[12:31] 0ero to one. In practice, the integral
+[12:33] is approximated by interpolating across
+[12:35] the discrete operating points where the
+[12:38] curve has steps. The two conventions can
+[12:40] give slightly different numbers for the
+[12:42] same detector which is one of the
+[12:47] gotchas of crossbenchmark comparisons.
+[12:50] Mean average precision map is average
+[12:54] precision average across classes. map
+[12:56] can be averaged across intersection over
+[13:00] union thresholds from 0.5 to 0.95 in
+[13:03] steps of 0.05.
+[13:07] This is the strictest form map at IOU
+[13:12] equals 0.5 through 0.95 average. This is
+[13:13] the metric in the cocoa detection
+[13:18] benchmark. Map at IOU equals 0.5 is the
+[13:21] more lenient Pascal style metric.
+[13:25] To compute map for each class, list
+[13:27] every predicted box ranked by
+[13:29] confidence. For each box, determine
+[13:31] whether it matches a ground trth object
+[13:34] of the same class with intersection over
+[13:38] union above the threshold. If so, it is
+[13:40] a true positive. If not, it is a false
+[13:43] positive. If it is the second box
+[13:45] matching the same ground truth, it is a
+[13:47] false positive. Only the highest
+[13:49] confidence match counts as a true
+[13:51] positive.
+[13:54] At each step, compute the precision and
+[13:56] recall up to that point. Plot the
+[13:59] precision recall curve. Compute its
+[14:01] area. That is the average precision for
+[14:04] that class. Repeat for all classes.
+[14:07] Average that is map.
+[14:09] We have the class confidences to vary
+[14:11] the threshold in plotting the PR curve.
+[14:15] But how do we get TP or FP?
+[14:17] Choose an IOU threshold with ground
+[14:19] truth boxes to determine if bounding box
+[14:23] prediction is TP or FP. Then can plot PR
+[14:27] curve and obtain AP metric. A common
+[14:29] confusion precision and recall in
+[14:32] detection are computed per class, not
+[14:34] overall detections lumped together. A
+[14:37] detector that is great at detecting cars
+[14:39] but terrible at detecting bicycles will
+[14:42] have low map for bicycles even if its
+[14:44] overall true positive count looks
+[14:47] reasonable. The per class breakdown is
+[14:49] essential for diagnosing which classes
+[14:52] the detector struggles with.
+[14:54] The intersection over union threshold
+[14:57] matters. A detector that produces boxes
+[14:59] that are roughly in the right place but
+[15:03] not pixel precise can score well at IOU
+[15:08] equals 0.5 and poorly at IOU equals 0.9.
+[15:11] Both numbers are meaningful. They
+[15:12] reflect different deployment
+[15:14] requirements for surgical instrument
+[15:16] detection where precise localization
+[15:19] matters. The high IOU number is what you
+[15:21] care about.
+[15:25] map over all classes with IOU threshold
+[15:27] of 0.5
+[15:31] often report map at multiple IUS
+[15:34] if IU threshold not specified in
+[15:37] experiments description for a paper may
+[15:39] need to look in data set evaluation
+[15:45] documentation default is often 0.5 or.5
+[15:48] closing on detection evaluation map is
+[15:51] the standard report per per class AP P
+[15:55] alongside map report at multiple IOU
+[15:57] thresholds if your application demands
+[16:00] precise localization
+[16:04] average of map values at IOU thresholds
+[16:06] regularly sample in the interval
+[16:11] state the version of the metric you are
+[16:16] using Pascal 11 point cocoa 100 one
+[16:21] point or strict map at IOU equals 0.5
+[16:23] through 0.95.
+[16:25] Quick summary, the three concepts
+[16:27] intersection over union for matching
+[16:30] boxes to ground truth. Precision recall
+[16:32] for trading off false alarms against
+[16:34] detection rate mean average precision
+[16:36] for summarizing the whole performance
+[16:39] picture into one number.
+[16:42] Case study time. Jyn and colleagues
+[16:45] 2018. Detecting and tracking surgical
+[16:48] instruments in operative video. The
+[16:50] clinical motivation is multiffold.
+[16:53] automated operative skill assessment,
+[16:55] surgical workflow analysis,
+[16:57] intraoperative decision support,
+[16:59] tracking patient outcomes against
+[17:01] surgeon technique. The paper uses a
+[17:05] faster RCNN style detector trained on
+[17:07] annotated frames from laparoscopic
+[17:09] surgery videos producing perframe
+[17:13] instrument detections.
+[17:15] The data set. Jyn's team annotated
+[17:17] frames from a public laparoscopic
+[17:21] colcystectomy video data set drawing
+[17:22] bounding boxes around surgical
+[17:25] instruments at each frame.
+[17:28] The instrument classes, graspers, hooks,
+[17:32] clippers, scissors, bipolar instruments.
+[17:35] Define the detection vocabulary. The
+[17:37] number of annotated frames was modest by
+[17:39] general detection standards but
+[17:41] substantial by medical detection
+[17:43] standards.
+[17:47] The pipeline a restnet backbone faster
+[17:49] RCNN detection head trained on the
+[17:52] annotated frames with standard detection
+[17:53] losses.
+[17:55] The novel contribution was not in the
+[17:57] architecture. The architecture is
+[18:00] offtheshelf but in linking the perframe
+[18:02] detections to downstream operative skill
+[18:05] metrics. Specifically, the parts that
+[18:08] instrument tips trace through space over
+[18:10] the course of an operation correlated
+[18:12] with attending surgeons subjective skill
+[18:16] assessments of the operating residents.
+[18:18] The clinical implication
+[18:21] operative skill is currently assessed by
+[18:23] attending surgeons watching videos of
+[18:27] trainees. Labor intensive subjective
+[18:30] with significant interrator variability.
+[18:33] An automated system that quantifies
+[18:35] instrument trajectories provides an
+[18:38] objective scaffold for skill assessment.
+[18:40] Not a replacement for expert judgment,
+[18:43] but a complement that scales.
+[18:45] Several deployment efforts in surgical
+[18:48] training have built on similar ideas.
+[18:50] The Singapore National University
+[18:53] Hospitals Center for Robotic Surgery
+[18:57] runs related research programs.
+[19:00] The full reference jin at al tool
+[19:02] detection and operative skill assessment
+[19:04] in surgical videos using region-based
+[19:08] convolutional neural networks wacv
+[19:10] 2018.
+[19:12] The paper is short and worth reading end
+[19:15] to end. It is a clean example of how
+[19:17] off-the-shelf detection machinery
+[19:20] applied to a specific clinical pipeline
+[19:22] can produce real clinical value without
+[19:26] requiring a novel architecture.
+[19:30] Architectural landscape slide. Faster RC
+[19:33] CNN is the canonical two-stage detector,
+[19:35] but the field also has one-stage
+[19:37] detectors that produce all detections in
+[19:39] a single network pass without a separate
+[19:43] region proposal stage. YOLO, you only
+[19:47] look once by Redmond and colleagues.
+[19:50] SSD, singleshot multibox detector by Lou
+[19:52] and colleagues.
+[19:55] Retinaet by Lynn and colleagues at
+[19:58] Facebook AI research which introduced
+[20:00] focal loss to handle the foreground
+[20:02] background class imbalance that hurts
+[20:05] one-stage detectors and then DR
+[20:08] detection transformer from carryon and
+[20:11] colleagues in 2020 which we will see in
+[20:14] lecture 9.
+[20:16] The trade-off between one stage and
+[20:19] two-stage. Two-stage detectors like
+[20:22] faster RC andn tend to be more accurate,
+[20:24] especially for small objects, but
+[20:26] slower.
+[20:28] One-stage detectors like YOLO and SSD
+[20:31] are much faster, suitable for real-time
+[20:33] applications like operating room video
+[20:36] or autonomous driving, but historically
+[20:39] slightly less accurate. The gap has
+[20:41] narrowed substantially as one-stage
+[20:43] methods have matured
+[20:45] for medical work where real-time
+[20:48] performance is not always required.
+[20:50] Two-stage methods remain a sensible
+[20:52] default.
+[20:54] For 3D medical detection, single stage
+[20:57] detector that uses a focal loss to
+[21:00] adaptively weight harder examples over
+[21:02] easy background examples.
+[21:05] able to outperform faster are CNN on
+[21:08] some benchmark tasks while being more
+[21:12] efficient. Retinaet is worth trying.
+[21:15] Recap of the visual recognition taxonomy
+[21:18] from lecture 3. Classification one label
+[21:21] per image. Detection bounding box plus
+[21:24] label per instance. Semantic
+[21:27] segmentation class label per pixel.
+[21:30] Instance segmentation class label plus
+[21:33] instance identifier per pixel. We have
+[21:35] now covered classification semantic
+[21:38] segmentation and detection. Instance
+[21:41] segmentation is next.
+[21:47] Mask R CNN he jikiari dollarar and gerik
+[21:49] icv
+[21:52] 2017 the canonical instance segmentation
+[21:54] architecture. The idea is
+[21:58] straightforward. Take faster RC andn and
+[21:59] add a third head alongside the
+[22:02] classification and box regression heads,
+[22:04] a small fully convolutional network that
+[22:07] produces a binary segmentation mask
+[22:10] within each proposed region. Train end
+[22:13] to end with a combined loss. The result
+[22:15] is a detector that also produces a per
+[22:17] instance pixel mask for each detected
+[22:20] object.
+[22:25] Mask R CNN introduce ROI align, a more
+[22:28] precise version of ROI pooling. The
+[22:31] problem with ROI pooling, when the
+[22:32] proposed region has fractional
+[22:34] coordinates relative to the feature map
+[22:37] grid, the pooling quantizes those
+[22:39] coordinates to integer grid positions,
+[22:42] introducing small spatial misalignments.
+[22:45] For classification and box regression,
+[22:47] this does not matter much. For pixel
+[22:50] level mass prediction, it matters
+[22:51] substantially.
+[22:54] A few pixels of misalignment translate
+[22:56] to noticeable mask errors at the
+[22:58] original resolution.
+[23:01] ROI align uses bilinear interpolation
+[23:04] instead of quantization to read feature
+[23:06] values at the precise sub pixel
+[23:08] coordinates of the proposed region.
+[23:10] No quantization, no spatial
+[23:13] misalignment. The effect on mass quality
+[23:16] is significant. Measured improvement in
+[23:19] mask AP of several points on the Coco
+[23:21] benchmark.
+[23:23] ROI align has subsequently become the
+[23:25] default in any architecture that needs
+[23:27] precise spatial alignment between
+[23:35] Now we use mask R CNN. The applications
+[23:38] in medical imaging are extensive. Cell
+[23:41] nuclei detection in hystopathology.
+[23:43] Count cells distinguish cell types.
+[23:46] segment cell boundaries,
+[23:49] lung nodule detection plus mask, locate
+[23:52] nodules on CT and also produce a mask
+[23:54] for volume measurement,
+[23:57] lesion segmentation on MRI, polip
+[24:00] detection on colonoscopy video. All of
+[24:02] these benefit from instance level
+[24:06] outputs that separate adjacent objects.
+[24:10] The architecture has four heads. Region
+[24:12] proposal predicts candidate object
+[24:15] regions. Classification
+[24:18] assigns class labels to regions. Box
+[24:21] regression refineses the bounding box.
+[24:24] Mass prediction produces a binary
+[24:28] segmentation mask at typically 28x 28
+[24:31] resolution within each region. The four
+[24:33] heads are trained jointly. The training
+[24:35] set requires not just labeled bounding
+[24:38] boxes, but label per pixel mass for each
+[24:41] instance. Much more expensive to
+[24:44] annotate than detection boxes alone.
+[24:46] We need new metrics for instance
+[24:49] segmentation because the output combines
+[24:51] detection and segmentation aspects.
+[24:54] Standard practice is map computed using
+[24:58] mask IOU instead of box IOU.
+[25:01] An instance is correctly detected if the
+[25:03] predicted mask overlaps the ground truth
+[25:05] mask above some threshold of
+[25:08] intersection over union. The map
+[25:10] machinery then carries over from object
+[25:12] detection.
+[25:15] The mask IO
+[25:17] is the area of overlap between the
+[25:20] predicted mask and the ground truth mask
+[25:23] divided by the area of their union. Same
+[25:26] definition as semantic segmentation IOU
+[25:29] but applied per instance. A predicted
+[25:31] mask that covers most of the ground
+[25:34] truth mask with limited extra area
+[25:38] scores high mask IOU. A predicted mask
+[25:40] that is too small or extends well beyond
+[25:43] the ground truth scores lower.
+[25:46] The instance segmentation metric is map
+[25:51] at mask IOU thresholds from 0.5 through
+[25:52] 0.95
+[25:56] average. Same recipe as detection but
+[26:01] with mask IOU instead of box IOU.
+[26:04] A practical note mask annotations are
+[26:06] much more expensive to produce than box
+[26:09] annotations. For some medical instance
+[26:11] segmentation tasks, the field has
+[26:13] converged on weekly supervised
+[26:15] approaches that use point annotations
+[26:17] instead of full masks.
+[26:20] The mask RCNN architecture can be
+[26:21] adapted to these weaker supervision
+[26:24] signals with appropriate loss design
+[26:27] with modest accuracy loss compared to
+[26:29] full mass supervision.
+[26:32] When you evaluate instance segmentation,
+[26:34] also look at the failure cases. The
+[26:38] cases with low IOU or missed detections.
+[26:40] Are the failures concentrated on small
+[26:43] instances? On instances that touch each
+[26:46] other, on instances in unusual
+[26:48] orientations? The failure analysis
+[26:51] matters more than the headline map for
+[26:52] understanding where to invest
+[26:55] engineering effort.
+[26:59] Closing on evaluation. Report mask map
+[27:02] at the IOU thresholds. Your application
+[27:06] requires report per class breakdown. Be
+[27:08] explicit about the labeling protocol.
+[27:11] Were mass drawn by a single annotator or
+[27:14] by multiple. Was interanotator agreement
+[27:16] measured?
+[27:19] First application example. Cell nuclei
+[27:22] segmentation in hystopathology.
+[27:24] The clinical motivation. Count tumor
+[27:26] cells in a biopsy. Separate them from
+[27:30] stromal cells. Identify motic figures.
+[27:33] Manual counting is slow, subjective, and
+[27:36] limited to small fields of view.
+[27:37] Automated counting via instance
+[27:40] segmentation enables exhaustive analysis
+[27:43] of entire whole light images.
+[27:47] Many extensions of the basic mask RCNN
+[27:50] approach in medical imaging. Cascade
+[27:52] mask RCNN
+[27:54] multi-stage refinement of the mass
+[27:56] predictions. High resolution mass
+[27:59] boundary refinement useful for cell
+[28:03] boundary accuracy. Solo and solo VR2
+[28:05] segment objects by location sidest
+[28:08] stepping the box then mass pipeline. The
+[28:10] field is active but the original mask
+[28:13] RCNN architecture remains a strong
+[28:15] default starting point for most clinical
+[28:19] instance segmentation problems. Another
+[28:22] application, lung nodule segmentation on
+[28:25] CT goes beyond detection. Once you have
+[28:28] found a nodule, you want a mask so you
+[28:30] can measure its volume precisely.
+[28:32] Volume is the most important
+[28:34] quantitative biomarker for lung cancer
+[28:36] screening because volume doubling time
+[28:38] is one of the strongest predictors of
+[28:40] malignancy.
+[28:42] The LIc
+[28:44] data set provides per nodule masks from
+[28:47] multiple radiologists.
+[28:50] Mask R C andN style architectures
+[28:54] adapted to 3D are a dominant approach.
+[28:57] Stock taking we have covered 2D
+[28:59] classification, 2D semantic
+[29:02] segmentation, 2D detection, 2D instance
+[29:04] segmentation.
+[29:06] We have a full toolbox for working with
+[29:09] 2D medical images. Now we extend to
+[29:12] higher dimensional data specifically 3D
+[29:16] volutric data from CT and MRI and video
+[29:18] data with a time axis.
+[29:23] Next 3D CNN's for volumetric medical
+[29:26] data three-dimensional medical imaging
+[29:27] CTMRI
+[29:31] 3D ultrasound microscopy stacks is the
+[29:33] norm rather than the exception in
+[29:36] clinical practice. 3D CNNs operate on
+[29:39] the full volume and explicitly model the
+[29:41] depth axis.
+[29:44] 3D convolutions as the natural extension
+[29:47] of 2D convolutions. A 3D filter has
+[29:50] spatial extent in three dimensions,
+[29:54] height, width, and depth. It slides
+[29:56] across all three axis of the input
+[29:59] volume and produces a 3D activation map.
+[30:01] Everything we said about 2D
+[30:04] convolutions, weight sharing, multiple
+[30:09] filters, padding, stride applies in 3D.
+[30:11] The only differences are computational.
+[30:13] 3D convolutions are much more expensive
+[30:17] in compute and memory and 3D volumes are
+[30:20] larger than 2D images.
+[30:23] Framing question, how do we handle 3D
+[30:26] data in deep learning? Three approaches.
+[30:28] One, treat the volume as a stack of
+[30:32] independent 2D slices. Run a 2D CNN per
+[30:34] slice. Aggregate predictions across
+[30:38] slices. Two, use the multiv- view 2D
+[30:41] trick like Chompy 2015, extracting
+[30:44] several 2D projections of each candidate
+[30:47] region and combining their predictions.
+[30:51] Three, use a full 3D CNN that operates
+[30:53] natively on the volume.
+[30:56] Each approach has trade-offs in compute
+[30:59] cost, data efficiency, and accuracy. The
+[31:01] right choice depends on the task and the
+[31:04] available compute.
+[31:08] Revisiting Kympi at AL 2015 from lecture
+[31:11] 3. Pulmonary nodule classification with
+[31:14] multiv- view 2D. Extract three or more
+[31:16] 2D projections per nodule, axial,
+[31:20] coronal, sagittal, plus oblique views.
+[31:23] Feed each through a 2D CNN. fuse the
+[31:26] perview predictions. You can leverage 2D
+[31:28] image net pre-training works well when
+[31:31] you have limited 3D labelled data which
+[31:35] is the typical clinical situation.
+[31:37] The empirical comparison between multiv-
+[31:42] view 2D and full 3D CNNs is nuanced with
+[31:44] limited data. Multiv- view 2D often
+[31:46] outperforms 3D because the 2D
+[31:50] pre-trained features transfer well with
+[31:52] abundant 3D data which is rare
+[31:55] clinically but becoming less so with
+[32:01] public data sets like LIC, BRATS, KITS.
+[32:04] Full 3D CNNs become competitive and
+[32:07] eventually superior. The crossover point
+[32:09] depends on the task but tends to be in
+[32:12] the tens of thousands of 3D labelled
+[32:14] examples.
+[32:19] A quick example, a 2D 32x32 RGB image
+[32:22] convolved with a 5x5x3 filter produces
+[32:26] an output spatial dimension of 28x 28.
+[32:29] The filter spans the full depth three
+[32:31] color channels. We worked this out in
+[32:33] lecture two.
+[32:38] Now switch to a 3D volume. A 32x 32x
+[32:41] 32x1 volume single channel like a CT
+[32:45] scan convolved with a 5x5x 5x1 filter
+[32:48] produces a 3D output spatial dimension
+[32:53] of 28x 28x 28. The 3D filter slides
+[32:55] across all three spatial axis. The
+[32:58] arithmetic generalizes directly from the
+[33:02] 2D case. The difference is in compute.
+[33:05] Instead of a 5x5 filter slit across two
+[33:08] axis, we have a 5x 5x5 filter slit
+[33:12] across three axis. About 125 multiply
+[33:14] accumulates per output position instead
+[33:16] of 25.
+[33:19] The diagram shows a small 3D input
+[33:22] volume on the left, a 3D filter sliding
+[33:24] through it, and a 3D output activation
+[33:26] volume on the right.
+[33:28] The mental picture you want is the
+[33:31] natural extension of the 2D picture from
+[33:34] lecture 2. Same operation, one extra
+[33:37] spatial axis. The filter has weights at
+[33:39] every position in its three-dimensional
+[33:42] grid. The operation at each input
+[33:45] position is a 3D dot product.
+[33:49] When might you use 3D convolutions?
+[33:52] As in 2D, we use multiple filters in the
+[33:54] same layer to produce multiple output
+[33:55] channels.
+[33:58] A 3D convolutional layer with 16 filters
+[34:02] of size 5x 5x5 takes a single channel
+[34:05] input volume and produces a 16 channel
+[34:07] output volume of slightly smaller
+[34:10] spatial size. Stack these layers interle
+[34:13] them with 3D pooling and you have a 3D
+[34:15] CNN.
+[34:19] 3D pooling the natural extension of 2D
+[34:22] pooling. A 2x twox two max pooling layer
+[34:24] with stride two halves each of the three
+[34:26] spatial dimensions
+[34:28] eight-fold reduction in volume per
+[34:32] pooling layer instead of four-fold in 2D
+[34:36] computational cost. A 3D convolution is
+[34:38] roughly an order of magnitude more
+[34:40] expensive than the analogous 2D
+[34:44] convolution per layer. 3D CNN's are
+[34:46] correspondingly more memory hungry and
+[34:49] slower to train.
+[34:51] GPU memory budgets are the practical
+[34:54] limit. A typical training batch in 3D is
+[34:57] much smaller than in 2D. Sometimes a
+[34:59] single volume per batch on commodity
+[35:01] GPUs.
+[35:02] Mix precision training and gradient
+[35:06] checkpointing become essential tools.
+[35:09] The data side 3D pre-training data sets
+[35:11] are smaller than image net by orders of
+[35:14] magnitude. There is no equivalent 3D
+[35:17] image net. This is a recurring challenge
+[35:20] for 3D medical imaging. You cannot just
+[35:22] borrow a 3D backbone the way you borrow
+[35:25] ResNet for 2D. Strategies include
+[35:27] training from scratch on the target data
+[35:30] set using 2D pre-trained backbones
+[35:33] inflated to 3D or self-supervised
+[35:35] pre-training on large unlabeled 3D
+[35:38] medical data sets like medical decathlon
+[35:40] volumes.
+[35:45] Build six, inflated 3D. When a 2D CNN's
+[35:48] 2D filters are extended to 3D by
+[35:50] replicating along the depth axis, the
+[35:53] result is a 3D CNN initialized with
+[35:55] knowledge transferred from 2D
+[35:56] pre-training.
+[35:58] Originally proposed by Carrera and
+[36:02] Zissimon for video I3D and adapted by
+[36:04] Matt 3D and others for medical
+[36:08] volumetric data. A useful trick when 3D
+[36:11] labelled data is limited.
+[36:13] and application lung nodule
+[36:16] classification on the LIC-IDRI
+[36:18] data set. The canonical benchmark for
+[36:22] lung cancer screening. The task given a
+[36:24] candidate nodule extracted from a chest
+[36:28] CT classify it as benign or malignant.
+[36:31] Several groups have shown that 3D CNN's
+[36:35] outperform 2D approaches at this task
+[36:36] with the gap growing as the labeled
+[36:39] training set grows.
+[36:41] The 2017 Kaggle data science bowl on
+[36:45] lung cancer detection brought 3D CNN
+[36:49] approaches into the mainstream.
+[36:52] How about a 3D UNET? The 3D extension of
+[36:55] the UNET architecture from lecture 3.
+[36:57] Same encoder decoder structure, same
+[37:00] skip connections, same overall design
+[37:03] philosophy, just with 3D convolutions
+[37:06] and 3D pooling instead of their 2D
+[37:08] counterparts.
+[37:11] Aside on a related architecture, Hang
+[37:15] and colleagues 2017, VNET, a similar 3D
+[37:17] segmentation architecture proposed for
+[37:19] prostate segmentation.
+[37:22] Subtle differences from 3D UNET, VNET
+[37:25] uses residual connections within each
+[37:27] stage, includes a dice loss as the
+[37:29] training objective rather than cross
+[37:31] entropy.
+[37:33] The two architectures are largely
+[37:35] interchangeable in practice and both
+[37:38] remain in active use.
+[37:41] For richer visual recognition tasks, you
+[37:43] can extend respective 2D CNN
+[37:47] architectures to 3D ResNet to 3D RestNet
+[37:52] unit to 3D unit mask RCNN to 3D mask
+[37:53] RCNN.
+[37:55] The extension procedure is generally
+[37:59] mechanical. Replace 2D convolutions with
+[38:03] 3D 2D pooling with 3D. Adjust strides
+[38:07] and channel counts to manage compute.
+[38:09] The harder questions are about data,
+[38:12] what 3D pre-training is available, what
+[38:15] data augmentation strategies work, how
+[38:18] to handle the larger memory budget.
+[38:20] The architecture follows the 2D unit
+[38:23] template from lecture 3 directly.
+[38:25] Encoder on the left, bottleneck at the
+[38:28] bottom, decoder on the right, skip
+[38:31] connections crossing horizontally.
+[38:33] The only change is that every spatial
+[38:36] operation is now three-dimensional. The
+[38:38] diagram looks busier than 2D dunet
+[38:40] because the volumes are drawn as cubes
+[38:43] rather than rectangles but the structure
+[38:46] is the same.
+[38:49] The encoder 3D convolutions with batch
+[38:53] normalization and realu followed by 3D
+[38:54] max pooling that halves all three
+[38:57] spatial dimensions per stage.
+[39:00] After three or four pooling stages, the
+[39:02] spatial extent is small and the channel
+[39:04] depth is large.
+[39:07] standard encoder pattern.
+[39:10] Here are the channels. The bottleneck,
+[39:11] the deepest most abstract
+[39:14] representation. By this point, each
+[39:16] spatial location has integrated
+[39:19] information from a large 3D receptive
+[39:20] field.
+[39:22] Architecture depth and pooling rate are
+[39:26] tuned to match the task's spatial scale.
+[39:30] The decoder mirror of the encoder 3D
+[39:33] upconvolutions that double each spatial
+[39:35] dimension per stage followed by
+[39:37] concatenation with the corresponding
+[39:39] encoder features through the skip
+[39:43] connection followed by 3D convolutions.
+[39:46] Same pattern as 2DS decoder just in
+[39:48] three dimensions.
+[39:51] The output a 3D volume with the same
+[39:54] spatial dimensions as the input with one
+[39:56] channel per class.
+[39:57] For binary foreground background
+[40:00] segmentation a single channel followed
+[40:02] by a sigmoid.
+[40:05] For multiclass say segmenting brain
+[40:07] tumor into enhancing
+[40:10] odimema and necrotic regions several
+[40:13] channels followed by a softmax across
+[40:16] classes at each voxal voxal wise cross
+[40:18] entropy or dice loss applied at the
+[40:20] output.
+[40:22] A practical consideration,
+[40:25] semi-supervised learning, learning from
+[40:27] data sets that are partially labeled.
+[40:29] This means a small amount of labeled
+[40:32] data plus a larger amount of unlabeled
+[40:33] data.
+[40:36] Lots of active research on ways, for
+[40:38] example, loss functions which don't
+[40:41] require manual labels to simultaneously
+[40:43] learn richer information from the
+[40:45] unlabeled data.
+[40:48] Augmentation in 3D. The same standard
+[40:51] augmentations apply. Random crops,
+[40:54] random flips, intensity perturbations.
+[40:57] For example, 3D segmentation of xenopus
+[41:01] kidney in confocal microscopic data. The
+[41:03] elastic deformation trick from the
+[41:06] original 2D unit carries over to 3D and
+[41:08] remains particularly effective for
+[41:11] medical segmentation.
+[41:13] Each channel corresponds to a different
+[41:16] type of data capture.
+[41:19] This 3D unit used only three samples
+[41:22] total with a total of 77 annotated 2D
+[41:26] slices. Leverages fact that each sample
+[41:28] contains many instances of same
+[41:31] repetitive structures with variation.
+[41:35] An application brain lesion segmentation
+[41:38] typically on multi-sequence MRI. The
+[41:41] BRAT challenge brain tumor segmentation
+[41:43] challenge has been the central benchmark
+[41:45] since 2012.
+[41:48] volumes contain four MRI sequences per
+[41:54] patient. T1 T1 with contrast T2 flare.
+[41:56] The task is to segment the tumor into
+[41:59] three regions. Enhancing tumor tumor
+[42:01] core oema.
+[42:03] Reference masks come from expert
+[42:05] neuroraiologist.
+[42:08] Most competitive entries since 2017 have
+[42:10] used some form of 3D unit or its
+[42:18] The multi-sequence aspect is interesting
+[42:21] from a multimodal perspective. The four
+[42:24] MRI sequences are co-registered. The
+[42:26] same voxal coordinates correspond to the
+[42:29] same anatomy across sequences.
+[42:31] Each sequence highlights different
+[42:33] tissue properties. The early fusion
+[42:36] approach stacks the four sequences as
+[42:39] four input channels of a 3D unit letting
+[42:42] the network learn the fusion.
+[42:45] The third axis we add today video data
+[42:47] is everywhere in medicine. operating
+[42:50] room cameras, ultrasound, echo
+[42:52] cardiography, fllororoscopy,
+[42:56] colonoscopy, endoscopy, generally OCT
+[42:59] video, even chest X-rays are sometimes
+[43:01] acquired as short fllororoscopic
+[43:03] sequences.
+[43:05] Each of these adds a time access to the
+[43:07] data.
+[43:11] Two architectural ideas for video. I3D
+[43:14] inflated 3D confnet by Carrera and
+[43:17] Zissiman CVPR 2017
+[43:22] takes a 2D image net pre-trained CNN and
+[43:24] inflates the 2D filters to 3D by
+[43:27] replicating along the time axis. The
+[43:29] resulting 3D network can be trained on
+[43:32] video data and benefits from 2D
+[43:33] pre-training.
+[43:36] Two stream networks by Simonian and
+[43:39] Zisaman near IPS 2014.
+[43:43] Use two parallel CNN streams. One on RGB
+[43:46] frames and one on optical flow between
+[43:49] frames. Combine the predictions. The two
+[43:51] ideas can be combined into a two stream
+[43:54] i3d which has been the strong default
+[44:01] Why video is harder than 2D images. A
+[44:03] one minute video at 30 frames per second
+[44:07] is 1,800 frames. Each frame is a 2D
+[44:09] image. The total data per video is
+[44:12] roughly an order of magnitude or two
+[44:15] larger than a single image.
+[44:17] Storage, compute, and memory budgets all
+[44:21] scale. Annotation costs scale too.
+[44:23] Labeling every frame of a long surgical
+[44:25] video is impractical. So most video
+[44:27] labels are at the clip level or are
+[44:31] sparse temporal annotations.
+[44:33] The natural approach. Treat video as a
+[44:36] 3D volume where the third axis is time
+[44:39] and apply 3D convolutions.
+[44:41] A 3D filter slides through space and
+[44:43] time, learning patterns that depend on
+[44:48] both. This is exactly what I3D does. The
+[44:49] filters can capture both spatial
+[44:51] patterns within each frame and motion
+[44:55] patterns across frames. for example, the
+[44:57] trajectory of a surgical instrument or
+[44:59] the contraction pattern of a beating
+[45:00] heart.
+[45:03] Compared to 3D DCNNs for volutric
+[45:07] medical data, video 3D DCNNs have a
+[45:09] similar architecture but a different
+[45:12] interpretation of the third axis.
+[45:16] In a volutric CT scan, the third axis is
+[45:19] anatomical depth. Adjacent slices are
+[45:22] spatially adjacent in the patient. In a
+[45:26] video, the third axis is time. Adjacent
+[45:28] frames are temporarily adjacent. The
+[45:31] physics differs, but the convolutional
+[45:33] machinery is the same.
+[45:37] The i3d architecture. The architectural
+[45:41] idea. Take an inception style 2D CNN
+[45:44] pre-trained on imageet. For each 2D
+[45:46] convolutional filter in the pre-trained
+[45:49] network, inflated to 3D by replicating
+[45:52] the 2D weights along the time axis and
+[45:55] normalizing. So the inflated filter
+[45:57] applied to a video that is constant in
+[45:59] time produces the same response as the
+[46:01] original 2D filter would on a single
+[46:05] frame. The inflation initialization
+[46:07] gives the 3D network a strong starting
+[46:11] point from 2D pre-training.
+[46:13] After inflation, the 3D network is
+[46:17] fine-tuned on a video data set. Carrera
+[46:20] and Zissman use kinetics, a benchmark of
+[46:22] action recognition videos.
+[46:26] I3D was state-of-the-art on kinetics and
+[46:28] on several earlier action recognition
+[46:29] benchmarks
+[46:33] for medical work. The i3D recipe has
+[46:35] been adapted to surgical video,
+[46:38] gastrointestinal endoscopy video, and
+[46:40] several other modalities. The
+[46:42] pre-trained then fine-tuned pattern
+[46:45] carries over cleanly.
+[46:48] Two stream i3d. The two stream
+[46:51] architecture combines two parallel i3d
+[46:54] networks. One stream takes raw RGB
+[46:57] frames as input. The other stream takes
+[47:01] optical flow between frames as input.
+[47:02] The two streams produce separate
+[47:05] predictions which are fused typically
+[47:07] averaged to produce the final
+[47:09] classification. The two streams capture
+[47:12] complimentary information appearance
+[47:16] from RGB motion from flow encoded as a
+[47:19] two channel image horizontal and
+[47:22] vertical motion components and fed into
+[47:24] the second stream of the network.
+[47:27] The empirical observation across many
+[47:28] video tests is that two stream
+[47:31] consistently beats single stream by a
+[47:34] few percentage points of accuracy.
+[47:36] The cost is doubling the compute for
+[47:39] real-time medical applications.
+[47:41] Surgical guidance for example can
+[47:44] pre-train from 2D data sets for example
+[47:46] imageet by replicating and normalizing
+[47:50] 2D weights over additional dimension.
+[47:53] Instead of a separate full I3D network
+[47:56] for flow, you can feed flow as an
+[47:58] additional input channel to a single i3d
+[48:00] network.
+[48:03] The RGB channels and the flow channels
+[48:05] are stacked along the channel dimension
+[48:07] and the network processes them jointly
+[48:09] from the first convolutional layer
+[48:12] onwards. This is early fusion of motion
+[48:15] information with optical flow.
+[48:17] Directional components can be
+[48:19] represented as images or multiple
+[48:22] channels of input volume. Early fusion
+[48:24] is simpler and faster, but the two
+[48:27] streams may interfere. There is no
+[48:30] universal winner. Pick based on compute
+[48:33] budget and the specific task.
+[48:35] Here are some architectures for video
+[48:37] classifiers. Computing optical flow for
+[48:40] an entire video can be expensive,
+[48:42] especially with learned flow networks
+[48:46] like raft. For long- form medical video,
+[48:49] hours of surgery, for example, flow
+[48:51] computation may be the bottleneck rather
+[48:54] than the classification network.
+[48:57] LSTM over RGB.
+[49:01] Instead of 3D convolutions, run a 2D CNN
+[49:03] per frame to produce a frame level
+[49:05] feature vector. Then run a recurrent
+[49:09] network, an LSTM, over the sequence of
+[49:12] frame features. The CNN handles spatial
+[49:15] structure within each frame. The LSTM
+[49:17] handles temporal structure across
+[49:20] frames. This is the CNN plus RNN
+[49:24] approach to video classification.
+[49:27] The architecture in pictures at each
+[49:31] frame a 2D CNN typically restnet or
+[49:34] inception pre-trained on imageet
+[49:38] produces a feature vector of say48
+[49:40] dimensions. The sequence of frame
+[49:43] features is fed to an LSTM that
+[49:46] processes them in order maintaining a
+[49:49] hidden state. The LSTM's final hidden
+[49:51] state or a pulled version of all the
+[49:55] hidden states goes to a classifier head.
+[50:00] The conceptual contrast with 3D CNN's 3D
+[50:02] CNN's model temporal patterns within
+[50:05] their convolutional receptive field,
+[50:07] typically a few seconds of video at
+[50:11] most. LSTMs model temporal patterns over
+[50:14] arbitrarily long sequences in principle
+[50:17] limited only by memory. For long range
+[50:20] temporal reasoning, distinguishing two
+[50:22] surgical phases that differ in their
+[50:24] long-term sequence of actions, for
+[50:27] example, LSTMs have a structural
+[50:30] advantage for short-range motion
+[50:33] patterns. 3D CNNs are usually more
+[50:35] efficient.
+[50:38] CNN plus LSTM has been the workhorse for
+[50:40] clinical video understanding task where
+[50:43] long range temporal reasoning matters.
+[50:46] Surgical workflow recognition
+[50:48] identifying which phase of an operation
+[50:50] is currently happening is the canonical
+[50:53] example. The fine grain perframe visual
+[50:56] signal is captured by the CNN. The
+[50:58] temporal grammar of surgical faces is
+[51:02] captured by the LSTM.
+[51:06] The boundary between CNN plus LSTM and
+[51:10] 3D CNN's has blurred in recent years.
+[51:12] Modern video models often combine the
+[51:16] two. A 3D CNN backbone that captures
+[51:19] short range motion followed by an
+[51:22] attention or LSTM module that aggregates
+[51:24] over longer time scales.
+[51:26] Transformerbased video models like
+[51:29] transformer which we will see later
+[51:31] generalize this further by using
+[51:32] attention across all spatial and
+[51:36] temporal positions.
+[51:38] A practical observation about training.
+[51:42] CNN plus LSTM training is memory
+[51:43] intensive because the entire frame
+[51:45] feature sequence must be kept in memory
+[51:48] for back propagation through time. For
+[51:51] long videos, this becomes intractable.
+[51:53] two solutions. Truncated back
+[51:56] propagation through time where gradients
+[51:58] are propagated only across a window of
+[52:00] frames at a time and gradient
+[52:02] checkpointing where intermediate
+[52:04] activations are recomputed on the
+[52:07] backward pass instead of stored. Both
+[52:09] are standard tricks in any recurrent
+[52:11] video pipeline.
+[52:14] We have introduced LSTMs in the context
+[52:17] of video but we have not yet covered the
+[52:20] recurrent network machinery in detail.
+[52:22] That detail comes in lecture five where
+[52:28] we cover RNN's and LSTMs for EHR
+[52:31] time series data. The next few slides
+[52:33] preview the recurrent network framework
+[52:37] so the video context is clear.
+[52:39] Preview slide. A recurrent neural
+[52:41] network processes a sequence by
+[52:44] maintaining a hidden state that gets
+[52:47] updated at each time step. The hidden
+[52:49] state at time t is a function of the
+[52:53] hidden state at time t minus one and the
+[52:56] input at time t. The recurrent
+[52:58] computation lets the network carry
+[53:00] information from earlier time steps to
+[53:03] later ones. A memory mechanism. The
+[53:06] simplest variant is vanilla RNN.
+[53:08] LSTMs
+[53:11] and GRUs are more sophisticated variants
+[53:13] designed to handle long range
+[53:15] dependencies. Lecture 5 has the full
+[53:18] story.
+[53:21] Videos are sequences. Each frame is one
+[53:24] element of the sequence. The recurrent
+[53:26] network processes the sequence one frame
+[53:29] at a time, updating its hidden state.
+[53:31] The hidden state encodes a running
+[53:35] summary of what has been seen so far.
+[53:37] At the end of the sequence or at any
+[53:39] point during it, the hidden state can be
+[53:41] used to predict something about the
+[53:44] video, its class, the current action,
+[53:46] the upcoming event.
+[53:49] The unrolled diagram, a standard
+[53:51] depiction shows the RNN unrolled in
+[53:55] time, one copy per frame with the hidden
+[53:57] state passed forward.
+[53:59] This is a useful visualization, but not
+[54:02] how the computation is implemented.
+[54:05] Internally, there is one RNN cell that
+[54:08] processes frames sequentially, reusing
+[54:10] the same parameters. The unrolled
+[54:12] diagram just makes the time dimension
+[54:16] explicit. The vanilla RNN cell, new
+[54:19] hidden state equals tanh of W * old
+[54:23] hidden state plus U* current input plus
+[54:26] bias. Two learnable weight matrices, one
+[54:29] bias, one nonlinearity.
+[54:32] Simple. The hidden state at the final
+[54:33] time step is what we use for
+[54:36] classification by passing it through a
+[54:38] small classifier head.
+[54:42] The issue with vanilla RNs
+[54:44] during back propagation through time
+[54:46] gradients have to flow back through many
+[54:49] time steps. Each backward step
+[54:51] multiplies by the recurrent weight
+[54:54] matrix. If those weights are small,
+[54:56] gradients vanish. If they are large,
+[54:59] gradients explode. both make training
+[55:02] unstable. The phenomenon is wellknown
+[55:04] and motivates the more sophisticated
+[55:06] LSTM
+[55:10] and GRU varants.
+[55:12] How do we compute gradient updates? Back
+[55:16] propagation through time BPTT is just
+[55:18] back propagation applied to the unrolled
+[55:20] RNN.
+[55:22] Every parameter appears at every time
+[55:24] step. So its gradient is the sum of
+[55:27] gradients across time steps.
+[55:30] Memory cost is linear in sequence length
+[55:32] because all activations must be kept for
+[55:34] the backward pass. For very long
+[55:37] sequences, this becomes prohibitive.
+[55:40] Hence, truncated BPTT
+[55:42] which limits the backward pass to a
+[55:46] fixed window of recent time steps.
+[55:48] This is a computational graph can back
+[55:54] prop and train RNN and CNN jointly.
+[55:56] but a very large number of parameters to
+[55:58] train simultaneously.
+[56:00] So it is more common to fine-tune a
+[56:03] single frame CNN over the data first or
+[56:07] use pre-trained CNN and then extract
+[56:11] features and train the RNN separately.
+[56:13] This is just a preview of RNN's. We'll
+[56:16] see again in our discussion of sequence
+[56:18] EHR data later.
+[56:20] There is now a new class of neural
+[56:23] network models. The transformers
+[56:25] introduced originally for NLP sequence
+[56:28] data which is now also starting to see
+[56:31] exploration for video data. We'll
+[56:33] discuss in upcoming lecture on text
+[56:37] data. So the CNN plus RNN architecture
+[56:39] has gradually been displaced by
+[56:42] transformers in many benchmark settings.
+[56:43] But it remains a strong default for
+[56:46] clinical applications where compute
+[56:49] budgets are limited and where the LSTM's
+[56:50] explicit handling of long range
+[56:54] structure matches the task.
+[56:56] Two clinical video AI applications worth
+[57:00] knowing in detail. ICU patient
+[57:03] mobilization activity detection using
+[57:05] ceiling mounted cameras to monitor
+[57:07] whether patients are being mobilized as
+[57:11] ordered. An important quality indicator
+[57:12] echo cardiography based ejection
+[57:15] fraction prediction automated estimation
+[57:17] of cardiac contractile function from
+[57:20] clinical ultrasound video
+[57:22] both are real systems with publish
+[57:24] evaluation.
+[57:26] The clinical motivation
+[57:30] ICU patients who are mobilized set up
+[57:33] transferred to a chair walked recover
+[57:35] faster and have shorter ICU stays than
+[57:38] those who remain bedbound.
+[57:40] Mobilization is part of every ICU
+[57:43] protocol. The catch, mobilization events
+[57:46] are not reliably documented in the EHR,
+[57:49] so quality monitoring is hard. A
+[57:51] vision-based system that automatically
+[57:54] detects mobilization activities from
+[57:56] ceiling mounted cameras provides ground
+[58:00] truth for quality improvement programs.
+[58:02] The technical approach. Jung and
+[58:05] colleagues 2019.
+[58:07] Ceiling mounted depth cameras above ICU
+[58:11] beds capturing lowresolution depth video
+[58:13] that preserves patient activity without
+[58:16] capturing identifiable facial features.
+[58:20] A privacy respecting design. CNN
+[58:23] perframe plus LSTM classifying short
+[58:25] video clips into mobilization activity
+[58:28] categories. trained on annotated video
+[58:30] from multiple ICU beds at Stanford
+[58:33] Hospital.
+[58:36] The deployment story. The system was
+[58:38] validated against in-person observers
+[58:40] and showed reasonable agreement on
+[58:43] activity categorization.
+[58:46] Privacy preserving design, depth video
+[58:49] only, no RGB was a key engineering
+[58:51] choice that made institutional approval
+[58:54] feasible. The general pattern of
+[58:55] camerabased clinical activity
+[58:58] recognition has expanded across multiple
+[59:01] academic medical centers. Singapore's
+[59:03] hospital system has been more
+[59:04] conservative about ambient camera
+[59:07] deployment for privacy reasons, but
+[59:10] selected research pilots exist.
+[59:13] Second clinical application
+[59:17] and colleagues nature 2020. The echoneet
+[59:19] dynamic model ejection fraction
+[59:21] estimation from echoc cardiography
+[59:25] video. The clinical metric left
+[59:27] ventricular ejection fraction is
+[59:29] calculated from the change in left
+[59:32] ventricular volume between nasto and n
+[59:35] systo. Manual measurement is operator
+[59:38] dependent and time consuming. Wuang's
+[59:44] model uses an R2 + 1 D video CNN to
+[59:46] estimate ejection fraction directly from
+[59:49] eco cardiography video with accuracy
+[59:50] comparable to repeated human
+[59:52] measurement.
+[59:55] Summary slide. Object detection with
+[59:59] faster RCNN. Anchor boxes. ROI pooling
+[60:02] and mean average precision evaluation.
+[60:06] Instance segmentation with mask RCNN and
+[60:10] ROI align evaluated via mask map 3D
+[60:13] CNN's and 3D unit for volutric medical
+[60:16] data with BRZ as the canonical
+[60:17] benchmark.
+[60:21] video classification with I3D two stream
+[60:25] networks and CNN plus LSTM for long
+[60:26] sequences.
+[60:28] Clinical applications in surgical
+[60:31] instrument detection, cell nuclei
+[60:34] segmentation, lung nodule analysis, ICU
+[60:37] patient mobilization and echoc
+[60:39] cardioraphic ejection fraction. That is
+[60:41] the picture of advanced vision modeling
+[60:46] in medical imaging as it stands today.
+[60:48] Next lecture, we leave the comfortable
+[60:50] territory of computer vision and enter
+[60:53] the messier reality of electronic health
+[60:56] records. Time series data, irregular
+[60:58] sampling, missing values, mixed data

@@ -1,0 +1,15 @@
+{
+  "n": 21855,
+  "prevalence": 0.0621,
+  "auprc": 0.1963,
+  "auroc": 0.757,
+  "brier": 0.182,
+  "sens_at_spec0.8": 0.5714,
+  "model": "cnnmlp",
+  "horizon_T": 30,
+  "best_val_auprc": 0.333,
+  "train_time_s": 24.7,
+  "n_params": 24961,
+  "n_train": 97595,
+  "n_test": 21855
+}

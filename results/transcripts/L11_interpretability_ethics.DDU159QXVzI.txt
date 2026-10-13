@@ -1,0 +1,1075 @@
+[00:02] Welcome back. This is the responsible AI
+[00:04] lecture. We are going to talk about
+[00:06] three intertwined topics:
+[00:09] interpretability, fairness, and ethics,
+[00:11] and how each of them shapes whether a
+[00:14] clinical AI system can responsibly be
+[00:15] deployed.
+[00:18] So far, our lectures are about building
+[00:21] up architectures and training recipes.
+[00:23] Today, we step back and ask the harder
+[00:24] questions.
+[00:26] When a CNN tells a clinician that a
+[00:29] patient has pneumonia, why should the
+[00:31] clinician believe it?
+[00:33] When we deploy a model trained on one
+[00:35] population at another hospital across
+[00:36] town,
+[00:39] what do we owe to the patients there?
+[00:41] And when our model fails, when it gets
+[00:44] confused, when it has systematic biases,
+[00:47] when it disagrees with a clinician, who
+[00:49] is responsible?
+[00:51] Today's lecture covers a broad and
+[00:53] interconnected set of concepts:
+[00:56] interpretability, explainability,
+[00:59] transparency, uncertainty, robustness,
+[01:02] fairness, ethics, bias, and more.
+[01:05] The vocabulary of responsible AI is
+[01:07] large, and the terms overlap in
+[01:09] confusing ways.
+[01:11] For instance, interpretability and
+[01:13] explainability are often used
+[01:16] interchangeably, but they have distinct
+[01:17] technical meanings.
+[01:20] Similarly, transparency relates to
+[01:23] accountability, while fairness, equity,
+[01:25] and justice touch on different aspects
+[01:27] of algorithmic decision-making.
+[01:31] Bias and discrimination, privacy
+[01:33] each term carries both a technical
+[01:35] meaning and a political meaning,
+[01:38] and the two are frequently conflated.
+[01:40] Over the next dozen slides, we will
+[01:42] focus on the technical core of
+[01:44] interpretability.
+[01:47] Then, we will move to fairness, and
+[01:49] finally to ethics broadly.
+[01:51] Treat the boundaries between these
+[01:53] topics as soft. They are deeply
+[01:55] interconnected.
+[01:57] Interpretability is a central challenge
+[01:59] in deep learning because
+[02:02] these models are intrinsically opaque.
+[02:04] On one hand, a decision tree offers a
+[02:07] clear linear chain of reasoning.
+[02:09] Each split corresponds to a
+[02:11] human-readable rule.
+[02:14] On the other hand, a neural network,
+[02:16] like a ResNet for chest x-ray
+[02:17] interpretation,
+[02:19] has tens of millions of parameters
+[02:22] organized into dozens of layers.
+[02:24] The operations within these layers are
+[02:26] not directly tied to anything a
+[02:28] clinician would recognize.
+[02:30] When the model predicts pneumonia from
+[02:31] an x-ray,
+[02:33] there is no explicit chain of reasoning
+[02:36] to inspect, just a learned function that
+[02:39] maps pixels to a probability.
+[02:41] This opacity is the fundamental
+[02:42] obstacle.
+[02:45] Recent research in interpretability have
+[02:47] attempted to crack this problem in
+[02:48] different ways,
+[02:51] with varying degrees of success.
+[02:53] Recall from lecture six that Rajkomar
+[02:55] and colleagues in 2018 can use soft
+[02:58] attention on electronic health record
+[02:59] tokens.
+[03:01] The attention layer produced weights
+[03:03] over input tokens,
+[03:06] and those weights could be inspected.
+[03:08] For a patient who died of sepsis, the
+[03:11] model put high attention on rising
+[03:14] lactate, dropping blood pressure, rising
+[03:16] respiratory rate, and antibiotic
+[03:18] administrations.
+[03:20] That attention pattern was clinically
+[03:22] coherent.
+[03:25] This is one of the cleanest examples of
+[03:27] built-in interpretability, an
+[03:29] architectural choice that produces
+[03:31] inspectable weights as a side effect of
+[03:33] how the model works.
+[03:35] Here's the mechanism.
+[03:37] The model weights input variables by an
+[03:40] attention weights vector P.
+[03:43] It learns to dynamically produce P for
+[03:46] any given input by making it a function
+[03:49] of the input X and a fully connected
+[03:53] layer F sub A with learnable parameters.
+[03:55] A, by optimizing for prediction
+[03:58] performance, the network learns to
+[04:00] produce P that gives stronger weights to
+[04:04] the most informative features in X.
+[04:06] Continuing with the Rajkomar example,
+[04:08] the soft attention model was trained for
+[04:11] in-hospital mortality on a subset of the
+[04:13] EHR data.
+[04:15] This is a simpler task than the full
+[04:18] Rajkomar pipeline, but it has the
+[04:20] advantage that the attention weights are
+[04:22] directly inspectable.
+[04:25] The figures in the paper show for
+[04:27] individual patients, which clinical
+[04:29] features the model attended to as it
+[04:32] built up its mortality prediction.
+[04:34] The interpretation aligns with clinical
+[04:37] intuition more often than not, but not
+[04:38] always.
+[04:41] That inconsistency is part of why we
+[04:44] need additional interpretability tools
+[04:46] beyond just attention.
+[04:48] So, they trained a model with soft
+[04:50] attention on this simpler task
+[04:54] in-hospital mortality using a subset of
+[04:56] data variables specifically to obtain
+[04:58] interpretability.
+[05:00] How can we try to interpret a trained
+[05:01] model?
+[05:04] Interpretability provides only partial
+[05:06] views, not complete explanations.
+[05:08] Common techniques include neuron
+[05:11] visualization, saliency maps, and
+[05:14] surrogate models like decision trees.
+[05:17] Each offers a glimpse of model behavior,
+[05:19] but none fully explains it. The simplest
+[05:21] interpretability technique is to
+[05:23] visualize the filters in the first
+[05:26] convolutional layer of a CNN.
+[05:29] In AlexNet, this means looking at 64
+[05:32] filters of size 3 by 11 by 11.
+[05:36] In ResNet 18, it's 64 filters of size 3
+[05:38] by 7 by 7.
+[05:40] The filters are small enough, typically
+[05:42] 3 by 3 or 5 by 5,
+[05:45] that you can visualize them directly as
+[05:46] small images.
+[05:48] When you do this for a trained ImageNet
+[05:51] model, you see edge detectors, color
+[05:53] blobs, and orientation-sensitive
+[05:55] patterns that are reminiscent of the
+[05:58] early visual cortex.
+[06:00] The fact that these patterns emerge from
+[06:02] random initialization through nothing
+[06:04] but gradient descent on classification
+[06:06] labels is one of the most striking
+[06:08] findings in deep learning.
+[06:11] The interpretation is straightforward.
+[06:13] The first layer learns Gabor-like
+[06:15] features.
+[06:17] We can also visualize filters at higher
+[06:18] layers,
+[06:19] though the results are not as
+[06:21] interpretable.
+[06:23] For example, from a ConvNetJS demo
+[06:25] trained on CIFAR-10,
+[06:28] the first layer weights are 16 filters
+[06:31] of size 3 by 7 by 7, still somewhat
+[06:35] interpretable as edges and color blobs.
+[06:36] But the second layer weights are 20
+[06:39] filters of size 16 by 7 by 7.
+[06:42] That's 20 filters, each of which is a 3D
+[06:45] volume with depth 16.
+[06:47] You can still visualize each of the 16
+[06:50] channels per filter as a small 7 by 7
+[06:51] image,
+[06:53] but the patterns become more abstract
+[06:56] and harder to map to simple features.
+[06:58] The third layer weights are 20 filters
+[07:02] of size 20 by 7 by 7, even deeper.
+[07:04] At this point, the visualized patterns
+[07:07] no longer look like edges or blobs.
+[07:08] They have become high-level
+[07:11] task-specific features that do not
+[07:13] easily correspond to anything a human
+[07:15] would recognize.
+[07:18] So, while filter visualization works
+[07:20] beautifully for the first layer, it
+[07:22] loses interpretive power as you go
+[07:24] deeper into the network.
+[07:26] We can also examine the last layer
+[07:28] before the classifier, for example,
+[07:32] the FC7 layer in AlexNet, which produces
+[07:34] a 4,096-dimensional
+[07:37] feature vector for each image.
+[07:38] By running many images through the
+[07:41] network and collecting their FC7 feature
+[07:42] vectors,
+[07:44] we can analyze the structure of this
+[07:46] high-dimensional space.
+[07:49] Mid network and late network features
+[07:51] compute increasingly abstract
+[07:53] representations.
+[07:56] Two images with similar FC7 vectors tend
+[07:58] to be perceptually similar
+[08:00] in ways that often align with semantic
+[08:02] similarity.
+[08:04] For instance, images of the same object
+[08:07] category or scene type cluster together.
+[08:09] This is the layer most commonly used for
+[08:11] transfer learning and for nearest
+[08:13] neighbor analysis.
+[08:17] We don't visualize FC7 features directly
+[08:19] because they are too high-dimensional.
+[08:22] Instead, we analyze the structure of the
+[08:24] FC7 space itself using techniques like
+[08:27] dimensionality reduction, clustering, or
+[08:30] similarity search.
+[08:32] We can also perform nearest neighbor
+[08:34] analysis on the last layer features.
+[08:36] Recall that nearest neighbors in raw
+[08:39] pixel space using L2 distance often fail
+[08:41] because small pixel changes can produce
+[08:43] large distances
+[08:45] while semantically similar images may
+[08:48] look very different pixel-wise.
+[08:50] But nearest neighbors in feature space
+[08:53] using the FC7 feature vectors work much
+[08:55] better.
+[08:57] For a query image, we find the K nearest
+[08:59] neighbors in this 4096-dimensional
+[09:01] space.
+[09:03] The neighbors often show semantically
+[09:04] related content.
+[09:07] For example, a query image of a Labrador
+[09:09] retriever returns other Labradors,
+[09:12] golden retrievers, and similar dogs
+[09:14] regardless of pose, background, or
+[09:16] lighting.
+[09:18] This is a powerful demonstration that
+[09:19] the network has learned semantic
+[09:21] similarity,
+[09:23] not just pixel similarity.
+[09:25] For medical applications, nearest
+[09:27] neighbor analysis in feature space lets
+[09:31] you find clinically similar cases.
+[09:33] For instance, a chest X-ray of a patient
+[09:36] with a certain nodule morphology returns
+[09:39] other X-rays with similar nodules.
+[09:41] This is useful for retrieval-based
+[09:43] decision support,
+[09:45] where clinicians can examine similar
+[09:47] historical cases when interpreting a new
+[09:49] patient.
+[09:51] We can also visualize the structure of
+[09:53] the FC7 feature space
+[09:55] by reducing its dimensionality from
+[09:58] 4,096 dimensions down to just two or
+[10:00] three dimensions.
+[10:03] The common approaches for this are
+[10:07] t-SNE stochastic neighbor embedding
+[10:09] and UMAP uniform manifold approximation
+[10:11] and projection.
+[10:14] Unlike PCA, which gives a linear
+[10:16] projection that preserves global
+[10:19] variance, t-SNE and UMAP
+[10:21] are nonlinear methods that preserve
+[10:23] local neighborhood structure,
+[10:24] meaning points that are close in the
+[10:27] high-dimensional space remain close in
+[10:30] the low-dimensional visualization.
+[10:32] When you apply these methods to FC7
+[10:33] features from a model trained on
+[10:35] ImageNet,
+[10:37] the resulting scatter plots often show
+[10:40] clear clustering by class. For example,
+[10:43] all images of dogs form one cluster,
+[10:47] cats another, cars another, and so on.
+[10:48] This indicates that the network has
+[10:50] learned to separate classes
+[10:53] geometrically in feature space,
+[10:55] a powerful demonstration of its
+[10:57] representational capacity.
+[10:59] For medical applications, these
+[11:01] visualizations can reveal whether the
+[11:03] model has learned clinically meaningful
+[11:05] groupings,
+[11:07] such as separating different disease
+[11:10] subtypes or patient outcomes.
+[11:12] A practical use of dimensionality
+[11:14] reduction is as a sanity check for any
+[11:16] trained model.
+[11:19] You apply t-SNE or UMAP to the FC7
+[11:22] features of a labeled validation set,
+[11:23] then color the points by their class
+[11:24] label.
+[11:26] If the classes cluster cleanly, meaning
+[11:28] points of the same class group together
+[11:30] and different classes separate,
+[11:32] the model has learned a useful
+[11:33] representation.
+[11:36] If the classes overlap heavily, it
+[11:37] suggests either the model is
+[11:38] under-trained or the task is
+[11:41] fundamentally difficult.
+[11:43] For medical applications, the same
+[11:45] technique reveals whether the model is
+[11:47] separating clinically meaningful
+[11:49] subgroups, such as disease versus
+[11:52] health, different severity strata, or
+[11:55] treatment-response groups.
+[11:57] This is a quick, visual, and intuitive
+[11:59] sanity check that should be part of any
+[12:01] model evaluation pipeline
+[12:04] before moving on to more quantitative
+[12:06] metrics.
+[12:07] Another technique is activation
+[12:10] visualization. For a trained CNN, you
+[12:12] run an input image through the network
+[12:14] and capture the activations at each
+[12:15] layer.
+[12:17] For convolutional layers, the
+[12:20] activations are feature maps, spatial
+[12:22] grids of values.
+[12:24] For example, the conv5 layer might
+[12:27] produce 128 feature maps,
+[12:30] each of size 13 by 13.
+[12:33] You can visualize each of these 128 maps
+[12:35] as a grayscale image,
+[12:37] where brightness corresponds to
+[12:39] activation magnitude.
+[12:41] What you typically see is that different
+[12:42] feature maps respond to different
+[12:44] aspects of the input.
+[12:46] Some highlight edges, some highlight
+[12:49] textures, some highlight class-specific
+[12:51] structures like wheels on a car or eyes
+[12:53] on a face. This gives you a
+[12:55] layer-by-layer view of what the network
+[12:57] is responding to.
+[12:59] Activation visualization is useful for
+[13:01] debugging. For instance, if all feature
+[13:04] maps are blank, the model might be dead.
+[13:06] And for understanding model behavior at
+[13:08] a coarse level, though it doesn't give a
+[13:11] complete causal explanation.
+[13:13] A more targeted technique is to find
+[13:15] maximally activating patches.
+[13:17] You pick a specific layer and a specific
+[13:21] channel. For example, conv5 has 128
+[13:24] channels, each of size 13 by 13, so you
+[13:29] You pick channel number 17 out of 128.
+[13:31] Then you run many images through the
+[13:33] network and record the values of that
+[13:34] chosen channel across all spatial
+[13:36] positions.
+[13:38] Finally, you visualize the image patches
+[13:40] that correspond to the highest
+[13:42] activation values.
+[13:44] More concretely, you run a large image
+[13:47] data set through the network recording
+[13:49] per neuron activations.
+[13:51] For each neuron, you collect the patches
+[13:54] that activated it most strongly.
+[13:57] Typically, the top nine or 16 patches.
+[13:59] The result is a small gallery of patches
+[14:02] per neuron arranged in a grid.
+[14:04] Those patches often share a clear visual
+[14:06] structure that reveals what the neuron
+[14:08] has learned to detect.
+[14:10] In natural images, you might see eyes,
+[14:12] wheels, or text.
+[14:14] In medical imaging, you might see
+[14:17] specific anatomical structures, lesions,
+[14:19] or textural patterns.
+[14:21] This technique gives you a functional
+[14:24] understanding of individual neurons,
+[14:26] not just what weights they have, but
+[14:27] what input patterns they actually
+[14:30] respond to.
+[14:31] Another way to ask which pixels matter
+[14:35] is saliency via occlusion. The idea is
+[14:37] simple. You mask part of the image
+[14:39] before feeding it to the CNN
+[14:41] and you check how much the predicted
+[14:43] probabilities change.
+[14:46] For example, if the model predicts
+[14:47] elephant
+[14:48] with probability
+[14:52] 0.95 on the original image,
+[14:53] but when you cover the elephant's face,
+[14:56] the probability drops to 0.75,
+[14:58] that region was important.
+[15:01] Here's how occlusion works. You slide a
+[15:04] small gray patch across the input image
+[15:06] position by position.
+[15:08] At each position, you record how much
+[15:10] the model's prediction probability for
+[15:12] the correct class drops.
+[15:14] That drop is a measure of how important
+[15:16] the occluded region was to the
+[15:17] prediction.
+[15:19] You repeat this across the full image to
+[15:21] build a saliency heat map.
+[15:23] Regions where the probability drops a
+[15:26] lot are colored as highly important.
+[15:27] Regions where the probability doesn't
+[15:29] change are not important.
+[15:31] The occlusion method is slow because you
+[15:33] have to run a forward pass for every
+[15:35] patch position,
+[15:38] but it is conceptually clean and model
+[15:40] agnostic. It works for any classifier,
+[15:44] not just CNNs.
+[15:45] The occlusion method generates a
+[15:48] saliency heat map by sliding a gray
+[15:50] patch across the image
+[15:51] and measuring how much the predicted
+[15:54] probability for each class,
+[15:55] such as schooner,
+[15:58] African elephant, or go-kart drops when
+[16:00] that region is masked.
+[16:02] Regions where the probability drops
+[16:04] significantly are considered important
+[16:06] for that class,
+[16:08] while regions with no change are
+[16:09] unimportant.
+[16:11] The result is a separate heat map per
+[16:12] class,
+[16:13] revealing that the model looks at the
+[16:15] sail for schooner,
+[16:16] the elephant's face for African
+[16:19] elephant, and the wheels for go-kart,
+[16:21] demonstrating class-specific
+[16:23] localization.
+[16:26] A faster alternative to occlusion is
+[16:29] saliency via backpropagation.
+[16:30] You perform a forward pass through the
+[16:32] model to compute the prediction
+[16:33] probabilities,
+[16:36] say, for a dog.
+[16:37] Then you compute the gradient of the
+[16:39] model's output, specifically
+[16:42] the probability for the correct class,
+[16:45] with respect to each input pixel.
+[16:47] Pixels with large gradient magnitudes
+[16:49] are those that, if changed even
+[16:51] slightly, would change the prediction
+[16:53] the most.
+[16:55] These are the pixels the model is most
+[16:56] sensitive to.
+[16:58] You then visualize these gradient
+[17:00] magnitudes as a heat map.
+[17:02] The advantage of this method is
+[17:03] efficiency.
+[17:06] It requires just one forward pass and
+[17:08] one backward pass, rather than the many
+[17:11] forward passes needed for occlusion.
+[17:13] This makes it practical for large images
+[17:15] and real-time applications,
+[17:17] though the resulting heat map can be
+[17:19] noisy and may require smoothing or other
+[17:21] post-processing.
+[17:24] Here's the backward pass. To compute a
+[17:26] gradient-based saliency map, you first
+[17:29] take the unnormalized class score,
+[17:30] the logic before the softmax for the
+[17:32] target class.
+[17:34] You then compute the gradient of that
+[17:35] score
+[17:38] with respect to each input pixel.
+[17:39] This tells you how much a small change
+[17:41] in each pixel would affect the class
+[17:42] score.
+[17:45] Next, you take the absolute value of
+[17:47] these gradients to capture the magnitude
+[17:50] of influence regardless of direction.
+[17:53] Finally, if the image is RGB, you take
+[17:55] the maximum over the three color
+[17:57] channels at each pixel location,
+[17:59] producing a single saliency value per
+[18:00] pixel.
+[18:03] The result is a grayscale heat map where
+[18:05] bright regions indicate pixels that most
+[18:06] strongly influence the model's
+[18:10] prediction for that class.
+[18:12] Here are some examples of gradient-based
+[18:14] saliency maps.
+[18:16] Saliency maps can also be used for
+[18:19] segmentation without supervision.
+[18:21] The idea is simple. Treat the saliency
+[18:23] map as a pixel-wise importance score for
+[18:26] the object of interest.
+[18:28] You then apply GrabCut,
+[18:30] an interactive segmentation algorithm,
+[18:33] initialized using the saliency map.
+[18:35] For example, you can threshold the
+[18:37] saliency map to automatically generate a
+[18:40] coarse foreground region where saliency
+[18:42] is high
+[18:44] and a background region where saliency
+[18:45] is low.
+[18:48] GrabCut then refines this into a clean,
+[18:51] pixel-accurate segmentation mask.
+[18:53] This pipeline, saliency map followed by
+[18:56] GrabCut, produces object segmentations
+[18:58] without any training data or manual
+[19:00] annotations, effectively turning a
+[19:02] classifier into an unsupervised
+[19:04] segmenter.
+[19:05] It works reasonably well when the
+[19:07] saliency map cleanly highlights the
+[19:09] target object and suppresses the
+[19:11] background.
+[19:14] Class activation maps, or CAM,
+[19:16] introduced by Joe and colleagues in
+[19:17] 2015,
+[19:20] give us a way to visualize which regions
+[19:21] of an image are important for
+[19:24] classifying it into a specific class.
+[19:27] Unlike gradient-based methods, CAM works
+[19:29] by projecting the final convolutional
+[19:32] feature maps back into the input space
+[19:34] using the weights of the fully connected
+[19:36] classification layer.
+[19:39] For a given class C, CAM computes a
+[19:42] weighted sum of the spatial activations
+[19:44] from the last convolutional layer,
+[19:46] where the weights come from class C's
+[19:49] connections to those feature maps.
+[19:52] The result is a heat map that shows, for
+[19:54] each spatial location, how important
+[19:58] that region was for predicting class C.
+[20:00] You can then upsample this heat map to
+[20:03] the original image size and overlay it.
+[20:06] The catch is that CAM requires a global
+[20:08] average pooling layer before the final
+[20:10] classification layer,
+[20:13] which many modern architectures include.
+[20:15] CAM relies on the idea that global
+[20:18] average pooling aggregates the signal
+[20:20] for specific patterns across the entire
+[20:23] spatial extent of a feature map.
+[20:24] The weights learned for the final
+[20:27] classification then indicate how
+[20:29] important each pattern is for a given
+[20:30] class.
+[20:32] By projecting those weights back onto
+[20:34] the original spatial feature maps before
+[20:36] pooling,
+[20:39] CAM produces a heat map showing not just
+[20:42] that a pattern was present, but where.
+[20:44] The weights of the final classification
+[20:46] layer directly indicate the importance
+[20:48] of each pattern represented by the
+[20:51] global average pooled feature maps to
+[20:53] its respective class.
+[20:55] Higher weights mean the pattern is more
+[20:58] discriminative for that class.
+[20:59] Heat maps generated before global
+[21:02] average pooling, GAP, reveal the
+[21:04] spatially localized signal that will
+[21:06] subsequently be aggregated by the GAP
+[21:08] layer to form the final class
+[21:10] prediction.
+[21:13] To obtain a class activation map CAM,
+[21:15] sum all activation maps from the last
+[21:18] convolutional layer, waiting each map by
+[21:26] Here's the computed CAM formula.
+[21:29] The activation map for the KTH filter in
+[21:31] the layer before global average pooling
+[21:33] is just a spatial grid of numbers
+[21:34] showing where that filter's pattern
+[21:36] fires in the image.
+[21:38] You then multiply that whole grid by the
+[21:40] weight that connects that filter to the
+[21:42] target class,
+[21:45] and you sum this up across all filters.
+[21:47] The result is your CAM heat map, a
+[21:49] weighted combination of all the
+[21:51] activation maps.
+[21:53] The weight for the KTH filter tells you
+[21:55] how important that filter's activation
+[21:58] is for predicting class C.
+[22:00] A larger weight means that when this
+[22:03] filter fires, meaning its pattern is
+[22:05] detected somewhere in the image,
+[22:07] it strongly supports classifying the
+[22:10] image as class C.
+[22:12] Zhou and colleagues in 2015 introduced
+[22:15] class activation maps.
+[22:18] A CAM visualizes a heat map that shows,
+[22:20] for each spatial location XY in the
+[22:23] image, how important the activation at
+[22:25] that spot was for classifying the image
+[22:27] into class C.
+[22:29] Brighter regions mean that area strongly
+[22:32] supported the prediction for that class.
+[22:34] It gives you a spatial explanation of
+[22:36] why the model thought the image belonged
+[22:38] to a particular class.
+[22:42] Grad-CAM is an extension of CAM that
+[22:45] works on broader CNN architectures.
+[22:48] The key limitation of CAM is that it
+[22:50] requires a global average pooling layer
+[22:52] just before the final classification
+[22:53] layer,
+[22:55] a constraint that excludes many modern
+[22:57] networks.
+[22:59] Grad-CAM removes this restriction by
+[23:01] using gradients instead of weights.
+[23:04] Specifically, Grad-CAM computes the
+[23:06] gradient of the class score
+[23:08] with respect to the feature maps of the
+[23:10] last convolutional layer.
+[23:12] It then globally averages these
+[23:14] gradients to obtain importance weights
+[23:16] for each feature map.
+[23:18] Those weights are then used to compute a
+[23:20] weighted sum of the feature maps,
+[23:23] producing a heat map.
+[23:25] Because the gradient computation works
+[23:28] for any network, Grad-CAM can be applied
+[23:30] to architectures without global average
+[23:32] pooling, such as those using fully
+[23:34] connected layers or other pooling
+[23:36] strategies.
+[23:38] This makes Grad-CAM far more general
+[23:41] than the original CAM.
+[23:44] Grad-CAM computes the gradient of the
+[23:46] prediction for class C with respect to
+[23:49] the feature map activations AK of a
+[23:51] convolutional layer.
+[23:53] That gradient tells you how much a tiny
+[23:55] change in each activation would affect
+[23:57] the class score.
+[23:58] You then globally average these
+[24:00] gradients to get importance weights for
+[24:02] each feature map
+[24:03] and use those weights to produce the
+[24:06] final heat map.
+[24:08] In Grad-CAM,
+[24:10] the importance weight for the KTH
+[24:12] feature map with respect to predicting
+[24:15] class C is computed by globally
+[24:16] averaging the gradients of the class
+[24:17] score
+[24:20] with respect to that feature map.
+[24:22] A larger positive weight means that
+[24:24] activating that feature map increases
+[24:27] the model's confidence in class C.
+[24:29] You then use these weights to combine
+[24:31] the feature maps and produce the final
+[24:33] heat map.
+[24:36] The saliency heat map for class CC is
+[24:38] generated by weighting each neuron's
+[24:40] activation map in a given layer by that
+[24:42] neuron's importance for predicting class
+[24:43] CC,
+[24:46] then summing the weighted maps.
+[24:49] In 2017, Rajpurkar and colleagues
+[24:51] developed CheXNet,
+[24:54] a 121-layer DenseNet CNN trained on the
+[24:57] chest X-ray 14 data set,
+[24:59] which has over 100,000 frontal chest
+[25:02] X-rays labeled for 14 different
+[25:03] diseases.
+[25:06] The study focused on detecting pneumonia
+[25:08] and compared the algorithm's performance
+[25:10] to four practicing radiologists.
+[25:13] CheXNet exceeded the average radiologist
+[25:15] performance on pneumonia detection.
+[25:17] They also applied the same model to the
+[25:20] other 13 diseases in the data set,
+[25:22] surpassing the previous state of the art
+[25:24] on all 14 conditions.
+[25:26] The model also produces a saliency heat
+[25:29] map that highlights which parts of the
+[25:30] X-ray were most important for its
+[25:40] In addition to pneumonia detection,
+[25:42] Rajpurkar and colleagues also showed CAM
+[25:45] visualizations for predictions of other
+[25:47] pathologies in the Chest X-ray 14 data
+[25:49] set.
+[25:51] For each of the remaining 13 diseases,
+[25:54] such as atelectasis, cardiomegaly, or
+[25:56] edema,
+[25:58] they produced class activation maps that
+[26:00] highlighted the image regions most
+[26:04] influential for that specific diagnosis.
+[26:06] These visualizations demonstrated that
+[26:07] the model had learned anatomically
+[26:09] sensible patterns.
+[26:11] For example, focusing on the cardiac
+[26:13] silhouette for cardiomegaly
+[26:15] and on lung fields for infiltrates,
+[26:17] rather than relying on spurious
+[26:19] correlations.
+[26:20] This provided additional evidence that
+[26:22] the model's internal representations
+[26:24] were clinically meaningful beyond just
+[26:27] its classification accuracy.
+[26:29] A different type of approach is model
+[26:31] distillation,
+[26:33] where you train a complex neural network
+[26:34] and then distill it into an
+[26:37] interpretable model, like a decision
+[26:39] tree or gradient boosting model.
+[26:42] Che and colleagues in 2017 did exactly
+[26:43] this.
+[26:45] They trained a deep neural network for
+[26:47] ICU outcome prediction,
+[26:49] then distilled it into an interpretable
+[26:52] gradient boosting tree model, which they
+[26:54] called a mimic model.
+[26:56] This distillation approach offers
+[26:59] several benefits. First, the deep neural
+[27:01] network can learn to correct for errors
+[27:03] and noise in the training data,
+[27:04] producing cleaner predictions than the
+[27:06] raw labels.
+[27:09] Second, the classification probabilities
+[27:11] from the deep network give soft labels
+[27:13] that contain more information than hard
+[27:14] binary labels,
+[27:16] telling you not just that a patient is
+[27:20] at risk, but how confident the model is.
+[27:22] Third, the mimic approach can also be
+[27:25] seen as a form of regularization on the
+[27:27] more complex deep network.
+[27:29] More broadly, this is a general
+[27:30] technique.
+[27:32] You train a complex deep model, then
+[27:35] train a simpler interpretable model,
+[27:38] a decision tree, a rule list, or a small
+[27:40] linear model
+[27:43] to mimic the deep model's predictions.
+[27:44] The interpretable model becomes the
+[27:46] explanation.
+[27:48] The simple model's accuracy is bounded
+[27:50] by how well it can approximate the
+[27:52] complex model,
+[27:53] and the gap between the two is
+[27:54] essentially the cost of
+[27:57] interpretability.
+[27:59] Another approach is to distill a complex
+[28:01] neural network into an interpretable
+[28:03] decision tree.
+[28:05] Che and colleagues in 2017 did this for
+[28:08] ICU outcome prediction.
+[28:10] They compared their mimic model against
+[28:12] baselines on two tasks,
+[28:15] predicting mortality and ventilator-free
+[28:16] days.
+[28:18] The distilled trees gave clinically
+[28:21] coherent rules using features like lung
+[28:24] injury score and oxygenation index.
+[28:25] The approach achieved both high
+[28:29] performance and interpretability.
+[28:31] When can we trust the model?
+[28:32] This question leads to several key
+[28:35] concepts. First, there is the notion of
+[28:37] uncertainty. Models can be more or less
+[28:40] confident about a given prediction,
+[28:42] and model confidences are sometimes more
+[28:45] trustworthy than at other times.
+[28:47] Interpretability and explainability help
+[28:49] by giving us indications of how the
+[28:51] model arrived at its conclusion,
+[28:53] allowing us to assess whether that
+[28:55] reasoning makes sense.
+[28:58] Second, there is the notion of
+[28:59] robustness.
+[29:01] Models may behave differently under
+[29:03] different settings. For example, when
+[29:05] there is a shift in the distribution of
+[29:07] the patient population or the data
+[29:09] acquisition process.
+[29:11] We may not be able to trust the models
+[29:13] outputs in the same way under these
+[29:15] shifted conditions.
+[29:17] The question becomes,
+[29:18] can we quantify how the model might
+[29:21] perform under different settings?
+[29:22] And can we make it robust under the
+[29:25] specific settings that we care about?
+[29:27] Both uncertainty and robustness are
+[29:29] essential for building trust in clinical
+[29:32] AI systems, especially when they are
+[29:34] deployed in environments that differ
+[29:36] from their training data.
+[29:38] Mester and colleagues in 2019 showed
+[29:41] that EHR models using standard feature
+[29:43] representations suffered performance
+[29:45] drops over time due to data drift from
+[29:47] record keeping changes.
+[29:49] They introduced something called
+[29:51] clinical aggregations grouping raw
+[29:53] features into expert defined clinical
+[29:55] concepts.
+[29:56] This increased robustness and
+[29:58] significantly reduced the performance
+[30:01] drops caused by the data drift.
+[30:04] Distributionally robust optimization,
+[30:07] DRO, minimizes the worst-case training
+[30:09] loss over a predefined set of groups or
+[30:11] data distributions.
+[30:13] Unlike standard empirical risk
+[30:16] minimization, which optimizes average
+[30:18] performance, DRO forces the model to
+[30:22] perform equitably across all groups,
+[30:24] such as different hospitals, demographic
+[30:27] subgroups, or disease types.
+[30:29] By explicitly focusing on the worst
+[30:32] performing group, this provides a formal
+[30:33] guarantee on performance under
+[30:35] distribution shifts within the
+[30:37] considered set.
+[30:40] Ethics in medical AI raises many
+[30:43] questions around human AI collaboration.
+[30:45] Who is responsible when an AI makes a
+[30:47] mistake? How much autonomy should the
+[30:48] system have?
+[30:50] How do we ensure clinicians remain the
+[30:52] final decision makers?
+[30:55] And how do we prevent automation bias
+[30:57] where clinicians over rely on AI
+[31:00] recommendations?
+[31:02] Ethics in medical AI raises many
+[31:03] practical questions.
+[31:05] How do we make diagnosis and care
+[31:07] decisions when the algorithm disagrees
+[31:09] with the human clinician?
+[31:11] Does the model override the doctor or
+[31:14] does the doctor override the model?
+[31:17] How should AI algorithms work together
+[31:19] with humans in a way that leverages the
+[31:21] strengths of both
+[31:24] without undermining clinical authority?
+[31:26] How do we handle machine error versus
+[31:27] human error?
+[31:29] When the algorithm is wrong,
+[31:31] who is accountable?
+[31:33] And how do we detect that error before
+[31:35] it harms the patient?
+[31:38] How do we make sure AI algorithms don't,
+[31:40] perhaps inadvertently, discriminate
+[31:42] against certain populations, whether by
+[31:45] race, gender, socioeconomic status, or
+[31:48] other protected attributes?
+[31:50] Finally, how do we handle tradeoffs
+[31:52] between algorithmic performance on some
+[31:55] groups versus others?
+[31:57] What if improving performance for one
+[31:59] subgroup comes at the cost of worse
+[32:02] performance for another?
+[32:04] These are not just technical questions,
+[32:06] but deeply ethical ones that require
+[32:08] input from clinicians, patients,
+[32:12] regulators, and affected communities.
+[32:14] Algorithmic bias happens when a model
+[32:16] performs better for one population than
+[32:19] another, usually because of biases in
+[32:21] the training data.
+[32:23] A famous example is Buolamwini and
+[32:27] Gebru's 2018 study, Gender Shades.
+[32:29] They analyzed commercial gender
+[32:31] classification systems and found that
+[32:33] error rates for lighter-skinned males
+[32:35] were under 1%,
+[32:38] but for darker-skinned females, error
+[32:41] rates were over 20% and in some cases
+[32:43] exceeded 34%.
+[32:45] The cause was training data sets that
+[32:48] were mostly lighter skinned subjects.
+[32:50] This showed how bias in data leads
+[32:54] directly to bias in model performance.
+[32:56] Studies on MIMIC-III data show clear
+[32:58] performance disparities.
+[33:00] She and colleagues found that models
+[33:03] using only measurement patterns, how
+[33:05] often vitals were recorded,
+[33:10] predicted mortality with an AUC of 0.76.
+[33:12] White patients received more frequent
+[33:13] blood pressure
+[33:15] and oxygen measurements than black or
+[33:17] Hispanic patients.
+[33:19] Males had fewer missing temperature
+[33:21] readings than females.
+[33:23] For heart attack patients, 1-year
+[33:26] mortality was 33.2% for women versus
+[33:29] 22.5% for men.
+[33:32] Different risk factors emerged by sex.
+[33:34] Chronic kidney failure and high heart
+[33:37] rate predicted mortality in women,
+[33:39] while acute kidney failure and elevated
+[33:41] troponin did in men.
+[33:44] These disparities matter.
+[33:46] For sepsis patients, in-hospital
+[33:48] mortality varied significantly by
+[33:50] insurance. Self-pay patients had the
+[33:54] highest rate at 22.00%
+[33:56] followed by Medicare
+[33:59] at 16.68%
+[34:02] and private insurance at 11.29%.
+[34:04] Models trained on the general population
+[34:07] showed significant performance decreases
+[34:09] when applied to specific subgroups,
+[34:11] indicating that insurance-based
+[34:14] disparities exist even if exact error
+[34:16] rates are not quantified.
+[34:19] For race, the differences in error rates
+[34:21] for psychiatric readmission were not
+[34:23] statistically significant.
+[34:25] Black patients showed the highest error
+[34:27] rate among racial groups followed by
+[34:30] Hispanic patients.
+[34:32] Obermeyer and colleagues in 2019
+[34:34] published a landmark study in science
+[34:37] showing algorithmic bias in a healthcare
+[34:39] algorithm used to allocate high-risk
+[34:42] patients to special care programs.
+[34:44] The algorithm was less likely to refer
+[34:46] black patients compared to white
+[34:47] patients.
+[34:49] Why? The algorithm used predicted
+[34:51] healthcare costs as a proxy for medical
+[34:53] complexity.
+[34:55] But in the training data, black patients
+[34:57] had lower healthcare costs for the same
+[34:58] level of sickness
+[35:01] due to systemic differences in access to
+[35:02] care.
+[35:04] As a result, a sicker black patient
+[35:06] often looked like a healthier white
+[35:08] patient in terms of cost.
+[35:10] The bias was significant.
+[35:13] It reduced black patient identification
+[35:14] for extra care
+[35:16] by more than half.
+[35:18] However, when they reformulated the
+[35:21] algorithm to predict different outcomes
+[35:22] like number of chronic conditions
+[35:24] instead of cost,
+[35:26] they were able to reduce the bias by an
+[35:29] estimated 84%.
+[35:31] This study is a classic example of how
+[35:33] technical choices encode societal
+[35:35] inequities even without using race as an
+[35:37] input.
+[35:39] More on fairness, there are many
+[35:41] possible definitions and they often
+[35:43] conflict with each other.
+[35:46] First, group independent predictions
+[35:48] means predictions should be independent
+[35:50] of group membership.
+[35:52] The model's output shouldn't even know
+[35:54] what group you belong to.
+[35:56] Second, equal metrics across groups
+[35:58] means requiring equal true positive
+[36:00] rates across groups
+[36:03] or equal false positive rates or equal
+[36:04] calibration.
+[36:06] Third, individual fairness says that
+[36:09] individuals who are similar with respect
+[36:11] to the prediction task
+[36:13] should have similar outcomes.
+[36:15] Similar patients should get similar
+[36:16] predictions.
+[36:19] Fourth, causal fairness requires for
+[36:21] example that there should be no causal
+[36:23] pathway from a sensitive attribute like
+[36:25] race or gender to the outcome
+[36:26] prediction.
+[36:28] Each definition is mathematically
+[36:29] precise,
+[36:30] but they can't all be satisfied
+[36:32] simultaneously.
+[36:34] Choosing which definition to optimize is
+[36:37] itself an ethical and policy decision,
+[36:40] not just a technical one.
+[36:42] No single definition of fairness can
+[36:44] satisfy all criteria simultaneously.
+[36:46] Satisfying one definition, such as equal
+[36:48] false positive rates,
+[36:50] typically forces trade-offs against
+[36:51] another,
+[36:54] like equal true positive rates.
+[36:55] Group independent predictions may
+[36:57] conflict with equal metrics across
+[36:58] groups.
+[37:00] An individual fairness often clashes
+[37:03] with group-based parity requirements.
+[37:05] These trade-offs are mathematically
+[37:07] inevitable,
+[37:09] making fairness an ethical and policy
+[37:11] choice, rather than a purely technical
+[37:14] optimization.
+[37:15] Mitchell and colleagues in 2019
+[37:17] introduced model cards.
+[37:20] A model card is short document that
+[37:22] accompanies a trained model,
+[37:23] detailing its performance across
+[37:25] different demographic groups,
+[37:28] race, gender, skin type, and their
+[37:30] intersections.
+[37:32] For example, their smiling detection
+[37:34] model card showed performance
+[37:37] disparities across gender and skin type
+[37:39] that aggregate metrics would hide.
+[37:41] The goal is to make model limitations
+[37:45] explicit and guide appropriate use.
+[37:47] Model cards report performance across
+[37:49] specific factors and metrics.
+[37:52] The factors include race, gender, age,
+[37:54] Fitzpatrick skin type, geographic
+[37:57] region, lighting conditions, language,
+[37:59] and their intersections, like gender
+[38:01] plus skin type.
+[38:04] The metrics include accuracy, precision,
+[38:07] recall, F1 score, AUC, calibration,
+[38:10] false positive and false negative rates,
+[38:12] confidence intervals, and most
+[38:14] importantly, the performance gaps across
+[38:16] different subgroups.
+[38:20] The goal is to make disparities visible.
+[38:22] Model cards document both training and
+[38:24] evaluation data.
+[38:26] For training data, you report which data
+[38:29] set was used, for example, CelebA and
+[38:31] its basic characteristics.
+[38:33] For evaluation data, you need to report
+[38:36] data set provenance, licensing,
+[38:39] and ensure no train test leakage.
+[38:41] Most importantly, you evaluate across
+[38:44] demographic groups, race, gender, age,
+[38:47] skin type, and their intersections. You
+[38:49] also document preprocessing policy,
+[38:53] resizing, cropping, normalization.
+[38:55] The evaluation results are then
+[38:57] disaggregated by these factors to reveal
+[39:00] performance disparities.
+[39:02] Gebru and colleagues in 2018 proposed
+[39:05] data sheets for data sets.
+[39:06] The idea is simple. Every machine
+[39:08] learning data set should come with a
+[39:10] data sheet, just like every electronic
+[39:13] component comes with a data sheet.
+[39:15] The data sheet documents the data set's
+[39:18] motivation, composition, collection
+[39:21] process, preprocessing steps, intended
+[39:24] users, and maintenance plans.
+[39:25] Why does this matter?
+[39:28] Because many AI failures, from biased
+[39:30] facial recognition to medical models
+[39:32] failing in new clinical settings,
+[39:33] trace back to undocumented
+[39:36] characteristics of training data.
+[39:39] A data sheet won't fix societal bias,
+[39:41] but it creates transparency.
+[39:43] It forces data set creators to disclose
+[39:45] what's in the data, how it was
+[39:48] collected, who funded it, and what its
+[39:50] limitations are.
+[39:52] Data sheets for data sets complements
+[39:54] model cards. Data sheets document the
+[39:57] data, model cards document the trained
+[39:58] model.
+[40:00] Together, they form a transparency
+[40:02] ecosystem.
+[40:04] That brings us to the end of today.
+[40:06] Next lecture is the final one,
+[40:08] distributed learning, security, and

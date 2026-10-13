@@ -1,0 +1,1361 @@
+[00:02] Welcome back. This is part two of our
+[00:04] treatment of electronic health records.
+[00:07] Last time we set up the problem, what
+[00:10] EHR data looks like, how it differs from
+[00:12] images, how a recurrent network can
+[00:14] ingest a time series of clinical
+[00:17] observations and produce a prediction.
+[00:20] We work through the Harutunian benchmark
+[00:23] on mimic 3 as the canonical comparison
+[00:27] of LSTMs against logistic regression.
+[00:29] Today we fill in three things that part
+[00:32] one deliberately left for later. We talk
+[00:35] about where EHR data actually comes from
+[00:37] in the real world and the data standards
+[00:40] that let us combine across sources. We
+[00:43] talk about missing data which turns out
+[00:45] to be the single biggest practical
+[00:48] obstacle to making an EHR model work.
+[00:50] And we introduce a piece of architecture
+[00:53] called soft attention which gives us
+[00:55] interpretability
+[00:57] and which also happens to be the seat of
+[00:58] the transformer architecture we will
+[01:02] study later. By the end of today you
+[01:04] should be able to understand the oom
+[01:07] common data model and its vocabulary.
+[01:08] Recognize the three classes of
+[01:11] missingness in clinical data and pick a
+[01:14] sensible imputation strategy.
+[01:17] Four-part agenda. First recap of RNN
+[01:21] versus LSTM for EHR prediction anchored
+[01:23] on the Harotunian benchmark we discussed
+[01:28] before. Second more on EHR data sources
+[01:32] formats the data standards OM OP and
+[01:34] FHIR.
+[01:37] Third feature representations. How do
+[01:39] you actually turn an EHR record into a
+[01:41] vector or a sequence of vectors that you
+[01:44] can feed into a network? That includes
+[01:46] token embeddings and it includes our
+[01:48] deep dive into missing data and the mice
+[01:50] algorithm.
+[01:52] And fourth, a first look at soft
+[01:54] attention as a mechanism for
+[01:56] interpretability.
+[02:00] Vanilla RNN, new hidden state equals
+[02:02] tanch of a weight matrix times the
+[02:04] previous hidden state plus another
+[02:06] weight matrix times the current input
+[02:09] plus a bias. Single tang gate single
+[02:12] hidden state struggles with long range
+[02:14] dependencies because of the vanishing
+[02:16] gradient problem. Fine for short
+[02:18] sequences but limited for the kind of
+[02:20] complex clinical time series we are
+[02:24] dealing with. LSTM long short-term
+[02:26] memory hawkwriter and Schmidt Huber
+[02:28] 1997.
+[02:30] A separate cell state carries long range
+[02:33] information. Three gates forget input
+[02:36] output control what gets added to the
+[02:39] cell state what gets read out what gets
+[02:40] forgotten.
+[02:42] The mathematics is more involved but the
+[02:46] intuition is simple. The LSTM has been
+[02:48] designed so that gradients can flow back
+[02:50] through many time steps without
+[02:52] vanishing or exploding.
+[02:55] That is the key engineering insight. The
+[02:57] empirical bottom line from Harut Union
+[03:03] at AL 2019 on mimic 3 LSTMs outperformed
+[03:05] logistic regression on all four
+[03:08] benchmark tasks inhosp mortality,
+[03:11] decompensation, length of stay and
+[03:12] phenotyping.
+[03:15] Not by enormous margins, but
+[03:17] consistently.
+[03:18] Quick reminder of what we are dealing
+[03:21] with. An EHR is the digital substrate
+[03:23] that brings together everything that
+[03:25] happens to a patient in a healthcare
+[03:28] encounter, imaging studies, lab results,
+[03:31] vital sign trends, free text, clinical
+[03:34] notes, medication orders, problem lists,
+[03:37] diagnoses encoded in ICD10, procedures
+[03:40] encoded in CPT, allergies, family
+[03:43] history. The figure on the slide from
+[03:46] Raj Kumar at all 2018 gives you an
+[03:48] illustrative example. A patient
+[03:50] encounter is a tree of structured and
+[03:53] unstructured records stitched together
+[03:55] by patient identifier and visit
+[03:56] identifier.
+[03:59] Two things worth emphasizing. First,
+[04:01] every one of those data types has its
+[04:04] own conventions, its own units, its own
+[04:07] missingness pattern. A blood pressure
+[04:09] reading is structured but irregularly
+[04:12] sampled. A discharge summary is
+[04:15] unstructured free text. A laboratory
+[04:17] result is structured but the reference
+[04:20] range may differ between hospitals.
+[04:22] Second, the patient's record is
+[04:25] longitudinal. It spans visits, sometimes
+[04:28] years, sometimes decades. The temporal
+[04:31] structure is part of the signal.
+[04:34] The canonical research data set for EHR
+[04:36] machine learning is mimic the medical
+[04:39] information M for intensive care from
+[04:41] Beth Israel Deaconess Medical Center in
+[04:45] Boston in collaboration with the MIT lab
+[04:47] for computational physiology.
+[04:50] Mimic 3 was published by Alistister
+[04:52] Johnson and colleagues in scientific
+[04:54] data in 2016.
+[04:56] It contains deidentified clinical
+[04:59] records of approximately 53,000 ICU
+[05:03] stays for around 40,000 patients between
+[05:06] 2001 and 2012.
+[05:08] Mimic is fully deidentified under safe
+[05:12] harbor high resolution at minute level
+[05:15] vital sign granularity and supported by
+[05:17] an active research community that has
+[05:20] built tools and benchmarks around it.
+[05:22] Four canonical prediction tasks from the
+[05:26] Harotunian benchmark. Inhos mortality.
+[05:29] Given the first 48 hours of an ICU stay,
+[05:32] will the patient die before discharge?
+[05:35] Decompensation. At any moment during the
+[05:37] stay, what is the probability the
+[05:39] patient will deteriorate in the next 24
+[05:41] hours?
+[05:44] Phenotyping. Given the full ICU record,
+[05:46] which of 25 chronic and acute conditions
+[05:50] does this patient have? length of stay.
+[05:52] Given the early data, how long will this
+[05:54] patient be in the ICU?
+[05:57] Each is its own technical problem.
+[06:00] Mortality is highly imbalanced. Most
+[06:03] patients survive. Decompensation has a
+[06:06] moving target. At every hour, you are
+[06:09] making a new prediction. Phenotyping is
+[06:11] multilel. A patient can have several
+[06:14] conditions at once. Length of stay is a
+[06:16] regression problem with a longtailed
+[06:18] distribution.
+[06:21] The simplest framing for feeding EHR
+[06:23] data into a network is to summarize the
+[06:25] patient record as a fixeddimensional
+[06:28] feature vector, counts of events, mean
+[06:30] and standard deviation of continuous
+[06:33] variables over various time windows,
+[06:35] indicator variables for categorical
+[06:38] events, and feed that vector to a fully
+[06:40] connected network or a logistic
+[06:41] regression.
+[06:44] This throws away temporal structure, but
+[06:46] is computationally cheap and gives you a
+[06:49] strong baseline. The Harotunian logistic
+[06:52] regression baseline uses this approach.
+[06:54] The empirical fact is that this baseline
+[06:56] is harder to beat than people often
+[06:59] expect because much of the predictive
+[07:02] signal in EHR data is captured by the
+[07:05] patients overall clinical state, which a
+[07:08] summary vector captures reasonably well.
+[07:10] To do better, you need a model that can
+[07:12] exploit temporal dynamics, which is
+[07:15] where RNNs come in.
+[07:18] Brief reminder of the vanilla RNN cell
+[07:21] from last lecture. At each time step t,
+[07:24] the input x subt and the previous hidden
+[07:27] state h subt minus one are combined
+[07:29] through a learnable weight matrix and a
+[07:31] tang nonlinearity to produce the new
+[07:34] hidden state h subt.
+[07:36] The same weights are reused at every
+[07:39] time step, weight sharing across time.
+[07:41] The hidden state acts as the network's
+[07:44] memory of what it has seen so far. For a
+[07:47] many to one classification task like in
+[07:50] hospital mortality, the final hidden
+[07:53] state H subt is fed to a classifier
+[07:56] head. The training signal flows back
+[07:57] through time through back propagation
+[07:59] through time with the well-known
+[08:01] vanishing and exploding gradient
+[08:04] pathology for long sequences.
+[08:08] The LSTM cell three gates forget input
+[08:11] output and a separate cell state. The
+[08:13] cell state runs alongside the hidden
+[08:15] state and supports long range
+[08:17] information flow because its update is
+[08:19] approximately additive rather than
+[08:21] multiplicative.
+[08:23] Gradients can pass through the cell
+[08:25] state across many time steps without
+[08:27] being attenuated by repeated
+[08:29] multiplication which is what makes long
+[08:32] sequence training tractable. The hidden
+[08:35] state at each time step is a gated copy
+[08:38] of the cell state. The four parallel
+[08:41] linear transformations, three gates and
+[08:44] one candidate give the LSTM about four
+[08:46] times the parameter count of a vanilla
+[08:51] RNN cell of the same hidden dimension.
+[08:53] The empirical payoff is reliable
+[08:55] training on sequences of hundreds or
+[08:57] thousands of time steps.
+[09:01] Harutunan 2019 work in scientific data.
+[09:03] The canonical benchmark for clinical
+[09:06] time series modeling on mimic 3 four
+[09:09] prediction tasks standard pre-processing
+[09:11] pipeline released as open source
+[09:13] performance reported for several
+[09:15] baseline architectures including
+[09:18] logistic regression with handgineered
+[09:22] features and several LSTM variants.
+[09:24] The paper's main contribution is
+[09:26] methodological establishing a clean
+[09:28] benchmark that subsequent papers can
+[09:31] compare against.
+[09:34] Input and coding. The authors curate 17
+[09:37] clinical variables. Heart rate, systolic
+[09:39] and diastolic blood pressure,
+[09:42] respiratory rate, oxygen saturation,
+[09:45] temperature, glasco scale components,
+[09:49] glucose and others. Time is binned into
+[09:51] 1-hour windows. Within each window,
+[09:53] observations are aggregated by taking
+[09:56] the most recent observed value. Missing
+[09:59] values, the windows where no observation
+[10:01] occurred are imputed using either the
+[10:04] last observation carried forward value
+[10:07] or a normal range fallback value if no
+[10:10] prior observation exist.
+[10:12] Critically, a binary mass is
+[10:14] concatenated to each clinical variable
+[10:16] indicating whether the value at that
+[10:18] time step was actually observed or was
+[10:20] imputed.
+[10:22] The mask is itself informative. The
+[10:24] absence of an observation is often
+[10:27] correlated with clinical state and the
+[10:30] network can learn from it. Multitask
+[10:33] setup. The authors train a single LSTM
+[10:36] network jointly on all four tasks.
+[10:38] Phenotyping, inhosp mortality,
+[10:41] decompensation, and length of stay. The
+[10:43] shared layers learn a representation
+[10:46] that is useful across tasks. Task
+[10:48] specific output hits predict each
+[10:51] outcome. Multitask training acts as a
+[10:54] regularizer. The shared representation
+[10:56] cannot overfit to any single task
+[10:59] because it has to support all four. The
+[11:02] empirical multitask gains are small but
+[11:04] consistent. The gains are largest for
+[11:07] task with smaller label counts which
+[11:09] benefit most from sharing with larger
+[11:11] label tasks.
+[11:14] Cross task summary. LSTMs beat logistic
+[11:17] regression on all four tasks modestly
+[11:20] but consistently. AUC
+[11:22] gains of one to four points depending on
+[11:26] the task. The largest LSTM gains are on
+[11:28] task where temporal dynamics matter
+[11:31] most. Decompensation and acute condition
+[11:32] phenotyping.
+[11:35] The smallest gains are on task where
+[11:37] static patient information dominates.
+[11:40] Chronic phenotypes in hospital mortality
+[11:43] at admission. The overall picture is
+[11:46] that LSTMs are worth using, but the
+[11:48] gains are smaller than naive
+[11:51] expectations would suggest.
+[11:53] The honest interpretation, most of the
+[11:55] predictive power on these tasks comes
+[11:57] from a relatively small number of
+[11:59] well-gineered features applied with a
+[12:01] sensible model. Architectural
+[12:04] sophistication on top adds incremental
+[12:07] gains. This is a recurring pattern in
+[12:09] clinical machine learning. labeled
+[12:12] clinical data is the bottleneck. And
+[12:14] given enough good labels and features,
+[12:16] the choice between classical methods and
+[12:18] modern deep learning is less important
+[12:21] than people often assume. Worth
+[12:23] remembering when you read papers with
+[12:26] implausibly large reported gains. Those
+[12:28] gains often turn out to be data leakage
+[12:30] or evaluation artifacts on closer
+[12:32] inspection.
+[12:35] Going back to Harotunian's imputation
+[12:37] choice for logistic regression, they
+[12:39] used handgineered features per time
+[12:43] series, minimum, maximum, mean, standard
+[12:46] deviation and so on computed over
+[12:48] various subsequences.
+[12:49] If a feature was missing in a
+[12:51] subsequence, they imputed it with the
+[12:54] mean from the training set. Categorical
+[12:56] variables that had meaningful numeric
+[12:59] values were left alone. everything was
+[13:01] standardized to zero mean and unit
+[13:03] variance.
+[13:05] That is a reasonable choice. It is not
+[13:07] the best choice. It assumes the
+[13:09] missingness is uninformative. That a
+[13:11] missing value can be safely replaced by
+[13:14] the average. That assumption is in
+[13:18] clinical data almost always wrong. Let's
+[13:20] understand why.
+[13:22] Missing data is the single biggest
+[13:25] practical issue in EHR modeling. In a
+[13:27] typical ICU data set, the missingness
+[13:30] fraction varies enormously by variable.
+[13:32] Heart rate is recorded almost
+[13:34] continuously while serum lactate
+[13:35] [clears throat] may be measured only
+[13:38] once or twice during a stay. The pattern
+[13:41] of missingness is also non-random.
+[13:43] Patients who are stable are measured
+[13:45] less frequently than patients who are
+[13:47] unstable, which means the very absence
+[13:49] of a measurement is informative about
+[13:51] clinical state. Any reasonable
+[13:54] imputation strategy must take this into
+[13:56] account.
+[13:58] Statisticians distinguish three classes
+[14:01] of missing data due to Donald Rubin in
+[14:02] 1976.
+[14:07] Missing completely at random MC.
+[14:08] The missingness depends on neither the
+[14:11] missing variable itself nor on any other
+[14:14] variable. A portion of patient pain
+[14:17] surveys are randomly lost in the post.
+[14:18] The lossness is statistically
+[14:21] independent of everything else. Easiest
+[14:23] case, you can ignore the missing values
+[14:25] without introducing bias.
+[14:29] Missing at random, M. The missingness
+[14:31] depends on other observed variables, but
+[14:34] not on the missing variable itself.
+[14:36] Male patients are less likely to
+[14:38] complete a pain survey. So, sex is
+[14:40] correlated with missingness. But
+[14:42] conditional on sex, the actual pain
+[14:44] level has no effect on whether the
+[14:46] survey was filled in. Harder but
+[14:49] tractable. Impute conditional on the
+[14:51] observed variables.
+[14:54] Missing not at random. Mn.
+[14:56] The missingness depends on the missing
+[14:58] variable itself. Patients with higher
+[15:00] pain levels are less likely to complete
+[15:02] the pain survey because they are too
+[15:05] unwell. No clean way to recover the true
+[15:07] distribution from the observed
+[15:08] responses.
+[15:11] In clinical data, MN is depressingly
+[15:13] common.
+[15:16] Why does this matter for our LSTMs?
+[15:19] Because in real clinical data, the fact
+[15:21] that a measurement was taken at all is
+[15:23] often informative. A patient being
+[15:25] measured every 5 minutes is a patient
+[15:28] who is unstable. A patient with no
+[15:30] recent vital signs in the chart is
+[15:33] paradoxically often stable enough not to
+[15:35] need monitoring
+[15:38] or has been moved off the wart or has
+[15:41] just been admitted or has died. The
+[15:43] missingness pattern itself carries
+[15:46] clinical signal. This is exactly why
+[15:48] Harotunian's binary mask trick works so
+[15:52] well. By concatenating the value with a
+[15:54] mass bit indicating whether it was
+[15:56] observed, the network learns that the
+[15:59] absence of an observation is itself an
+[16:00] observation.
+[16:02] It learns the missingness mechanism
+[16:04] implicitly, which is a way of being
+[16:08] approximately robust to MN data without
+[16:10] explicitly modeling it.
+[16:13] Full robustness to MNR is beyond the
+[16:16] scope of any standard imputation method.
+[16:19] If you have severe MNR and you sometimes
+[16:21] can detect it by domain knowledge, the
+[16:23] only honest answer is to be cautious
+[16:25] about your conclusions and to flag the
+[16:27] limitation.
+[16:30] A taxonomy of imputation strategies from
+[16:33] simplest to most sophisticated. The next
+[16:35] several slides walk through them. The
+[16:37] general principle, pick the simplest
+[16:39] strategy that handles your missingness
+[16:43] mechanism. For MC data, anything works.
+[16:46] For M data, simple imputation may be
+[16:48] biased, but conditional imputation can
+[16:50] be unbiased.
+[16:53] For MN data, no method is fully
+[16:55] unbiased, and you should be honest about
+[16:57] that limitation.
+[16:59] Basic strategies. Delete records with
+[17:02] missing data. List-wise deletion. Fine
+[17:04] if you have lots of data and the
+[17:07] missingness is MC. Otherwise, dangerous
+[17:09] because you may delete an
+[17:11] unrepresentative subset and bias your
+[17:13] analysis.
+[17:15] Impute with the mean or median computed
+[17:17] from the training set. What Harutunan
+[17:20] did for their logistic regression.
+[17:22] Cheap, deterministic, fine as a
+[17:25] baseline. Fill with the most recent
+[17:27] observed value. Last observation carried
+[17:31] forward often called LOCF in the
+[17:33] clinical literature. Appropriate when
+[17:36] the underlying variable changes slowly
+[17:38] and the missingness reflects measurement
+[17:41] gaps rather than absence.
+[17:43] Linear interpolation between observed
+[17:45] values fine for smooth signals like
+[17:48] vital signs. Less appropriate for
+[17:49] episodic ones like medication
+[17:52] administration.
+[17:54] Intermediate strategies. K nearest
+[17:56] neighbors imputation. Find the K
+[17:58] patients in the training set whose
+[18:00] observed variables are most similar to
+[18:02] the patient with the missing value and
+[18:05] impute using their values. Captures more
+[18:07] conditional information than mean
+[18:10] imputation. Single imputation via a
+[18:13] regression or classification model.
+[18:14] Train a model to predict the missing
+[18:16] variable from the other observed
+[18:19] variables. Then use that model to fill
+[18:21] in the gaps. both more sophisticated
+[18:24] than mean imputation. Both still
+[18:26] singleoint imputations that do not
+[18:28] quantify uncertainty in the imputed
+[18:29] value.
+[18:33] Advanced strategies multiple imputation
+[18:35] and specifically the mice algorithm
+[18:37] which we will work through in the next
+[18:39] several slides. Multiple imputation
+[18:41] accepts that any single guess at a
+[18:43] missing value is uncertain and
+[18:45] propagates that uncertainty by
+[18:47] performing the imputation many times
+[18:49] with different random initializations
+[18:52] and aggregating. The most principle
+[18:54] approach available without going into
+[18:57] deep generative models. Deep generative
+[19:00] models gees
+[19:03] normalizing flows trained to imputee are
+[19:05] an active research area we will not
+[19:07] cover in detail.
+[19:10] Harutunyan again use mean value
+[19:13] imputation plus the binary mask.
+[19:15] The mask is doing a lot of work in their
+[19:17] pipeline. If you remove it, performance
+[19:19] drops noticeably.
+[19:21] The combination of simple imputation
+[19:24] plus an explicit mask is a strong
+[19:26] baseline and is the default I recommend
+[19:28] you reach for first. It captures most of
+[19:31] the gain of more sophisticated methods
+[19:32] at a fraction of the engineering
+[19:35] complexity. Reach for mice only when the
+[19:37] mass plus simple imputation is not
+[19:39] enough or when you need formal
+[19:42] uncertainty quantification.
+[19:45] Mice multiple imputation by chained
+[19:48] equations. The canonical reference is
+[19:50] Steph Vanburn's 2011 paper in the
+[19:53] journal of statistical software.
+[19:55] Although the ideas go back to the late
+[19:56] 1990s,
+[19:59] the five-step algorithm. Step one,
+[20:01] identify all missing values across your
+[20:04] features. Step two, fill in initial
+[20:07] placeholders, typically column means or
+[20:08] random draws from the marginal
+[20:11] distribution. Step three, iterative
+[20:14] regression. Pick one feature, train a
+[20:16] regression model to predict it from all
+[20:19] the other features. Use the model to
+[20:21] update its missing values. Cycle through
+[20:24] every feature. Step four, repeat the
+[20:27] cycle until imputed values converge.
+[20:30] Step five, repeat the entire procedure n
+[20:31] times with different random
+[20:34] initializations to produce n imputed
+[20:37] data sets. Then aggregate downstream
+[20:40] predictions across the n data sets. The
+[20:42] aggregation gives you a measure of
+[20:45] uncertainty in the imputed values.
+[20:48] The illustrative example on the slide.
+[20:51] Three features A, B, and C. Some entries
+[20:53] are red. They are missing. The first
+[20:56] step in mice fill those red entries with
+[20:58] placeholders. Random numbers column
+[21:01] means whatever is reasonable. Now no
+[21:03] entry is missing. The data set is
+[21:05] complete but the placeholders are crude.
+[21:08] We will iteratively replace them with
+[21:10] better estimates.
+[21:13] Update feature A. For every row where A
+[21:15] was originally missing, train a
+[21:17] regression model with A as the target
+[21:20] and B C as the predictors using all the
+[21:23] rows where A was observed. Then use the
+[21:25] model to predict A for the rows where it
+[21:27] was missing.
+[21:29] Yellow on the slide indicates the
+[21:31] updated values. A is now better than a
+[21:34] placeholder. It is a learned estimate
+[21:35] that takes the other features into
+[21:37] account.
+[21:39] Now update feature B. Same procedure
+[21:42] regression of B on A and C using all
+[21:44] rows where B was observed. Then predict
+[21:48] B where it was missing. Crucially, the
+[21:50] values of A used as predictors now
+[21:52] include the yellow updated values from
+[21:55] the previous step. So B's update uses
+[21:58] A's improved imputation. The features
+[22:01] bootstrap each other. This iterative
+[22:03] refinement is what gives mice its name,
+[22:05] chained equations.
+[22:07] If features A and B are known to be
+[22:10] strongly correlated in your domain, you
+[22:12] should be able to verify that the
+[22:14] imputed values reflect that correlation
+[22:17] more accurately with each pass. In the
+[22:20] cartoon, the correlation between A and
+[22:23] B, even including the imputed values,
+[22:25] improves across iterations.
+[22:27] That is the qualitative signature of
+[22:30] mice working as intended. If you see the
+[22:33] correlations failing to improve, your
+[22:34] regression models are not capturing
+[22:37] enough of the joint structure and you
+[22:38] may need richer models for the
+[22:41] conditional predictions.
+[22:43] Continue this update process for feature
+[22:46] C. Then circle back to A then B again
+[22:49] and so on. Repeat until the imputed
+[22:50] values stop changing meaningfully
+[22:52] between iterations.
+[22:55] The convergence criterion is usually the
+[22:58] mean change in imputed values across all
+[23:01] features falls below some threshold.
+[23:04] Implementations like the mice ranger
+[23:06] package in R or scikitlearn's iterative
+[23:08] imputer in Python handle this
+[23:11] automatically. You typically need 10 to
+[23:13] 20 iterations to converge
+[23:15] and then you repeat with n random
+[23:18] initializations as in step five. The
+[23:21] output is n complete data sets. Each one
+[23:23] a plausible draw from the conditional
+[23:25] distribution of the missing values given
+[23:28] the observe. Conventional choice for n
+[23:31] is somewhere between five and 20
+[23:33] depending on how much missingness you
+[23:36] have. For downstream supervised
+[23:38] learning, you can train a model on each
+[23:41] of the n imputed data sets and average
+[23:42] the predictions.
+[23:44] The variance across the n predictions
+[23:46] gives you a measure of imputation
+[23:50] induced uncertainty in the final answer.
+[23:51] This is the principled way to handle
+[23:55] missing data when uncertainty matters.
+[23:58] Practical notes on mice. The choice of
+[24:00] regression model for each feature
+[24:03] matters. Linear regression is the
+[24:05] default for continuous targets. Logistic
+[24:08] regression for binary. Multinnomial
+[24:10] logistic for categorical.
+[24:13] More sophisticated choices, random
+[24:15] forests, gradient boosted trees, can
+[24:17] capture richer conditional structure,
+[24:20] but are slower and may overfit on small
+[24:23] data sets. The mice ranger package uses
+[24:26] random forest by default. For mimic
+[24:28] scale clinical data, random forest mice
+[24:31] is computationally tractable and tends
+[24:33] to give better results than linear mice
+[24:36] on heterogeneous data with nonlinear
+[24:39] interactions among features.
+[24:41] Now we shift gears. We have talked about
+[24:43] the input pipeline, time series,
+[24:46] imputation, masking. Let me back up and
+[24:48] talk about where the data actually comes
+[24:50] from. Because in the real world, that is
+[24:52] often a bigger problem than any of the
+[24:55] modeling. The next 10 slides walk
+[24:57] through EHR data sources and the two
+[25:00] main data standards, OM OP for research
+[25:03] and FHIR for clinical exchange that you
+[25:05] will encounter in any cross
+[25:07] institutional work.
+[25:11] Ehr data sources mimic 3 and mimic 4
+[25:15] mimic CXR for chest X-rays Physionet
+[25:17] more broadly these are the open-source
+[25:20] data sets then there is institutional
+[25:24] EHR data which is mostly Epic and Cerna
+[25:25] those are the dominant vendors in the
+[25:29] United States and increasingly elsewhere
+[25:31] in Singapore the public hospitals run a
+[25:34] mix with Epic dominant in the Singh
+[25:37] health cluster institutional data is
+[25:39] restricted access, you need an ethics
+[25:42] approval, a data use agreement, and
+[25:44] usually you are working in a secure
+[25:45] enclave.
+[25:48] Beyond hospital, EHR,
+[25:50] insurance claims data, billing level
+[25:52] records that fill in the gaps when a
+[25:55] patient sees a non-hosp provider, fills
+[25:57] a prescription at a community pharmacy,
+[26:00] visits an urgent care clinic. Claims
+[26:03] data is broader than hospital ehr, but
+[26:06] coarser. You see the diagnosis code that
+[26:08] was built, not the underlying clinical
+[26:12] detail. Star the Stanford translational
+[26:14] and applied research data set is
+[26:17] Stanford Hospital's EHR data converted
+[26:20] to the OM OP common data model which is
+[26:22] the next thing I want to talk about. The
+[26:24] point of mentioning all these sources is
+[26:26] that real clinical AI work involves
+[26:29] stitching across multiple sources each
+[26:32] with its own quirks and standards exist
+[26:33] precisely because the stitching is
+[26:36] otherwise impossible.
+[26:39] OMP the observational medical outcomes
+[26:41] partnership. It started as a public
+[26:44] private partnership in the United States
+[26:46] involving the FDA, pharmaceutical
+[26:49] companies, and healthcare providers with
+[26:51] the goal of doing postmarket drug safety
+[26:53] surveillance across multiple data
+[26:54] sources.
+[26:57] The challenge, every data source had its
+[27:00] own format, its own coding conventions,
+[27:02] its own field names. You could not pull
+[27:05] data across hospitals without enormous
+[27:07] custom engineering.
+[27:10] OMP's answer was the common data model.
+[27:12] A standardized schema with a fixed set
+[27:16] of tables. Person, visit, occurrence,
+[27:19] condition, occurrence, drug exposure,
+[27:21] measurement, procedure, occurrence,
+[27:24] observation, death, and a standardized
+[27:28] vocabulary drawing from Snowmet RXOM,
+[27:32] low in ICD, CPT, and several others.
+[27:35] If you convert your EHR data into OM OP
+[27:37] format, then you can run the same
+[27:39] analysis script against your data and
+[27:43] against any other om formatted data set
+[27:45] and the results are directly comparable.
+[27:48] This sounds boring. It is enormously
+[27:51] important. The ODSI consortium
+[27:53] observational health data sciences and
+[27:56] informatics maintains OMOP and now
+[27:58] claims hundreds of partner institutions
+[28:02] converting their data to OM OP covering
+[28:05] hundreds of millions of patient lives.
+[28:06] Studies that would have been impossible
+[28:09] at a single hospital, too few rare
+[28:11] disease cases, too short a follow-up
+[28:15] become possible at ODSI scale because
+[28:17] you can federate the analysis across the
+[28:18] network.
+[28:21] In Singapore, the major public healthare
+[28:23] clusters have done OM OP conversions of
+[28:26] various data subsets for specific
+[28:28] research programs with conversion work
+[28:31] being ongoing.
+[28:32] STAR is the Stanford specific
+[28:35] instantiation of the OM OP model.
+[28:37] Stanford Hospital and Stanford
+[28:39] Children's Health have converted their
+[28:43] EHR data into OM OP format and made it
+[28:46] available for institutional research. It
+[28:48] is one of the cleanest examples of an OM
+[28:50] OP deployment at a single academic
+[28:55] medical center. The original BODS 220
+[28:57] course use star for several homework
+[29:00] assignments. For our course, we will
+[29:02] rely on mimic and on selected sing
+[29:04] health research data sets where
+[29:08] available. Singapore's precise precision
+[29:10] health research Singapore is building an
+[29:14] OMP formatted data infrastructure for
+[29:16] the national precision medicine program
+[29:18] which over time will serve a similar
+[29:20] role for local research.
+[29:24] FHIR pronounced fire fast healthcare
+[29:27] interoperability resources where OM OP
+[29:30] is a researchoriented common data model
+[29:33] focused on observational analysis. Fire
+[29:35] is a clinical operational standard
+[29:37] focused on realtime exchange of health
+[29:40] information between systems
+[29:43] developed by HL7 the health level 7
+[29:45] international standards organization. It
+[29:48] is web- based restbased you exchange
+[29:51] data via standard HTTP
+[29:54] get postput request and data is
+[29:58] structured as resources in JS or XML.
+[30:00] A fire resource is a self-contained
+[30:03] chunk of healthcare information. A
+[30:05] patient resource, an observation
+[30:07] resource, a condition resource, a
+[30:10] medication request resource. Each is a
+[30:14] JSo object with a defined schema.
+[30:17] Adoption. The schemas are version and
+[30:20] stable. Apple Health, the major EHR
+[30:22] vendors, and increasingly hospital
+[30:25] systems worldwide expose fire endpoints.
+[30:28] Singapore's NEHR has a fire interface.
+[30:31] The US Centers for Medicare and Medicaid
+[30:33] Services have mandated firebased patient
+[30:36] access APIs as part of their
+[30:38] interoperability rules.
+[30:40] The dream is that a clinician or a
+[30:42] researcher or a patient can access
+[30:45] health data wherever it lives in a
+[30:48] consistent format. We are not there yet,
+[30:50] but fire is the best tool we have for
+[30:52] getting closer.
+[30:54] Information exchange architecture. The
+[30:57] figure on this slide from Choy at al
+[31:00] 2016 shows the pattern. Multiple data
+[31:04] sources, EHR systems, claims databases,
+[31:06] pharmacy systems, all expose fire
+[31:08] endpoints.
+[31:10] A consuming application calls those
+[31:14] endpoints, gets back JS resources, and
+[31:16] stitches them together.
+[31:17] The same application can talk to
+[31:21] Singapore's NEHR to an NHS deployment in
+[31:24] the UK to an Epic instance in the US
+[31:26] because they all speak fire. The
+[31:28] application layer is decoupled from the
+[31:30] storage layer.
+[31:33] Important conceptual point Oop and fire
+[31:35] are not in competition. They do
+[31:38] different jobs. OMOP is a research data
+[31:41] model designed for retrospective
+[31:43] observational studies designed for
+[31:45] aggregating millions of patients across
+[31:49] hospitals for population scale analysis.
+[31:51] Fire is a clinical exchange standard
+[31:53] designed for moving an individual
+[31:55] patients record between systems in real
+[31:57] time. There are tools that translate
+[31:59] between them.
+[32:04] Choy Adel's OHDSI on firework which maps
+[32:07] OM OPCDM to fire resources but the use
+[32:09] cases differ. If you are doing
+[32:12] retrospective research on big EHR
+[32:16] cohorts you will probably work in OM OP.
+[32:17] If you are building a clinical app that
+[32:20] talks to a live EHR system, you will
+[32:23] probably work in fire. If you are doing
+[32:26] federated learning across hospitals, you
+[32:28] may well need to do both.
+[32:30] Smart on fire is a platform layer on top
+[32:33] of fire for building thirdparty
+[32:36] applications that consume ehr data. The
+[32:40] reference is mandal at al 2016 in jamba
+[32:44] smart standardizes authentication o 2.0
+[32:47] zero and the launch context. How an app
+[32:49] gets told which patient is currently
+[32:52] open in the EHR.
+[32:55] With smart on fire, an EHR vendor can
+[32:57] run an app marketplace and clinical
+[32:59] informatics groups can build apps that
+[33:01] drop into any smart compliant EHR
+[33:04] without writing custom integrations per
+[33:07] vendor. Why is this interesting for us?
+[33:10] Because if you build an AI model, say a
+[33:12] sepsis predictor, and you want to deploy
+[33:15] it inside an EHR, the cleanest
+[33:17] deployment path is as a smart onfire
+[33:20] app. The model is hosted on your server.
+[33:24] The EHR sends it patient data via fire.
+[33:27] The app sends back a prediction. The EHR
+[33:30] displays it. The life cycle of an AI
+[33:32] model in production goes through this
+[33:35] layer in many real deployments. Closing
+[33:37] on FHIR,
+[33:40] the standard is large, hundreds of
+[33:42] resource types with versioning and
+[33:44] extension mechanisms.
+[33:46] Know that smart on fire is the way AI
+[33:51] applications get embedded inside EHRS.
+[33:54] Before I leave the topic of EHR data, a
+[33:55] slide on something that is not strictly
+[33:57] about machine learning, but that you
+[33:59] will encounter in every clinical
+[34:01] deployment of AI.
+[34:04] Modern EHR systems are by many accounts
+[34:07] terrible to use. Clinicians spend an
+[34:09] enormous fraction of their day clicking
+[34:11] through them. Studies suggest that for
+[34:13] every hour a physician spends with a
+[34:17] patient, they spend 2 hours on the EHR.
+[34:19] Physician burnout, which has reached
+[34:22] crisis levels in many systems, is
+[34:25] significantly attributed to EHR burden.
+[34:28] Why? The systems were built and adopted
+[34:30] very quickly, particularly after the
+[34:33] 2009 Hightech Act in the US, which
+[34:35] incentivized adoption, but did not
+[34:38] specify usability standards. Vendors
+[34:41] competed on features and certifications,
+[34:43] not on user experience.
+[34:45] There are ongoing efforts to improve
+[34:48] this AI assisted documentation through
+[34:50] ambient scribing, decision support
+[34:53] integration, workflow simplification.
+[34:55] Many of the opportunities for clinical
+[34:58] AI are not new prediction models but
+[35:00] reductions in the friction of using the
+[35:02] existing record.
+[35:04] Now the main case study of today's
+[35:08] lecture Rajkumar Adal 2018 in NPJ
+[35:11] digital medicine scalable and accurate
+[35:13] deep learning with electronic health
+[35:18] records a team from Google UCSF Chicago
+[35:21] and Stanford. They took the entire raw
+[35:23] EHR record for hundreds of thousands of
+[35:26] patients across multiple hospitals,
+[35:29] converted it all to fire format, trained
+[35:31] a deep neural network, multiple
+[35:33] architectures actually to predict
+[35:36] clinical outcomes from the full record.
+[35:40] The outcomes inhosp mortality, 30-day
+[35:43] readmission, length of stay greater than
+[35:45] 7 days, and a number of secondary
+[35:47] outcomes.
+[35:49] The work is the canonical industry scale
+[35:52] demonstration that deep learning on EHR
+[35:54] data can match or beat carefully
+[35:57] engineered baselines when the data and
+[36:00] the architecture are right.
+[36:04] Data setup roughly 216,000 adult patient
+[36:06] hospitalizations from two academic
+[36:09] medical centers UCSF and University of
+[36:12] Chicago. Every event in each
+[36:15] hospitalization was converted to a fire
+[36:18] resource and represented as a token in a
+[36:21] sequence. A medication administration is
+[36:24] a token. A vital sign measurement is a
+[36:27] token. A procedure is a token. A
+[36:29] laboratory result is a token.
+[36:32] Timestamped ordered. The patients
+[36:34] hospitalization becomes a long sequence
+[36:37] of timestamped events. Sometimes tens of
+[36:41] thousands of events per hospitalization.
+[36:43] The crucial scaling decision. Do not
+[36:46] handgineer features. Do not select a
+[36:49] small subset of variables. Use every
+[36:51] event in the record and let the model
+[36:53] learn what matters.
+[36:55] This is the deep learning ethos applied
+[37:00] to EHR data. It requires a lot of data.
+[37:01] They had 200,000 patient
+[37:03] hospitalizations
+[37:05] and it requires a model architecture
+[37:08] that can handle long sequences which is
+[37:11] where the LSTM, the attention layer and
+[37:13] the feed forward network they tested
+[37:16] come in. The architectural choice is
+[37:19] enabled by the data scale with 10,000
+[37:21] patients you cannot afford to throw away
+[37:26] features. With 200,000 you can. How do
+[37:28] you feed an event? a token like
+[37:31] administration of mettopol 25 mgs into a
+[37:34] neural network. You embed it the same
+[37:37] trick that word two ve used for words in
+[37:39] natural language which we will see again
+[37:42] later. Each unique token gets a
+[37:44] learnable vector representation in a
+[37:47] d-dimensional embedding space. The next
+[37:49] few slides walk through token embeddings
+[37:51] in detail because they are the
+[37:53] conceptual bridge between discrete
+[37:55] clinical events and the continuous
+[37:59] tensor world of neural networks.
+[38:01] Token embeddings the basic idea you have
+[38:04] a vocabulary of n distinct tokens every
+[38:07] unique medication every unique lab test
+[38:09] every unique procedure code that appears
+[38:12] in your data. You want to represent each
+[38:15] token as a vector. One hot encoding
+[38:18] gives you an n-dimensional vector with a
+[38:21] single one. But n is huge and one hot
+[38:23] vectors are not informative. They tell
+[38:25] you nothing about which tokens are
+[38:27] related to which. Embedding does
+[38:29] something better. You maintain an n byd
+[38:31] matrix where each row is the embedding
+[38:33] of one token.
+[38:37] To encode a token, you look up its row.
+[38:40] D is much smaller than n, typically 64
+[38:42] to several hundred. So the
+[38:45] representation is dense and compact.
+[38:48] Crucially, the matrix is learned during
+[38:49] training.
+[38:52] Why do learner embeddings work? Because
+[38:55] tokens that play similar clinical roles
+[38:57] end up with similar vectors.
+[39:00] two related medications, say two beta
+[39:03] blockers, will be administered in
+[39:06] similar clinical contexts with similar
+[39:09] surrounding events and the network will
+[39:11] end up assigning them similar embeddings
+[39:14] because that minimizes prediction loss.
+[39:16] The semantic structure of the clinical
+[39:18] data, what medications are
+[39:21] interchangeable, which diagnoses
+[39:24] cluster, which procedures relate gets
+[39:26] encoded into a geometry in the embedding
+[39:28] space. without anyone handsp specifying
+[39:31] it. That geometric structure is what
+[39:34] makes embeddings powerful.
+[39:37] How embeddings are computed in practice.
+[39:39] Multiply a one hot vector, a row of
+[39:42] zeros with a single one by the n byd
+[39:45] embedding matrix. The result is one row
+[39:48] of the matrix, the row corresponding to
+[39:51] whichever position the one was in. So
+[39:52] the embedding operation is
+[39:55] mathematically a matrix multiplication
+[39:58] and computationally a table lookup.
+[40:02] Every framework PyTorch, TensorFlow, Jax
+[40:04] implements embeddings as index table
+[40:07] lookups with sparse gradients. The
+[40:09] matrix multiplication notation is
+[40:11] convenient for back propagation. The
+[40:14] implementation is a lookup. The
+[40:16] dimensions you choose are a
+[40:17] hyperparameter.
+[40:19] The values are learned by gradient
+[40:22] descent from the task loss.
+[40:24] Now we put embeddings together with the
+[40:27] RNN. The full pipeline for a clinical
+[40:31] token sequence. At each time step t, the
+[40:35] input token x subt, a one hot vector is
+[40:38] multiplied by the embedding matrix e to
+[40:41] produce a d-dimensional embedding.
+[40:44] That embedding is the input to the rnn
+[40:46] cell along with the previous hidden
+[40:48] state.
+[40:51] The RNN produces a new hidden state
+[40:54] which carries forward. After processing
+[40:56] the full sequence, the final hidden
+[40:58] state or some pulled version of all
+[41:02] hidden states feeds the prediction head.
+[41:04] Walking through the diagram one element
+[41:06] at a time. The bottom row is the input
+[41:09] token sequence. Patient events ordered
+[41:12] in time. Each token gets embedded into
+[41:15] its D-dimensional vector. The middle row
+[41:17] is the sequence of embeddings fed to the
+[41:19] RNN cells.
+[41:22] The top row is the sequence of hidden
+[41:24] states. At the right edge, the final
+[41:26] hidden state is fed to the prediction
+[41:29] hit which outputs the binary mortality
+[41:32] probability or the multiclass
+[41:35] readmission category or whatever the
+[41:37] task is.
+[41:39] back propagation. In this pipeline,
+[41:41] gradients flow from the prediction head
+[41:43] back through the RNN cells through every
+[41:46] embedding lookup all the way to the
+[41:48] embedding matrix entries that correspond
+[41:50] to tokens that actually appeared in the
+[41:52] sequence.
+[41:54] The embedding matrix is updated by
+[41:56] gradient descent like any other
+[41:57] parameter.
+[42:00] Tokens that never appeared in a sequence
+[42:02] get zero gradient and keep their initial
+[42:05] random values. tokens that appeared
+[42:08] frequently get updated proportionally
+[42:11] in medicine. This means if your task is
+[42:15] mortality prediction from EHR tokens,
+[42:16] the embedding matrix will end up
+[42:20] reflecting which medications, diagnosis,
+[42:21] and procedures the network has learned
+[42:25] to associate with mortality risk.
+[42:27] The geometry of the embedding space is
+[42:29] taskshaped.
+[42:31] This is in contrast to word two vex
+[42:34] style embeddings which are trained on a
+[42:36] self-supervised objective and have a
+[42:38] more generalpurpose geometry.
+[42:42] For task specific clinical work, task
+[42:44] trained embeddings often work better
+[42:47] than pre-trained ones. But for tasks
+[42:49] with limited labels, pre-trained
+[42:51] embeddings from a larger source corpus
+[42:53] can transfer usefully.
+[42:55] tradeoff.
+[42:58] The vocabulary in clinical embedding
+[43:01] tasks can be very large. Raj Koma's full
+[43:03] token vocabulary across U CSF and
+[43:06] Chicago was tens of thousands of
+[43:09] distinct events with the long tail of
+[43:11] rare codes contributing little but
+[43:13] inflating the parameter count of the
+[43:15] embedding matrix.
+[43:17] Standard tricks for handling this
+[43:21] include reshaping at each time step. Use
+[43:23] hierarchical embedding through code
+[43:26] groupings. For example, embed at the ICD
+[43:29] 93digit level rather than the full
+[43:31] five-digit code.
+[43:33] Embedding matrix has values that are
+[43:35] randomly initialized at the beginning
+[43:37] then learned through training back
+[43:41] propagation. Also, time between events
+[43:44] is informative. A medication given 6
+[43:45] hours after admission is a different
+[43:48] signal from one given 6 days into a long
+[43:52] ICU stay. So they added an embedding for
+[43:54] the time delta between consecutive
+[43:57] events as an additional input feature to
+[44:01] the LSTM at each time step. The model
+[44:03] learns the appropriate representation of
+[44:06] the time gap. This is the same idea that
+[44:08] transformers later formalize as
+[44:12] positional encoding. But in 2018 in an
+[44:17] RNNbased EHR model, it was already an
+[44:19] explicit design choice.
+[44:22] In this pipeline, token embeddings plus
+[44:25] time delta embeddings plus the LSTM
+[44:28] machinery give you a model that ingests
+[44:31] raw EHR token sequences and produces
+[44:33] clinical predictions.
+[44:35] The architectural pattern is general.
+[44:37] The same pipeline applies to any
+[44:40] sequential clinical data with discrete
+[44:41] events.
+[44:44] It is the workhorse design for EHR deep
+[44:45] learning.
+[44:48] With the input pipeline understood, the
+[44:50] rest of Rajcom's contribution is the
+[44:53] model and the scale. They tested three
+[44:55] architectures. a recurrent network with
+[44:57] LSTM,
+[45:00] a feed forward attention network, and a
+[45:02] boosting style sequential aggregator.
+[45:05] Against a strong baseline, logistic
+[45:07] regression with handgineered features
+[45:09] from a curated subset of variables. The
+[45:13] deep models, particularly the LSTM,
+[45:15] outperform the baseline across all
+[45:17] primary outcomes.
+[45:21] Rajcom's LSTM input format in detail.
+[45:23] Each feature type, medications,
+[45:26] procedures, vital signs, lab test has
+[45:29] its own embedding dimension. Medications
+[45:33] might be embedded in a 128 dimensional
+[45:37] space. Lab tests in a 256dimensional
+[45:40] space. The dimensionalities are
+[45:42] hyperparameters tuned for each feature
+[45:45] type. Different feature types have
+[45:47] different cardalities.
+[45:49] There are tens of thousands of distinct
+[45:52] medications, but only a few hundred lab
+[45:55] tests. So a single shared embedding
+[45:57] dimension would be wasteful.
+[45:59] When there are multiple tokens of the
+[46:01] same feature type in the same time
+[46:03] bucket, three medication administrations
+[46:06] in one hour, their embeddings are
+[46:07] averaged into a single vector for that
+[46:11] feature type. This is the back of tokens
+[46:13] trick. It loses some ordering
+[46:15] information within the bucket but keeps
+[46:18] the input dimensionality manageable.
+[46:20] The choice between averaging and
+[46:23] concatenation is empirical. Averaging
+[46:26] worked well for Rajcom's pipeline. For
+[46:28] very fine grain ordering, you could move
+[46:30] to a finer time discretization rather
+[46:32] than averaging.
+[46:35] Time delta is added as a separate input
+[46:38] feature at each time step. The model
+[46:40] receives the per feature embeddings
+[46:42] concatenated with the time delta
+[46:44] embedding and processes the
+[46:47] concatenation through the lstm.
+[46:49] The choice of how to combine the time
+[46:52] delta with the feature embeddings
+[46:55] concatenate add multiply is again
+[46:57] empirical.
+[46:59] Concatenation is the simplest and is
+[47:03] what Raj Kumar used. A worked example.
+[47:06] Consider a single time bucket one hour
+[47:08] of a patient's hospitalization.
+[47:11] In that hour, the patient received
+[47:14] metoprolol 25 mg and had their heart
+[47:17] rate and blood pressure measured twice.
+[47:20] The bucket's input vector is average
+[47:22] embedding of all medications
+[47:25] administered in the hour one entry
+[47:27] metropol
+[47:29] average embedding of all measurements
+[47:33] taken two entries heart rate and BP plus
+[47:35] the time delta to the previous bucket
+[47:38] concatenate that is the LSTM input for
+[47:40] that time step
+[47:43] scale of the embeddings. Rajcom reports
+[47:45] total parameter counts in the embedding
+[47:48] tables in the millions which is small
+[47:50] compared to the rest of the network and
+[47:53] tiny compared to the data scale. The
+[47:55] compute cost of training was dominated
+[47:59] by the LSTM forward and backward passes
+[48:01] not by the embedding lookups
+[48:04] for a research group with access to
+[48:07] TPUs. Training on hundreds of thousands
+[48:09] of hospitalizations
+[48:11] took on the order of days, which is
+[48:14] tractable but not casual. For an
+[48:17] academic lab on commodity GPUs, working
+[48:21] with smaller subsets is more realistic.
+[48:24] Comparison against baselines, the deep
+[48:26] models outperformed logistic regression
+[48:28] with handgineered features across all
+[48:30] primary outcomes.
+[48:33] On inhosp mortality, AU moved from
+[48:37] around 0.92 for logistic regression to
+[48:41] around 0.94 for the deep models. On
+[48:45] 30-day readmission from around 0.74 to
+[48:48] around 0.77.
+[48:51] Importantly, they evaluated the model at
+[48:52] multiple time points during the
+[48:54] hospitalization.
+[48:57] At admission, 24 hours after admission,
+[48:59] at discharge.
+[49:01] The model's predictive performance
+[49:04] improves over time as more data acrru,
+[49:06] which is the expected behavior for a
+[49:08] recurrent architecture that integrates
+[49:11] the patient's record over time.
+[49:13] Different decisions are made at
+[49:15] different time points. A mortality
+[49:17] prediction at admission when you only
+[49:19] have the patients history and triage
+[49:22] vital signs is a different decision than
+[49:25] one at 24 hours when you have laboratory
+[49:29] results and response to initial therapy.
+[49:31] Useful clinical models need to be
+[49:33] evaluated in the time frame where the
+[49:35] decision they inform will actually be
+[49:37] made.
+[49:39] Now we get to the part that connects to
+[49:41] where we are going next in this course.
+[49:43] Raj Koma and colleagues also train a
+[49:45] model with soft attention on a simpler
+[49:48] version of the task mortality on a
+[49:50] subset of variables.
+[49:53] The attention layer let them ask which
+[49:55] features did the model find most
+[49:58] informative at each time step.
+[50:00] The output in the papers figure four and
+[50:03] figure five is a heat map. Time along
+[50:07] the x-axis features along the y-axis
+[50:09] intensity of color indicating attention
+[50:13] weight. For a given patient, you can see
+[50:15] exactly which features the model
+[50:18] attended to at which time. For a patient
+[50:20] who died of sepsis, the model attended
+[50:23] heavily to the rising lactate, the
+[50:25] dropping blood pressure, the worsening
+[50:28] respiratory rate, the antibiotic
+[50:30] administrations.
+[50:31] The attention pattern is clinically
+[50:33] interpretable.
+[50:35] Walking through the soft attention
+[50:38] mechanism in detail. Soft attention is a
+[50:41] waiting operation. You have an input
+[50:45] vector X with D features X1, X2 through
+[50:48] XD. You compute a set of attention
+[50:52] weights P1 P2 through PD and these
+[50:54] weights are non- negative and sum to
+[50:57] one. Then your weighted input Z is
+[51:02] element wise Z equals P1 * X1 P2 * X2
+[51:06] and so on. The weighted input Z goes
+[51:08] into the rest of the network as if it
+[51:11] were the original input.
+[51:13] The attention layer is interposed
+[51:15] between the input and the downstream
+[51:18] network and it is fully differentiable.
+[51:21] So gradients flow through it. Where do
+[51:24] the attention weights P come from? They
+[51:26] are computed by a small learnable
+[51:29] network. A fully connected layer with
+[51:30] parameters that get learned by back
+[51:33] propagation along with everything else.
+[51:36] The input to that small network is some
+[51:39] combination of the original input X and
+[51:43] the RNN's previous hidden state.
+[51:45] The output of the small network is
+[51:47] passed through a softmax to enforce non-
+[51:51] negativity and unit sum on the weights.
+[51:53] The attention layer adds parameters but
+[51:55] not many small relative to the rest of
+[51:57] the LSTM
+[51:59] and it adds the property that the
+[52:02] attention weights after training can be
+[52:04] inspected.
+[52:05] Three things to note about soft
+[52:08] attention. First, the parameters of the
+[52:10] attention layer are learned alongside
+[52:13] everything else. No separate training
+[52:16] procedure. Second, the attention layer
+[52:19] adds parameters but not many for an
+[52:21] input of dimension D and a hidden state
+[52:24] of dimension H. The attention network is
+[52:29] at most A D + H by D matrix plus a bias
+[52:31] which is small relative to the rest of
+[52:33] the LSTM.
+[52:35] Third, the attention weights after
+[52:38] training are interpretable.
+[52:40] They reliably highlight the features the
+[52:43] model has learned to find informative.
+[52:45] not noise, meaningful highlighting that
+[52:47] aligns with clinical intuition more
+[52:50] often than not.
+[52:53] Cavitz on attention as interpretability.
+[52:55] The attention weights tell you what the
+[52:57] model is looking at, not why it is
+[53:00] making its prediction in a causal sense.
+[53:04] A 2019 paper by Jane and Wallace,
+[53:06] attention is not explanation, showed
+[53:08] that you can sometimes find different
+[53:10] attention patterns that lead to the same
+[53:12] prediction, which means the attention
+[53:14] weights are not uniquely determined by
+[53:17] what the model is doing. We grapher and
+[53:20] Pinter responded with attention is not
+[53:21] explanation,
+[53:23] arguing that attention can still be
+[53:25] useful interpretability when used
+[53:27] carefully.
+[53:30] The honest position is attention is a
+[53:33] partial answer to the blackbox criticism
+[53:36] and a useful debugging tool, but it is
+[53:38] not a complete explanation of model
+[53:40] behavior. Treat it as one of several
+[53:43] interpretability tools, not as the whole
+[53:45] answer.
+[53:48] Integrating attention into an RNN.
+[53:50] The diagram on the slide reads from the
+[53:53] bottom up. Input X comes in at the
+[53:56] bottom. It feeds into two places. first
+[53:59] into the attention layer which also
+[54:01] takes the previous hidden state as input
+[54:04] and the attention layer plus a softmax
+[54:07] produces the attention weight vector.
+[54:09] Second, the input is elementwise
+[54:11] multiplied by the attention weights to
+[54:15] produce the weighted input Z. Then Z
+[54:18] goes into the rest of the RNN through
+[54:21] its LSTM cells through any further
+[54:24] hidden layers and finally produces the
+[54:26] output prediction.
+[54:29] The attention layer is doing two jobs at
+[54:32] once. It is a feature selection layer
+[54:35] emphasizing informative features
+[54:37] suppressing uninformative ones at each
+[54:39] time step.
+[54:42] And it is an interpretability layer
+[54:43] exposing the model's per step feature
+[54:46] emphasis as a quantity you can read off
+[54:49] and inspect. The same machinery serves
+[54:51] both purposes.
+[54:53] This dual role is one of the reasons
+[54:56] attention has been so widely adopted. It
+[54:58] improves model performance modestly
+[55:00] while providing interpretability
+[55:02] essentially for free.
+[55:05] One last conceptual point, the attention
+[55:07] I have just described is what is
+[55:09] sometimes called feature level attention
+[55:12] or input feature attention. It is a
+[55:14] particular variant.
+[55:16] In the transformer architectures we will
+[55:20] see later, attention is more general. It
+[55:23] operates between tokens in a sequence,
+[55:26] between positions, between a query and a
+[55:28] set of keys.
+[55:30] But the basic ingredient learn a weight
+[55:33] vector, apply softmax, use the weights
+[55:36] to combine inputs is the same in both
+[55:38] places.
+[55:40] Soft attention in the Rajkcomar EHR
+[55:42] model is the seed of the attention
+[55:46] mechanism in BERT and GPT and VIT.
+[55:48] When we get to those, you will recognize
+[55:50] the shape. Active
+[55:54] research areas in EHR deep learning
+[55:58] foundation models for EHR
+[56:00] transformers pre-trained on massive
+[56:03] unlabeled EHR data then fine-tuned for
+[56:09] specific tasks examples ethos met beert
+[56:11] clinical camel gatoratron
+[56:14] several Singapore groups including ours
+[56:16] have contributed to this literature
+[56:19] federated learning for cross institution
+[56:21] training without centralizing data
+[56:24] covered later. Causal inference for
+[56:26] treatment effect estimation going beyond
+[56:29] prediction to recommendation.
+[56:32] Interpretability and fairness multimodal
+[56:35] models that combine EHR with imaging
+[56:38] genomics and wearable data. The field is
+[56:40] active. The published methods are
+[56:43] improving rapidly and deployment is
+[56:45] finally beginning to catch up with the
+[56:46] research.
+[56:49] Summary. We recaped the LSTM versus
+[56:51] logistic regression comparison from
+[56:54] Harut Union and emphasized that the LSTM
+[56:57] gains are real but modest. We worked
+[57:00] through missing data systematically, MC,
+[57:04] M, MN, and walked through the MIC
+[57:07] algorithm slide by slide. We covered EHR
+[57:11] data standards, omop for research, fire
+[57:14] for clinical exchange, smart on fire for
+[57:17] deploying AI inside EHRs
+[57:20] and we worked through Rajcom 2018 as the
+[57:23] canonical example of industry scale deep
+[57:26] learning on EHR data introducing token
+[57:29] embeddings, time delta embeddings and
+[57:32] soft attention along the way. Soft
+[57:33] attention is the bridge to the
+[57:35] transformer architecture that will
+[57:38] dominate the next several lectures. Next
+[57:39] lecture pivots to natural language
+[57:42] processing and the transformer family,
+[57:45] word embeddings, the transformer encoder
+[57:47] BERT and the clinical adaptations like
+[57:50] clinical bird and pupmet

@@ -1,0 +1,59 @@
+{
+  "horizon_T": 60,
+  "full": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.1675,
+    "auroc": 0.733,
+    "brier": 0.1162,
+    "sens_at_spec0.8": 0.5479
+  },
+  "only_demo_static": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.0821,
+    "auroc": 0.6099,
+    "brier": 0.1459,
+    "sens_at_spec0.8": 0.3546
+  },
+  "without_demo_static": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.1513,
+    "auroc": 0.7144,
+    "brier": 0.1592,
+    "sens_at_spec0.8": 0.4924
+  },
+  "only_pre_bp": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.1592,
+    "auroc": 0.7092,
+    "brier": 0.1867,
+    "sens_at_spec0.8": 0.4985
+  },
+  "without_pre_bp": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.0935,
+    "auroc": 0.6259,
+    "brier": 0.1391,
+    "sens_at_spec0.8": 0.3714
+  },
+  "only_machine": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.0751,
+    "auroc": 0.5839,
+    "brier": 0.2018,
+    "sens_at_spec0.8": 0.3029
+  },
+  "without_machine": {
+    "n": 22407,
+    "prevalence": 0.0586,
+    "auprc": 0.174,
+    "auroc": 0.7327,
+    "brier": 0.121,
+    "sens_at_spec0.8": 0.5411
+  }
+}

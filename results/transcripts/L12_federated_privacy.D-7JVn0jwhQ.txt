@@ -1,0 +1,696 @@
+[00:01] Welcome back and welcome to the last
+[00:04] lecture of MD6329.
+[00:06] Today's topic is the deployment side
+[00:08] complement to everything we have built
+[00:10] up over the course. Distributed
+[00:12] learning. How to train models across
+[00:15] many institutions without centralizing
+[00:16] the data.
+[00:19] Security and privacy. What happens when
+[00:21] the data we train on is sensitive? When
+[00:23] models can be probed for what they have
+[00:26] memorized. when patients have legal and
+[00:28] ethical rights to be protected from
+[00:30] reidentification.
+[00:32] We close with a quick review of the
+[00:34] course.
+[00:36] Today's lecture covers four topics.
+[00:39] First, we explain federated learning and
+[00:41] why decentralized data matters in
+[00:43] clinical settings. Patient data cannot
+[00:46] be easily pulled across hospitals due to
+[00:49] legal and ethical barriers. So, models
+[00:51] must go to the data rather than the data
+[00:55] coming to the model. Second, we describe
+[00:58] patient privacy obligations under HIPAA,
+[01:02] GDPR and PDPA and the risk that even
+[01:04] deidentified health data can be
+[01:07] reidentified through linkage attacks.
+[01:10] Third, we define K anonymity and
+[01:13] differential privacy then outline DPSGD
+[01:16] and PAT as two leading techniques for
+[01:19] differentially private deep learning.
+[01:21] Fourth, we discuss how federated
+[01:22] learning combined with differential
+[01:25] privacy enables multi-institution
+[01:27] learning while keeping patient data
+[01:30] within local silos. By the end, you
+[01:32] should be able to read any federated
+[01:34] learning or differential privacy paper
+[01:36] in clinical AI.
+[01:39] Agenda one, distributed learning and
+[01:42] federated learning. Two, privacy and
+[01:44] differential privacy.
+[01:46] Distributed learning is the umbrella
+[01:48] term for training a single model across
+[01:51] multiple devices, machines or data
+[01:54] centers. Modern large models, including
+[01:57] Frontier LLMs, cannot fit on a single
+[01:59] GPU and cannot train on a single
+[02:02] machine. They require tens of thousands
+[02:05] of GPUs simultaneously.
+[02:07] Even smaller medical AI models benefit
+[02:10] from multiGPU training to handle larger
+[02:12] batches or fit larger 3D volumes into
+[02:15] memory. Federated learning is a special
+[02:17] variant of distributed learning where
+[02:20] the data never leaves local sites. Only
+[02:23] model updates are shared. This matters
+[02:26] clinically because patient data is
+[02:28] legally slowed across hospitals and
+[02:30] federated learning allows
+[02:32] multi-institution training without
+[02:34] moving the data.
+[02:36] Each node holds a subset of the data and
+[02:39] computes gradient updates locally. These
+[02:42] updates are then aggregated typically by
+[02:44] averaging to produce a single global
+[02:47] update for the shared model. This scales
+[02:50] training to large data sets and models.
+[02:52] In federated learning, the same
+[02:55] principle applies, but nodes correspond
+[02:58] to distinct institutions and data never
+[03:00] leaves each node. Only gradient updates
+[03:02] are shared.
+[03:04] In distributed learning, there are two
+[03:07] main paradigms. The first is data
+[03:09] parallelism where the model is
+[03:12] replicated across multiple nodes and
+[03:14] each node processes a different subset
+[03:17] of the data. All nodes share the same
+[03:19] model parameters, compute gradients on
+[03:21] their local data batch and then
+[03:24] synchronize typically by averaging
+[03:26] gradients or model weights.
+[03:28] This is the most common form of
+[03:31] distributed training for deep learning.
+[03:33] The second is model parallelism where a
+[03:35] single large model is split across
+[03:38] multiple nodes. Different layers or
+[03:40] different parts of the model reside on
+[03:42] different devices.
+[03:44] This is necessary when the model itself
+[03:46] is too large to fit in the memory of a
+[03:49] single GPU. For example, very large
+[03:51] transformers or 3D medical imaging
+[03:55] models. In model parallelism, data can
+[03:56] flow sequentially through the pipeline
+[03:59] of devices or more complex schemes like
+[04:01] Tensor model parallelism can chart
+[04:03] individual layers across multiple
+[04:05] devices.
+[04:08] In federated learning, a central server
+[04:09] coordinates training across
+[04:12] decentralized sites like hospitals.
+[04:15] The key property data never leaves its
+[04:18] local silo. The server sends the current
+[04:20] model to each site. Sites train locally
+[04:22] on their own data, then send back only
+[04:26] the model updates, not the data. The
+[04:28] server averages these updates to improve
+[04:30] the global model. This repeats until
+[04:32] convergence. No site ever sees another
+[04:35] site's data, which addresses legal and
+[04:38] ethical barriers in clinical settings.
+[04:41] A classic example of federated learning
+[04:43] is training a next word prediction model
+[04:45] on many individual cell phones. Instead
+[04:47] of sending all users typing data to a
+[04:49] central server, which would raise
+[04:52] massive privacy concerns, each phone
+[04:54] trains the model locally on that user's
+[04:57] own typing history. Only the model
+[04:59] updates, the weight changes are sent
+[05:01] back to the server. The server averages
+[05:03] these updates across millions of phones
+[05:06] to produce a better global model. No raw
+[05:09] text ever leaves any phone. This is
+[05:11] exactly the same paradigm we use in
+[05:14] clinical settings, but with hospitals
+[05:16] instead of cell phones.
+[05:19] The current copy of the global model is
+[05:21] shipped to local devices that are ready
+[05:24] to contribute to training. Each device,
+[05:26] whether a cell phone, a hospital server,
+[05:29] or an edge device, receives the same
+[05:32] model weights. The device then trains
+[05:34] this model locally using its own data
+[05:37] for several steps or epochs.
+[05:39] Local gradient updates are shipped back
+[05:42] to the central server. Each device after
+[05:44] training on its local data computes how
+[05:46] much its model weights change relative
+[05:49] to the global model it received. These
+[05:52] weight differences or gradient updates
+[05:55] are then sent back to the server.
+[05:57] Local gradient updates are computed on
+[05:59] local data after one or several
+[06:02] iterations of gradient descent. Each
+[06:04] device starts with the global model,
+[06:06] runs local training steps on its own
+[06:08] data, calculates the difference between
+[06:11] the updated local model and the original
+[06:14] global model, and sends only that
+[06:16] difference back to the central server.
+[06:19] The server averages these updates across
+[06:20] devices to produce the next global
+[06:22] model.
+[06:24] Once the central server receives local
+[06:26] gradient updates from all participating
+[06:29] devices, it combines them typically by
+[06:32] averaging and uses the result to update
+[06:34] the global model. The server then
+[06:36] distributes this updated global model
+[06:39] back to the devices and the entire
+[06:41] process repeats.
+[06:43] This aggregation step is what makes
+[06:45] federated learning work. The global
+[06:47] model improves without any device ever
+[06:50] sharing its raw data.
+[06:52] After the server aggregates the local
+[06:55] updates and produces a new global model,
+[06:57] that updated global model is shipped
+[06:59] back to the local devices for future
+[07:01] rounds of federated learning training.
+[07:04] The devices then use this improved model
+[07:05] as their starting point for the next
+[07:08] round. They train locally on their own
+[07:11] data again, compute new local updates,
+[07:15] send them back, and the cycle repeats.
+[07:17] This iterative process continues until
+[07:19] the global model converges or a stopping
+[07:22] criterion is met.
+[07:24] A concrete medical example learning a
+[07:26] personalized healthcare model from data
+[07:27] across different healthcare
+[07:30] organizations. Each hospital say
+[07:33] Stanford and Tanto Senang Hospital has
+[07:35] its own patient data that cannot leave
+[07:37] its local servers due to privacy
+[07:40] regulations and institutional policies.
+[07:43] In federated learning, the central
+[07:45] server sends the current global model to
+[07:47] each hospital. Each hospital trains the
+[07:50] model locally on its own patients,
+[07:52] computing gradient updates.
+[07:55] Only these updates are sent back to the
+[07:57] server. The server averages the updates
+[08:00] and produces a new global model. The
+[08:03] model improves over time using data from
+[08:06] all hospitals, but no hospital ever sees
+[08:09] another hospital's patient data.
+[08:11] This enables multi-institution learning
+[08:13] without centralizing sensitive health
+[08:15] information.
+[08:17] Returning to an earlier example, the
+[08:19] Brett's brain tumor segmentation data
+[08:22] set. This data set contains MRI scans of
+[08:27] brain tumors. The 2015 version had 220
+[08:30] high-grade gloma cases and 54 lowgrade
+[08:33] gloma cases. The task is to segment the
+[08:36] tumor to label each pixel in the MRI as
+[08:38] tumor or not.
+[08:40] A standard approach is to use a unit
+[08:42] architecture trained with a dice loss
+[08:45] function which directly optimizes
+[08:47] overlap between predicted and ground
+[08:49] truth tumor regions.
+[08:52] This is a centralized learning example.
+[08:55] All data is pulled together. But in
+[08:58] practice these scans come from multiple
+[08:59] institutions.
+[09:01] Federated learning would allow training
+[09:04] a unit across those institutions without
+[09:08] centralizing the actual MRI scans.
+[09:11] Lee and colleagues in a 2019 paper using
+[09:13] NVIDIA Clara's federated learning system
+[09:16] trained a brain tumor segmentation model
+[09:19] on the BRATZ data set. They achieved
+[09:21] comparable performance to standard
+[09:25] non-federated training around 0.82 dice
+[09:28] score. Training was somewhat slower due
+[09:30] to communication overhead, but the key
+[09:32] benefit was that data silos were
+[09:35] preserved across institutions.
+[09:37] They also implemented a differentially
+[09:40] private version which adds formal
+[09:42] privacy guarantees and we will return to
+[09:44] that shortly.
+[09:47] HIPPA the health insurance portability
+[09:50] and accountability act of 1996 created
+[09:52] the privacy rule which governs how
+[09:54] healthcare entities protect patient
+[09:56] medical information. It defines
+[10:00] protected health information PHI using
+[10:03] 18 specific identifiers. These include
+[10:06] names, addresses, dates like birth and
+[10:08] admission, medical record numbers,
+[10:10] social security numbers, email
+[10:13] addresses, IP addresses, biometric
+[10:16] identifiers like fingerprints, and even
+[10:19] fullface photos. Remove all 18 and the
+[10:22] data is considered deidentified and no
+[10:25] longer subject to HIPPA's privacy rule,
+[10:29] though reidentification remains a risk.
+[10:32] A major risk is data triangulation. A
+[10:34] person may be deidentified with respect
+[10:36] to one data set, but the knowledge that
+[10:38] they are a member of another available
+[10:41] data set can allow reidentification.
+[10:43] The classic example comes from Sweeney
+[10:47] and colleagues in 2011. They match known
+[10:49] patients to health records in Washington
+[10:52] state data. Even with identifiers
+[10:54] removed, cross referencing across data
+[10:57] sets like voter roles, public records,
+[11:00] or other health databases can pinpoint
+[11:01] individuals
+[11:03] The figure from that paper illustrates
+[11:06] how combining information from multiple
+[11:08] sources breaks the deidentification of
+[11:11] any single data set.
+[11:14] Sweeny's 2011 study demonstrated a
+[11:17] concrete reidentification attack. She
+[11:19] harvested news stories containing the
+[11:21] word hospitalized which often include
+[11:24] identifying information about patients
+[11:27] like age, gender, hospital name, date of
+[11:30] admission, and condition.
+[11:32] She then attempted to match these news
+[11:33] reported patients to their actual
+[11:35] medical records in the Washington State
+[11:38] Hospital discharge database.
+[11:41] For 43% of the studied cases, she
+[11:44] succeeded. The key insight is that new
+[11:46] stories contain just enough quasi
+[11:48] identifiers, information that is not
+[11:50] unique on its own, but becomes
+[11:52] identifying when combined across data
+[11:56] sets to reidentify individuals.
+[11:57] This shows that even when a medical
+[11:59] database is deidentified according to
+[12:02] HIPPA standards, it can still be
+[12:04] vulnerable to reidentification using
+[12:07] publicly available auxiliary data.
+[12:11] Sweeny's 2011 paper has two key figures.
+[12:14] Figure 1 shows a sample news story. For
+[12:17] example, man 61 thrown from motorcycle
+[12:20] with specific details like name, age,
+[12:23] hospital, and incident date. These are
+[12:25] the quasi identifiers harvested from
+[12:28] public sources. Table two shows the
+[12:31] distribution of incident types. 57%
+[12:34] motor vehicle crashes, 14% medical
+[12:36] hospitalizations,
+[12:40] 13% assaults, and 16% other. Across 90
+[12:42] news reported subjects, Sweeney
+[12:46] successfully reidentified 43% of them in
+[12:47] Washington state's hospital discharge
+[12:49] database.
+[12:51] The figure illustrates what information
+[12:54] is available publicly. The table shows
+[12:55] what kinds of incidents led to
+[12:58] reidentification.
+[13:00] Here's what an actual match record
+[13:03] looked like. In October 2011, a
+[13:06] 60-year-old male was admitted following
+[13:08] a motorcycle crash. He was discharged
+[13:11] after 6 days. The diagnosis quotes tell
+[13:14] the story. a close pelvic fracture, a
+[13:16] fractured rib, a splenic injury,
+[13:19] pulmonary insufficiency, acute renal
+[13:23] failure, and poshmoragic anemia. The
+[13:26] external cost code was E816.2,
+[13:29] loss of control of a motorcycle. The
+[13:32] total charge was over $71,000
+[13:34] paid by Medicare, commercial insurance,
+[13:37] and other government payers. This record
+[13:40] matched a new story about a 60-year-old
+[13:42] man thrown from his Harley-Davidson.
+[13:44] The name from the new story, Ronald
+[13:46] Jameson, was now attached to this
+[13:49] deidentified hospital record.
+[13:51] Sweeney and colleagues reidentified
+[13:53] participants in the personal genome
+[13:55] project. They took publicly available
+[13:59] PGP profiles which included zip code,
+[14:01] date of birth, and gender and link them
+[14:05] to voter list and other public records.
+[14:07] Using just these three demographics, not
+[14:10] any DNA data, they correctly identified
+[14:13] 84 to 97% of the profiles for which they
+[14:17] provided names to PGP staff. The key
+[14:20] finding reidentification succeeded using
+[14:23] basic demographic information alone.
+[14:24] This vulnerability has been known for
+[14:27] decades and could be easily thwarted
+[14:29] with minimal loss of research value
+[14:31] simply by reporting less precise
+[14:34] demographics like year of birth instead
+[14:36] of full date or region instead of full
+[14:41] zip code. A data release has K anonymity
+[14:43] if each person's information cannot be
+[14:45] distinguished from at least K one
+[14:48] others. Figure two shows an example. The
+[14:51] quasi identifiers are race, birth date,
+[14:54] gender, and zip code. The original table
+[14:57] has unique individuals. After
+[14:59] generalization, replacing the last digit
+[15:01] of the zip code with an asterisk,
+[15:04] records group into equivalence classes.
+[15:06] Rows one and two both have zip code
+[15:09] 0214, so they are indistinguishable.
+[15:13] Rows three and four both have 0213. Each
+[15:15] class has two identical records, so K
+[15:17] equals 2. An attacker who knows
+[15:20] someone's zip code prefix, birth year,
+[15:22] gender, and race sees two matching
+[15:25] records, not one. They cannot uniquely
+[15:29] identify the target. That's K anonymity.
+[15:31] The original private table or PT
+[15:34] contains quasi identifiers like birth
+[15:37] date, gender, and zip code. To achieve K
+[15:40] equals 2 anonymity, you generalize the
+[15:44] data into a generalized table or GT. For
+[15:47] example, in GT1, exact birth dates
+[15:50] become just the year. In GT3, birth
+[15:53] dates become 5-year ranges like 1965 to
+[15:56] 1969, and zip codes become the first
+[15:59] three digits only. Each subsequent GT
+[16:02] applies coarser generalization.
+[16:03] You choose the minimal generalization
+[16:06] that gives you K anonymity, distorting
+[16:08] the data just enough to hide each person
+[16:12] among at least K minus one others, but
+[16:13] no more than necessary to preserve
+[16:15] utility.
+[16:18] In a white box setting, the attacker has
+[16:20] full access to the model's parameters,
+[16:22] architecture, and gradients. For
+[16:24] instance, when a model is downloaded
+[16:27] onto a local device for inference, model
+[16:30] inversion attacks exploit this access to
+[16:33] reconstruct sensitive training data. The
+[16:36] core technique uses gradient descent.
+[16:38] The attacker starts with random noise
+[16:40] and iteratively updates it to minimize
+[16:42] the distance between the target model's
+[16:45] output on this synthetic input and the
+[16:47] desired output. For example, a specific
+[16:51] class label. By back propagating through
+[16:53] the model, gradients guide the synthetic
+[16:55] input to become increasingly similar to
+[16:57] a real training example, eventually
+[17:00] revealing faces, medical images, or
+[17:02] other sensitive attributes.
+[17:04] This process effectively reverses the
+[17:07] training procedure. Instead of updating
+[17:09] model parameters to fit data, the
+[17:11] attacker updates the input to fit the
+[17:14] model's predictions.
+[17:16] The key idea of differential privacy is
+[17:18] that the output for a data set should be
+[17:20] hardly different from the output for the
+[17:23] same data set with a single entry change
+[17:26] adding or removing one individual. The
+[17:28] mathematical guarantee is that no
+[17:30] attacker regardless of auxiliary
+[17:33] information or computational power can
+[17:34] confidently determine whether any
+[17:37] specific individual's data was used in
+[17:39] the computation. This is formalized with
+[17:42] a privacy parameter epsilon. Smaller
+[17:45] epsilon means stronger privacy because
+[17:47] the algorithm's output distribution
+[17:49] changes less when any single individual
+[17:52] is added or removed.
+[17:55] Unlike K anonymity, differential privacy
+[17:57] provides a worst case guarantee that
+[17:59] holds even against attackers with
+[18:02] arbitrary background knowledge.
+[18:04] Differential privacy is defined as
+[18:07] follows. A randomized algorithm M
+[18:09] satisfies epsilon differential privacy
+[18:12] if for any two neighboring data sets D
+[18:15] and D that differ by exactly one
+[18:17] individual meaning one is the other with
+[18:20] a single record added or removed.
+[18:23] And for any possible output set S, the
+[18:26] probability that M of D lands in S is at
+[18:29] most E to the epsilon times the
+[18:31] probability that M of D prime lands in
+[18:35] S. In other words, the presence or
+[18:37] absence of any single individual changes
+[18:40] the output distribution by at most a
+[18:42] multiplicative factor of E to the
+[18:45] epsilon. The privacy parameter epsilon
+[18:48] controls the strength of the guarantee.
+[18:51] Smaller epsilon means stronger privacy
+[18:53] because the outputs are more similar
+[18:55] whether the individual is in the data
+[18:56] set or not.
+[18:58] This guarantee holds against any
+[19:01] attacker regardless of auxiliary
+[19:04] information or computational power.
+[19:06] The simple intuition behind how we
+[19:08] achieve differential privacy is adding
+[19:11] noise. Take a simple example. You want
+[19:13] to report the average age of patients in
+[19:16] a data set. If you report the exact
+[19:19] average, an attacker might infer whether
+[19:22] a specific person was included. But if
+[19:25] you add random noise, say from a lelass
+[19:27] distribution, you obscure the
+[19:30] contribution of any single individual.
+[19:32] The more noise you add, the stronger the
+[19:35] privacy guarantee, but the less accurate
+[19:38] the answer. The laplas mechanism adds
+[19:40] noise calibrated to the sensitivity of
+[19:43] the query. How much the answer would
+[19:45] change if one individual were added or
+[19:48] removed. This is the simplest way to
+[19:50] achieve differential privacy. Compute
+[19:54] the true answer then add random noise.
+[19:57] DPSGD or differentially private stoastic
+[20:00] gradient descent from Abed and
+[20:04] colleagues in 2016 works as follows.
+[20:06] At each training step, you first take a
+[20:08] random batch of examples from your data
+[20:11] set. For each example in that batch, you
+[20:14] compute the gradient of the loss with
+[20:17] respect to the current model parameters.
+[20:19] Then you clip each per example gradient
+[20:23] to have a maximum L2 norm of C. This
+[20:25] means you scale down any gradient that
+[20:27] is larger than C so that no single
+[20:29] example can have an outsiz influence on
+[20:32] the model update. Next you average all
+[20:34] these clipped gradients across the
+[20:36] batch.
+[20:37] Then you add Gausian noise to the
+[20:39] average. The amount of noise is
+[20:42] controlled by a noise multiplier sigma
+[20:45] times the clipping norm C. The noisy
+[20:47] average gradient becomes your update
+[20:49] direction.
+[20:51] You use the definition of differential
+[20:53] privacy to take a step in the opposite
+[20:56] direction of this noisy gradient
+[20:58] updating the model parameters.
+[21:00] The key innovation is the privacy
+[21:03] accountant specifically the moment's
+[21:05] accountant which tracks the cumulative
+[21:09] privacy loss over many training steps.
+[21:11] This allows you to compute the overall
+[21:13] epsilon and delta privacy guarantees for
+[21:16] the entire training process. The result
+[21:18] is a deep learning model that comes with
+[21:21] a formal differential privacy guarantee.
+[21:23] No attacker can confidently determine
+[21:26] whether any specific individual's data
+[21:28] was used in training regardless of
+[21:31] auxiliary information or computational
+[21:32] power.
+[21:35] PAT or private aggregation of teacher
+[21:38] ensembles from paper not and colleagues
+[21:41] in 2017 works as follows.
+[21:44] First train separate classifiers the
+[21:47] teachers from disjoint data sets. At
+[21:49] this point there are no privacy
+[21:51] guarantees yet because the teachers
+[21:52] themselves could memorize their
+[21:55] individual training data.
+[21:57] To get a privacy preserving prediction,
+[22:00] you first obtain predictions from all
+[22:02] distinct teachers on a given input.
+[22:04] You aggregate these predictions into a
+[22:07] vote histogram counting how many
+[22:10] teachers voted for each class.
+[22:11] Then you add noise to the vote
+[22:14] histogram. This noise typically from a
+[22:17] LL or Gaussian distribution is what
+[22:19] provides the differential privacy
+[22:21] guarantee.
+[22:23] The amount of noise is calibrated to the
+[22:25] sensitivity of the aggregation.
+[22:28] If the teachers mostly agree, the true
+[22:30] class remains the highest even after
+[22:33] noise. If they are evenly split, the
+[22:35] noise could flip the outcome, which is
+[22:39] reflected in the privacy cost. Finally,
+[22:40] you take the class with the most noisy
+[22:43] votes as the final output. This output
+[22:45] is then used to label public data for
+[22:48] training the student model. The key is
+[22:50] that any single teacher's vote is hidden
+[22:52] by the noise, providing differential
+[22:55] privacy for the individuals whose data
+[22:57] trained that teacher.
+[22:59] Why does PAT provide differential
+[23:02] privacy? Because any single training
+[23:04] example appears in at most one teacher's
+[23:07] partition. If the teachers strongly
+[23:11] agree, say 100 out of 100 vote for dog,
+[23:13] then the ensemble output remains the
+[23:15] same whether that one teacher votes
+[23:17] differently or not, especially after
+[23:20] noise is added. The privacy cost is low
+[23:23] when there is consensus. The privacy
+[23:25] cost is higher when the vote is split
+[23:27] because each teacher's vote has more
+[23:31] influence. However, the teacher ensemble
+[23:33] alone can still be compromised if too
+[23:36] many queries are performed.
+[23:38] Privacy cost builds up with each query.
+[23:41] So after many queries, the privacy
+[23:43] guarantees become meaningless.
+[23:46] Also, if the model parameters are made
+[23:49] accessible, for example, if the teacher
+[23:51] ensemble is distributed in a local
+[23:53] application, then an attacker could
+[23:55] perform whitebox attacks like model
+[23:58] inversion to extract training data.
+[24:02] This is why PAT uses a student model.
+[24:04] The student model is trained on public
+[24:06] data replicating the noisy aggregated
+[24:09] teacher outputs. Once the student is
+[24:11] trained, you discard the teachers
+[24:14] entirely. The student model can be
+[24:16] deployed safely and queried an unlimited
+[24:19] number of times because it never saw the
+[24:22] private data directly, only the noisy
+[24:24] labels produced by the teachers. The
+[24:27] privacy cost is paid only once during
+[24:30] the labeling of the public data set, not
+[24:33] per query at deployment time.
+[24:36] Remember G's, a two-player game between
+[24:38] a generator and a discriminator. The
+[24:40] generator learns to produce realistic
+[24:43] samples. The discriminator learns to
+[24:46] tell real from fake. After training, you
+[24:48] discard the discriminator and use only
+[24:52] the generator to produce new images. PAT
+[24:54] has a similar structure. The teacher
+[24:57] ensemble is like the discriminator. It
+[24:59] provides labels, but it's not the final
+[25:02] product. The student model is like the
+[25:04] generator. It learns from the teachers
+[25:07] noisy outputs. After training, you
+[25:09] discard the teachers and keep only the
+[25:12] student. The student can be deployed
+[25:14] safely, queried an unlimited number of
+[25:17] times, and released publicly because it
+[25:20] never saw the private data directly,
+[25:23] only the noisy aggregated votes.
+[25:26] You can train GNS using differentially
+[25:30] private SGD, DPSGD.
+[25:32] The generator and discriminator are both
+[25:34] trained with clipped gradients and added
+[25:37] noise, providing a formal differential
+[25:39] privacy guarantee for the entire
+[25:42] training process. The key advantage is
+[25:44] that after training, using the generator
+[25:47] to produce synthetic data does not incur
+[25:49] any additional privacy cost. You can
+[25:51] generate an unlimited number of
+[25:55] synthetic samples, images, clinical data
+[25:57] or otherwise. And each sample comes with
+[25:59] the same privacy guarantee as the
+[26:02] original training algorithm.
+[26:04] This is because the generator itself is
+[26:06] a function of the private data only
+[26:08] through the differentially private
+[26:11] training process. Once the generator is
+[26:13] released, generating new data is a
+[26:16] post-processing step and differential
+[26:19] privacy is immune to post-processing.
+[26:22] This makes DP trained GANs a powerful
+[26:24] tool for privacy preserving data sharing
+[26:27] in clinical settings.
+[26:30] This is a code snippet showing how DPSGD
+[26:32] is implemented within a deep learning
+[26:35] framework. Specifically using
+[26:37] TensorFlow's privacy library, you
+[26:41] instantiate a DP optimizer here, DP
+[26:43] gradient descent gaussian optimizer with
+[26:46] several key hyperparameters.
+[26:49] L2_nom_clip
+[26:51] which is the clipping nomcis
+[26:54] multiplier which controls the amount of
+[26:57] gausian noise added num microbatches
+[26:59] which lets you compute per example
+[27:02] gradients efficiently and learning
+[27:05] underscore rate. You also specify the
+[27:09] population size here 60,000 which is the
+[27:11] size of the training set. This is used
+[27:14] for privacy accounting. Then you call
+[27:17] minimize on a vector loss meaning per
+[27:20] example losses not a scalar average
+[27:22] and the optimizer handles the per
+[27:25] example gradient clipping noise addition
+[27:27] and aggregation internally.
+[27:30] The same library also provides utilities
+[27:33] for calculating epsilon.
+[27:35] After training, you can compute the
+[27:37] overall differential privacy guarantee,
+[27:40] the epsilon and delta based on the noise
+[27:43] multiplier, sampling probability and
+[27:46] number of training steps. This makes it
+[27:48] practical to train deep learning models
+[27:50] with differential privacy without
+[27:51] implementing the clipping and noise
+[27:54] mechanics from scratch.
+[27:56] Today the final lecture we covered
+[27:58] distributed learning, federated
+[28:00] learning, secure aggregation and the
+[28:02] medical applications around BRAT's
+[28:05] multi-institution segmentation.
+[28:07] We covered HIPPA and the broader privacy
+[28:10] regulatory landscape. The empirical
+[28:12] reality of reidentification attacks from
+[28:15] Sweeney and colleagues. NK anonymity as
+[28:18] the first formal privacy protection. We
+[28:21] covered differential privacy formally
+[28:26] then DPS GD and PAT as the two leading
+[28:27] techniques for training differentially
+[28:30] private deep learning models
+[28:33] and we touched on DPGAN for synthetic
+[28:35] data. That brings us to the end of
+[28:38] MD6329.
+[28:40] Over 14 lectures, we have built up from
+[28:42] the convolutional layer to foundation
+[28:45] models, from supervised learning to
+[28:47] federated and differentially private
+[28:50] learning, from imaging to EHR.
+[28:52] The techniques are mature enough to
+[28:54] deploy in real clinical settings with
+[28:57] the right governance and the right care.
+[28:59] The hard problems that remain are not
+[29:03] algorithmic. They are operational,
+[29:06] regulatory, ethical and political. Thank
+[29:08] you all for being part of this course.
+[29:10] It has been a genuine pleasure to teach
+[29:13] this course. Take care of the patients
+[29:15] you will one day care for and remember
+[29:18] that the technology serves them, never
+[29:20] the other way around. Final questions

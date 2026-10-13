@@ -1,0 +1,830 @@
+[d0] loading sessions.csv ...
+[d0] sessions 197,269 -> 160,069 after cleaning
+[d0] loading vip.csv ...
+saved E:\WorkBuddy Data\2026-09-04-10-40-13\project\results\protocol.json
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+C:\Users\LEYI\.workbuddy\binaries\python\envs\default\Lib\site-packages\numpy\lib\_polynomial_impl.py:676: RuntimeWarning: invalid value encountered in divide
+  lhs /= scale
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+[d0] T=30: N=143,575 train=97,595 IDH_rate=0.0801 (565s)
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+C:\Users\LEYI\.workbuddy\binaries\python\envs\default\Lib\site-packages\numpy\lib\_polynomial_impl.py:676: RuntimeWarning: invalid value encountered in divide
+  lhs /= scale
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+[d0] T=60: N=147,044 train=99,972 IDH_rate=0.0774 (386s)
+C:\Users\LEYI\.workbuddy\binaries\python\envs\default\Lib\site-packages\numpy\lib\_polynomial_impl.py:676: RuntimeWarning: invalid value encountered in divide
+  lhs /= scale
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+[d0] T=90: N=150,761 train=102,321 IDH_rate=0.0713 (87s)
+C:\Users\LEYI\.workbuddy\binaries\python\envs\default\Lib\site-packages\numpy\lib\_polynomial_impl.py:676: RuntimeWarning: invalid value encountered in divide
+  lhs /= scale
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+E:\WorkBuddy Data\2026-09-04-10-40-13\project\src\d0_build_dataset.py:117: RankWarning: Polyfit may be poorly conditioned
+  slope = float(np.polyfit(tt[keep], ss[keep], 1)[0])
+[d0] T=120: N=151,182 train=102,620 IDH_rate=0.0652 (55s)
+DONE
+exit=0

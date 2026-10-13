@@ -1,0 +1,1143 @@
+[00:02] Welcome back. Today we cover two
+[00:04] learning paradigms that have not yet had
+[00:06] their full clinical day in the sun.
+[00:08] Unsupervised learning and reinforcement
+[00:12] learning. Part one is unsupervised. The
+[00:15] goal extract structure from raw data
+[00:18] when you have no labels at all.
+[00:19] Autoenccoders, variational
+[00:22] autoenccoders, generative adversarial
+[00:24] networks, and a brief tour of diffusion
+[00:27] models. Part two is reinforcement
+[00:30] learning. The goal learn to act for
+[00:32] reward when the right action depends on
+[00:34] a history of decisions. We will look at
+[00:37] the canonical Atari example and then
+[00:39] move into the much harder problem of
+[00:40] reinforcement learning for treatment
+[00:43] policy in the ICU
+[00:46] where today sits in the course. Lectures
+[00:48] 2 through 9 covered supervised learning
+[00:52] across modalities imaging EHR text
+[00:54] multimodal.
+[00:57] Today lecture 12 covers unsupervised and
+[01:00] reinforcement learning. Lecture 13 will
+[01:03] cover interpretability and fairness, the
+[01:05] responsible AI lecture. The final
+[01:08] lecture will cover distributed learning,
+[01:11] security and privacy.
+[01:13] Three paradigms of machine learning.
+[01:17] Recap. Supervised learning. Given a data
+[01:20] set of paired inputs and outputs XY
+[01:23] learn a function that maps X to Y. image
+[01:26] to diagnosis, time series to mortality,
+[01:30] text to ICD code. This is the bread and
+[01:32] butter of practical machine learning and
+[01:34] most of what we have covered through
+[01:37] this course.
+[01:40] Unsupervised learning. Given a data set
+[01:43] of inputs only with no labels, learn the
+[01:45] underlying structure. That might mean
+[01:47] clustering. Group similar examples
+[01:51] together. Density estimation. Model the
+[01:54] probability distribution of the data.
+[01:56] Representation learning. Find a
+[01:58] compressed encoding that captures the
+[02:00] meaningful variation in the data.
+[02:03] Generative modeling. Learn to sample new
+[02:05] examples that look like the training
+[02:07] data. Different framings of the same
+[02:09] underlying problem.
+[02:11] One popular clustering algorithm is K
+[02:14] means clustering algorithm. Why
+[02:16] unsupervised learning matters in
+[02:19] medicine? The asymmetry between label
+[02:23] and unlabeled clinical data is enormous.
+[02:25] We have billions of clinical notes,
+[02:27] hundreds of millions of imaging studies,
+[02:30] billions of EHR records. We have a
+[02:32] vanishing fraction of these with labels
+[02:35] suitable for any specific task.
+[02:37] Unsupervised learning lets us extract
+[02:39] signal from the abundant unlabeled
+[02:41] portion and use the scarce labeled
+[02:43] portion only for final task specific
+[02:45] fine-tuning.
+[02:48] The goal of unsupervised learning is to
+[02:50] discover underlying hidden structure in
+[02:52] data without any explicit supervisory
+[02:55] signal. In practice, the most
+[02:57] influential branch of unsupervised
+[02:58] learning in modern deep learning has
+[03:02] been representation learning. The idea,
+[03:05] even without labels, you can construct a
+[03:07] learning task, usually a reconstruction
+[03:10] task or a contrastive task that forces
+[03:11] the network to learn meaningful
+[03:14] features. Those features can then be
+[03:17] used downstream, sometimes with very
+[03:20] little supervised fine-tuning.
+[03:22] So unsupervised learning requires the
+[03:24] ability to cluster, meaning group
+[03:26] similar patients or signals.
+[03:28] Representation learning, meaning
+[03:30] compressed data into useful features,
+[03:33] and density estimation, meaning to model
+[03:35] the data distribution.
+[03:37] Here's a picture of running K means
+[03:39] clustering algorithm to discover three
+[03:41] categories.
+[03:43] An encoder maps highdimensional input at
+[03:47] XX into a compact feature vector ZZ that
+[03:49] captures the meaningful factors of
+[03:53] variation in the data. Typically ZZ has
+[03:56] a lower dimensionality than XX resulting
+[03:59] in dimensionality reduction. This
+[04:01] compression forces the model to retain
+[04:03] only the most relevant information.
+[04:05] Architectures for encoders have evolved
+[04:07] over time, progressing from simple
+[04:09] linear layers followed by a sigmoid
+[04:12] activation to deep fully connected
+[04:15] networks and finally to convolutional
+[04:19] neural networks with realu activations.
+[04:23] Autoenccoders encode then reconstruct.
+[04:25] We will spend most of the time on
+[04:27] autoenccoders. The simplest and most
+[04:29] pedagogically clean form of unsupervised
+[04:32] representation learning. The encoder is
+[04:34] trained so that its compact feature
+[04:37] vector Z can reconstruct the original
+[04:39] input, a process known as autoenccoding
+[04:42] the data itself. This reconstruction
+[04:45] objective requires no labels, enabling
+[04:48] unsupervised learning. Why this matters?
+[04:50] After training, the encoder can be kept
+[04:53] as a fixed feature extractor. The
+[04:55] resulting features can then be used for
+[04:58] clustering, patient retrieval, or other
+[05:01] unsupervised tasks. Alternatively, the
+[05:04] encoder can be fine-tuned jointly with a
+[05:07] classifier for a supervised task,
+[05:08] leveraging the pre-trained
+[05:10] representations to improve performance
+[05:13] even with limited labeled data.
+[05:16] Autoenccoders, the simplest unsupervised
+[05:18] representation learning architecture.
+[05:20] Take an input, pass it through an
+[05:22] encoder to a compact latent
+[05:24] representation, pass the latent through
+[05:26] a decoder back to a reconstruction of
+[05:29] the original input. trained by
+[05:31] minimizing reconstruction loss which is
+[05:34] a simple L2 le squares. The encoder
+[05:36] learns a representation that captures
+[05:39] the variation in the data. The
+[05:41] architecture forces the model to discard
+[05:43] irrelevant noise while preserving the
+[05:46] signal needed to reconstruct.
+[05:49] The autoenccoder picture encoder F maps
+[05:53] input X to a lower dimensional latent Z.
+[05:55] Decoder G maps Z back to a
+[05:58] reconstruction X hat.
+[06:00] Reconstruction loss is typically mean
+[06:02] squared error or per pixel cross entropy
+[06:05] between X and Xhat. The constraint that
+[06:08] makes this useful is the bottleneck. Z
+[06:11] is much lower dimensional than X. This
+[06:13] is feature representation. It has to
+[06:15] compress which means it has to discard
+[06:18] noise and keep signal.
+[06:21] Lower dimensional feature representation
+[06:23] after training. The latent
+[06:26] representation Z is the autoenccoder's
+[06:29] learned compression of the input. It is
+[06:31] a lowdimensional vector that captures
+[06:33] the most important aspects of the data
+[06:35] needed for reconstruction.
+[06:38] For downstream tasks, classification,
+[06:41] clustering, anomaly detection, Z is
+[06:44] often more useful than the raw input.
+[06:46] The encoder F acts as a feature
+[06:48] extractor that can be reused across many
+[06:51] tasks. So the autoenccoder learns a
+[06:53] compressed representation of the input
+[06:56] typically tens to hundreds of dimensions
+[06:58] for inputs of tens of thousands of
+[07:00] dimensions.
+[07:02] The architecture of autoenccoders has
+[07:05] evolved significantly over time.
+[07:07] Originally autoenccoders use a single
+[07:10] linear layer followed by a nonlinearity
+[07:12] such as sigmoid.
+[07:14] Later deep fully connected networks
+[07:16] became common allowing for more
+[07:18] expressive representations. More
+[07:21] recently, autoenccoders have adopted
+[07:23] convolutional neural networks with realu
+[07:25] activations which are particularly
+[07:27] effective for image data as they
+[07:29] preserve spatial structure while
+[07:36] Question. So why dimensionality
+[07:38] reduction?
+[07:41] The answer you want features to capture
+[07:43] meaningful factors of variation in data.
+[07:45] The reduction in dimensionality is
+[07:48] significant.
+[07:49] How to learn this feature
+[07:52] representation.
+[07:55] The training procedure. Take a batch of
+[07:57] unlabeled examples. Pass each through
+[08:00] the encoder, then the decoder. Compute
+[08:03] the reconstruction loss. Back propagate.
+[08:06] Update both encoder and decoder weights.
+[08:08] Repeat across the data set for many
+[08:10] epochs. The training is identical to a
+[08:13] standard supervised network except the
+[08:15] target is the input itself rather than
+[08:17] an external label.
+[08:19] Convergence happens when reconstructions
+[08:21] are good and the latent dimensions are
+[08:25] being used effectively.
+[08:28] The decoder mirror architecture to the
+[08:31] encoder. The decoder in autoenccoders
+[08:33] has followed a similar evolutionary path
+[08:35] to the encoder.
+[08:37] Originally decoders used a linear layer
+[08:39] followed by a nonlinearity such as
+[08:42] sigmoid to reconstruct the input from
+[08:45] the compact latent representation. Later
+[08:47] deep fully connected decoders became
+[08:50] common enabling more expressive
+[08:53] reconstructions. More recently decoders
+[08:55] have adopted convolutional neural
+[08:58] networks with realu activations often
+[09:00] using upconvolutional transpose
+[09:02] convolution layers to progressively
+[09:04] upsample the latent vector back to the
+[09:07] original input dimensions which is
+[09:11] especially effective for image data.
+[09:14] For images, a deconvolutional network.
+[09:17] For sequences, an LSTM or transformer
+[09:20] decoder. For feature vectors, a fully
+[09:23] connected network. The decoder maps the
+[09:25] latent Z back to the input space,
+[09:28] producing the reconstruction X hat.
+[09:31] After training, the decoder is often
+[09:33] discarded. The encoder alone is what
+[09:36] gets reused for downstream tasks. But
+[09:38] for generative tasks, the decoder is
+[09:41] what produces new samples.
+[09:43] An autoenccoder is trained so that the
+[09:45] learned compact features can be used to
+[09:49] reconstruct the original input data.
+[09:51] This is achieved by passing the encoded
+[09:54] representation through a decoder which
+[09:56] maps it back to the original input
+[09:58] space. The training objective minimizes
+[10:01] the reconstruction error typically means
+[10:03] squared error or cross entropy between
+[10:05] the original input and its reconstructed
+[10:07] version.
+[10:09] The training to minimize the
+[10:11] reconstruction error does not use label
+[10:15] and hence it's unsupervised learning.
+[10:19] After training the decoder is discarded.
+[10:22] Once the autoenccoder is trained the
+[10:24] encoder network can be used as a feature
+[10:27] extractor. The features it produces
+[10:29] should be semantically meaningful
+[10:30] because the autoenccoder's
+[10:32] reconstruction loss forces the encoder
+[10:34] to preserve the most salient information
+[10:37] about the input.
+[10:39] Thus, the resulting feature vectors
+[10:41] capture the underlying factors of
+[10:43] variation in the data and are useful for
+[10:46] downstream tasks such as clustering
+[10:48] retrieval like finding the closest
+[10:51] patient to a given one or as inputs to
+[10:54] supervised classifiers.
+[10:56] The architecture of an autoenccoder is
+[10:59] simple. The training is unsupervised.
+[11:01] The resulting representations are useful
+[11:03] for many downstream tasks.
+[11:06] In supervised learning tasks, an encoder
+[11:08] that has been pre-trained in an
+[11:10] unsupervised manner, potentially on much
+[11:13] larger amounts of unlabelled data, can
+[11:16] be leveraged in two main ways. First, it
+[11:19] can be used as a fixed feature extractor
+[11:21] where the encoder's outputs are fed into
+[11:23] a separate classifier without updating
+[11:25] the encoder itself.
+[11:28] Second, the encoder can be fine-tuned
+[11:30] jointly with the classifier on the
+[11:33] labeled supervised task. This approach
+[11:35] allows the encoder to adapt its features
+[11:38] to the specific supervised objective
+[11:40] while still benefiting from the rich
+[11:42] generalpurpose representations learned
+[11:45] during unsupervised pre-training.
+[11:46] Fine-tuning often yields better
+[11:49] performance than using a fixed encoder,
+[11:51] especially when the labeled data set is
+[11:53] reasonably large.
+[11:55] Now we look at specific clinical
+[11:57] applications of unsupervised
+[11:59] representation learning. Two examples
+[12:03] worth knowing. Miato at al 2016 on deep
+[12:08] patient and Darabi at al 2019 on taper.
+[12:10] Both apply autoenccoder style
+[12:13] representation learning to ehr data.
+[12:15] Both produce patient embeddings that
+[12:17] turn out to be useful for downstream
+[12:19] prediction. Both are influential as
+[12:22] early demonstrations that unsupervised
+[12:24] pre-training transfers usefully to
+[12:26] clinical tasks.
+[12:31] Mito at al 2016 deep patient Mount Sinai
+[12:33] trained a stacked denoising autoenccoder
+[12:37] on the EHR records of 700,000 patients
+[12:40] from the Mount Sinai Health System. The
+[12:42] resulting patient embeddings were used
+[12:44] as features for predicting future
+[12:47] disease onset, diabetes, schizophrenas,
+[12:50] severe pneumonia and others. The
+[12:52] predictions outperform several baselines
+[12:55] demonstrating that unsupervised EHR
+[12:57] embeddings carry useful clinical signal
+[13:01] even without task specific labeling.
+[13:05] Darabi at all 2019 TAP
+[13:08] UCLA treatment adjusted patient
+[13:09] representations.
+[13:11] The authors trained a recurrent
+[13:14] autoenccoder on EHR sequences with an
+[13:16] additional adversarial training step to
+[13:18] remove information about treatment
+[13:20] received from the embeddings. The
+[13:23] motivation is causal. If the embedding
+[13:25] does not encode treatment, then any
+[13:27] predicted outcome difference between
+[13:29] treatment groups can be attributed to
+[13:31] the treatment rather than to confounded
+[13:34] baseline characteristics.
+[13:36] Taper handles multiple modalities by
+[13:38] training a separate autoenccoder for
+[13:41] each codebased modality. For example,
+[13:44] medications, treatments, diagnosis
+[13:46] as well as for signal time series data
+[13:49] such as heart rate. The core innovation
+[13:53] is its adversarial step. After learning
+[13:55] initial patient embeddings, taper trains
+[13:58] the encoder to produce representations
+[13:59] such that a separate treatment
+[14:02] prediction adversary cannot recover the
+[14:05] treatment assignment from the embedding.
+[14:07] This adversarial pressure pushes the
+[14:09] encoder to generate treatment invariant
+[14:11] patient representations,
+[14:13] meaning the embeddings no longer contain
+[14:14] information about which treatment a
+[14:16] patient received.
+[14:19] Finally, taper uses these treatment
+[14:21] invariant representations for outcome
+[14:22] prediction.
+[14:24] The key assumption is that if the
+[14:26] representations capture all relevant
+[14:28] patient characteristics except treatment
+[14:30] assignment, then any remaining
+[14:32] differences in predicted outcomes across
+[14:34] treatment groups can be interpreted as
+[14:36] causal effects of the treatments
+[14:37] themselves.
+[14:40] In taper, the feature representations
+[14:42] learned from each autoenccoder, for
+[14:45] example, for medications, diagnosis, and
+[14:48] physiological signals are concatenated
+[14:51] into a unified patient embedding.
+[14:53] This combined representation is then
+[14:55] further fine-tuned to predict future
+[14:58] events in the patients data such as
+[15:00] subsequent clinical outcomes or disease
+[15:02] progression.
+[15:03] Regarding results and broader
+[15:05] significance, Taper's treatment
+[15:07] invariant embeddings produce more
+[15:09] reliable causal estimates than naive
+[15:11] embeddings on held outcome prediction
+[15:14] tasks. This technique illustrates a
+[15:16] recurring theme in clinical unsupervised
+[15:19] learning. Embeddings can be tuned not
+[15:22] just for representation quality, but for
+[15:24] specific downstream properties such as
+[15:27] causal interpretability, fairness or
+[15:30] privacy. Each variation requires
+[15:32] different training objectives, but the
+[15:34] architectural foundation of the
+[15:37] autoenccoder remains constant.
+[15:39] Self-supervised learning learns
+[15:41] representations without external labels
+[15:44] by generating labels from the data's own
+[15:47] structure. For example, BERT mask tokens
+[15:50] and predicts them. Clinical B applies
+[15:53] this same approach to clinical notes.
+[15:54] Contrastive learning is another
+[15:56] self-supervised paradigm where two
+[15:58] augmented views of the same image are
+[16:00] pulled together to have similar
+[16:02] representations while views of different
+[16:05] images are pushed apart.
+[16:07] This approach has been a major driver of
+[16:09] recent medical imaging representation
+[16:11] learning work.
+[16:13] Self-supvised learning recap. The
+[16:16] defining trick. Construct a pretext task
+[16:18] from the unlabelled data. Train the
+[16:20] network on the pretext task and the
+[16:23] resulting representations transfer to
+[16:26] downstream supervised tasks. Examples:
+[16:29] SIM CLR contrastive learning, bird mask
+[16:31] language modeling, clip image text
+[16:35] alignment, MAE mast image modeling. All
+[16:37] three categories, generative,
+[16:39] predictive, contrastive, count as
+[16:41] self-supervised.
+[16:43] Autoenccoders fall in the generative
+[16:45] category.
+[16:47] A great deal of recent work in
+[16:49] self-supervised learning has focused on
+[16:52] contrastive learning. The core idea is
+[16:54] that two differently transformed
+[16:56] versions of the same image should be
+[16:59] mapped to similar representations while
+[17:01] their representations should be distinct
+[17:03] from those of transformed versions of
+[17:06] other images. By pulling positive pairs
+[17:08] together and pushing negative pairs
+[17:10] apart, the model learns invariant and
+[17:12] discriminative features without
+[17:15] requiring any manual labels.
+[17:17] Let's return to representation learning
+[17:20] by autoenccoder and consider a
+[17:22] probabilistic variant. Why
+[17:25] probabilistic? Two reasons. First,
+[17:27] sampling from the prior produces new
+[17:29] examples that did not appear in
+[17:32] training. The model is generative.
+[17:34] Second, the latent space becomes smooth
+[17:37] and well behaved because the regularizer
+[17:39] forces nearby points in latent space to
+[17:42] decode to similar outputs. The
+[17:44] smoothness makes the latent space useful
+[17:47] for interpolation, manipulation, and
+[17:48] exploration in ways the vanilla
+[17:52] autoenccoders latent space is not.
+[17:55] Variational autoenccoders, VAE, are a
+[17:57] probabilistic version of the standard
+[17:59] autoenccoder.
+[18:00] Instead of outputting a single
+[18:03] deterministic latent vector, the encoder
+[18:05] outputs a distribution, typically a
+[18:08] Gaussian. A latent code Z is then
+[18:11] sampled from this distribution and the
+[18:14] decoder P reconstructs the input. The
+[18:16] loss function balances two terms. The
+[18:18] reconstruction error making the output
+[18:21] resemble the input and a callback label
+[18:23] divergence term that keeps the
+[18:25] approximate posterior Q close to a prior
+[18:28] distribution, usually a standard normal.
+[18:31] This probabilistic framework allows
+[18:33] vaees to learn the underlying data
+[18:36] distribution. Consequently, one can
+[18:38] sample zed from the prior and then
+[18:41] decode to generate new synthetic data.
+[18:43] Moreover, the latent dimensions often
+[18:46] become interpretable with different
+[18:48] dimensions encoding meaningful factors
+[18:51] of variation such as head pose, smile
+[18:53] intensity, or other salient attributes
+[18:55] in the data.
+[18:57] Here's the setup for the variational
+[19:01] autoenccoders or VAE worked by Kingma
+[19:04] and Welling in 2013. A probabilistic
+[19:07] version of the autoenccoder.
+[19:09] Let's look first at the encoder and then
+[19:12] the decoder.
+[19:14] The encoder mechanics work like this.
+[19:17] Given an input X, the encoder outputs
+[19:20] the parameters of a distribution over Z
+[19:22] for a Gaussian. That's a mean vector and
+[19:26] a log variance vector. We then sample Z
+[19:29] from this distribution during training.
+[19:31] The trick that makes this trainable is
+[19:34] the reparameterization trick. We sample
+[19:36] epsilon from a standard Gaussian then
+[19:39] form Z as the mean plus the standard
+[19:41] deviation times epsilon.
+[19:43] This way gradients flow through the
+[19:45] deterministic mean and variance
+[19:47] parameters even though the sampling
+[19:50] itself is stochastic.
+[19:53] Now for the decoder mechanics. Given a
+[19:55] sample latent vector Z, the decoder
+[19:58] produces a distribution over the input
+[20:01] space X. For continuous data, this is
+[20:03] typically a Gaussian where the decoder
+[20:05] outputs the mean. For binary data, it's
+[20:08] a boni where the decoder outputs the
+[20:13] During training, we can sample a
+[20:16] reconstructed X from this distribution.
+[20:18] But more commonly we evaluate the
+[20:20] likelihood of the actual observed input
+[20:23] directly. That likelihood becomes the
+[20:27] reconstruction term in the VAE loss. At
+[20:29] test time when we generate new data, we
+[20:32] sample Z from the prior, pass it through
+[20:34] the decoder to get the distribution
+[20:36] parameters and then sample and output X
+[20:40] from that distribution.
+[20:42] The VAE loss function combines two
+[20:44] terms.
+[20:46] The first term maximizes the likelihood
+[20:47] of the original input being
+[20:49] reconstructed from the sampled latent
+[20:52] code. This is the reconstruction loss
+[20:54] which ensures the decoder preserves
+[20:56] important information.
+[20:58] The second term makes the encoder's
+[21:02] output distribution Q of Z given X close
+[21:05] to a prior distribution usually a
+[21:07] standard normal. This is done by
+[21:09] minimizing the KL divergence between the
+[21:12] two distributions. Together, these terms
+[21:15] balance faithful reconstruction with a
+[21:17] regularized, well ststructured latent
+[21:18] space that allows for smooth
+[21:22] interpolation and meaningful generation.
+[21:24] Once the VAE is trained, we can discard
+[21:27] the encoder entirely. All we need is the
+[21:30] decoder network. Now we can simply
+[21:32] sample Z directly from the prior
+[21:35] distribution, a standard normal, and
+[21:37] pass it through the decoder. The decoder
+[21:39] then generates a new synthetic data
+[21:42] point sampling from the distribution it
+[21:46] produces over X. This is how VAE become
+[21:48] generative models. We can create novel
+[21:51] outputs that resemble the training data
+[21:54] without needing any input at all.
+[21:57] Imagine training a VAE on the MNIST data
+[21:59] set of handwritten digits but forcing
+[22:01] the latent space to have only two
+[22:03] dimensions.
+[22:06] Every single digit image, all 70,000 of
+[22:08] them, gets mapped to a single point on a
+[22:11] two-dimensional plane. That means each
+[22:13] digit is represented by just two
+[22:14] numbers.
+[22:16] Now, here's where it gets interesting.
+[22:18] Because the latent space is only
+[22:21] two-dimensional, we can systematically
+[22:24] vary Z1 and Z2, the two coordinates, and
+[22:26] see what digit the decoder generates at
+[22:29] each point. If you take a grid of points
+[22:31] covering the latent plane and decode
+[22:33] every point, you'll see the entire
+[22:36] generative landscape of the model. As
+[22:39] you walk across the grid by changing Z1,
+[22:41] the digit smoothly morphs from one form
+[22:45] to another. And as you change Z2, you
+[22:47] see a different kind of variation.
+[22:49] Perhaps the stroke thickness or the
+[22:51] slant of the digit. By moving
+[22:53] continuously through the latent space,
+[22:56] you can watch a tree gradually turn into
+[22:59] an eight or a zero. because the VAE has
+[23:01] learned that these digits are connected
+[23:03] along the data manifold.
+[23:06] If you train a VAE on a phase data set
+[23:09] instead of MNIST, the two-dimensional
+[23:11] latent space often becomes highly
+[23:14] interpretable. For example, you might
+[23:16] find that moving along the horizontal
+[23:19] axis Z, two smoothly changes the head
+[23:21] pose, turning a face from looking left
+[23:23] to looking right. Meanwhile, moving
+[23:26] along the vertical axis zit, one
+[23:28] controls the degree of smile, ranging
+[23:30] from a neutral expression to a wide
+[23:34] grin. This means the VAE has discovered
+[23:36] two independent factors of variation
+[23:38] without ever being told what a smile or
+[23:40] a head pose is. You can even combine
+[23:42] them. Take a face looking left with a
+[23:45] neutral expression. Increase Z2 to turn
+[23:48] the head right and increase Z1 to add a
+[23:51] smile. The decoder will generate a face
+[23:53] looking right and smiling smoothly
+[23:55] interpolating along both attributes at
+[23:57] once.
+[23:58] Now let's pivot to the second major
+[24:01] generative architecture. Generative
+[24:04] adversarial networks or GNS introduced
+[24:08] by Goodfellow and colleagues in 2014.
+[24:11] GS offer a completely different framing
+[24:14] of the generation problem. Instead of
+[24:16] explicit probabilistic models with
+[24:19] reconstruction losses, GANs use a two
+[24:22] network adversarial game. One network,
+[24:24] the generator tries to produce realistic
+[24:27] samples. The other, the discriminator
+[24:29] tries to tell real samples from the
+[24:31] generator's fakes. Training the two
+[24:33] against each other produces a generator
+[24:36] that can fool the discriminator, which
+[24:37] means it produces samples
+[24:39] indistinguishable from the training
+[24:42] data. The core insight is that sampling
+[24:44] directly from a complex highdimensional
+[24:47] distribution is very hard. So instead,
+[24:50] we sample simple noise Z's and learn a
+[24:52] network that transforms that noise into
+[24:55] realistic data. And that network is
+[24:57] trained by a second network that judges
+[24:59] its outputs. For applications where the
+[25:02] primary goal is highquality samples,
+[25:04] most state-of-the-art approaches are
+[25:07] still GAN based.
+[25:09] The motivation for GS is
+[25:12] straightforward. We want to sample that
+[25:14] is generate new data from a complex
+[25:17] highdimensional training distribution.
+[25:19] But there is no direct way to do this.
+[25:21] The solution is to sample from a simple
+[25:24] distribution such as random noise and
+[25:26] then learn a transformation that maps
+[25:28] that simple noise to the target training
+[25:31] distribution. The key question becomes
+[25:33] what can we use to represent this
+[25:36] complex transformation?
+[25:39] The answer is a neural network. The
+[25:40] generator which can learn highly
+[25:42] nonlinear mappings from a lowdimensional
+[25:45] latent space to the highdimensional data
+[25:47] space.
+[25:49] If goal is generating highquality
+[25:51] samples, most current state-of-the-art
+[25:53] approaches are based on designing two
+[25:56] neural networks. a generator network
+[25:58] that tries to fool the discriminator by
+[26:01] generating real-looking images
+[26:03] and a discriminator network that tries
+[26:05] to distinguish between real and fake
+[26:07] images.
+[26:09] The adversarial setup, the generator
+[26:12] takes random noise as input and produces
+[26:15] a sample. The discriminator takes either
+[26:17] a real sample from the training data or
+[26:20] a generator produce fake and outputs a
+[26:23] probability that the input is real. The
+[26:25] two networks are trained alternately.
+[26:27] The discriminator is trained on the
+[26:29] binary real versus fake classification
+[26:32] task while the generator is trained to
+[26:34] fool the discriminator.
+[26:37] At equilibrium, the generator produces
+[26:39] samples that the discriminator can no
+[26:41] longer distinguish from real data. the
+[26:44] generator network. The generator takes a
+[26:47] random vector Z, typically sampled from
+[26:48] a simple distribution such as a
+[26:51] Gaussian, and outputs a sample in the
+[26:54] data space. For images, the generator is
+[26:56] usually a deconvolutional network that
+[26:59] progressively upsamples Z's to the full
+[27:02] image resolution. For sequences, it is
+[27:03] often an auto reggressive model
+[27:07] conditioned on Z. The generator has its
+[27:09] own set of learnable parameters
+[27:10] completely separate from those of the
+[27:12] discriminator.
+[27:15] The novelty of G is to consider a
+[27:18] minimax game. And here's the training
+[27:20] objective function. The inner
+[27:21] maximization is handled by the
+[27:24] discriminator network. The outer
+[27:27] minimization is handled by the generator
+[27:30] network. Both networks evolve together
+[27:33] over the given pool of data.
+[27:35] Training mechanics. The discriminator
+[27:38] outputs a likelihood between zero and
+[27:40] one representing the probability that an
+[27:42] input image is real rather than
+[27:44] generated. The training mechanics
+[27:47] involve alternating between two steps.
+[27:49] First, train the discriminator on a
+[27:51] batch of real samples and fake samples
+[27:53] from the generator, teaching it to
+[27:56] distinguish the two. The first term of
+[27:58] the objective function measures how good
+[28:00] the discriminator performed for a real
+[28:03] data X. The second term of the objective
+[28:05] function measures how good the
+[28:07] discriminator performed for a generated
+[28:09] fake data GZ.
+[28:12] The discriminator with parameters theta
+[28:14] D wants to maximize its objective so
+[28:17] that D of X the probability assigned to
+[28:20] a real sample is close to one while D of
+[28:23] G of Z the probability assigned to a
+[28:26] generated fake is close to zero. In
+[28:28] other words, the discriminator wants to
+[28:30] correctly classify real as real and fake
+[28:33] as fake. The generator with parameters
+[28:36] theta G wants to minimize its objective
+[28:40] so that D of G of Z is close to one.
+[28:42] That means the generator wants to fool
+[28:44] the discriminator into thinking its fake
+[28:46] output is actually real.
+[28:48] The training alternates between two
+[28:52] steps. First, we perform gradient ascent
+[28:53] on the discriminator to improve its
+[28:57] ability to tell real from fake. Second,
+[28:59] we perform gradient descent on the
+[29:00] generator to make its fakes more
+[29:02] convincing.
+[29:04] We repeat this alternation for many
+[29:06] iterations until the generator produces
+[29:08] samples that the discriminator can no
+[29:10] longer reliably distinguish from real
+[29:12] data.
+[29:14] In practice, however, we don't actually
+[29:16] use gradient descent on the generator
+[29:19] with the original objective. Instead, we
+[29:22] flip the problem. We perform gradient
+[29:23] ascent on the generator using a
+[29:25] different objective.
+[29:27] Rather than minimizing the probability
+[29:29] that the discriminator correctly
+[29:31] identifies the fake, we maximize the
+[29:33] probability that the discriminator
+[29:36] mistakes the fake for real. This
+[29:38] modified objective provides much
+[29:40] stronger gradients early in training
+[29:42] when the generator is still producing
+[29:45] poor samples and the discriminator can
+[29:47] easily reject them. This practical trick
+[29:50] is what makes GAN training workable in
+[29:52] most real world applications.
+[29:54] So instead of minimizing the likelihood
+[29:57] that the discriminator is correct, that
+[29:59] is minimizing the chance it correctly
+[30:01] identifies a fake, we flip the
+[30:03] objective, we now maximize the
+[30:05] likelihood that the discriminator is
+[30:08] wrong. In other words, we train the
+[30:10] generator to make the discriminator
+[30:12] output a high probability that the fake
+[30:15] is real. This alternative objective
+[30:18] provides much stronger gradient signals,
+[30:19] especially early in training when the
+[30:22] generator's outputs are poor and the
+[30:25] discriminator can easily reject them.
+[30:27] It's ultimately the same objective of
+[30:30] fooling the discriminator. But this
+[30:32] alternative formulation maximizing the
+[30:34] likelihood that the discriminator is
+[30:36] wrong has some nice properties that make
+[30:40] optimization work better in practice.
+[30:42] In particular, it provides much stronger
+[30:44] gradient signals early in training when
+[30:47] the generator's outputs are poor and the
+[30:49] original objective would produce very
+[30:52] small saturating gradients.
+[30:54] This simple change keeps the learning
+[30:56] signal strong throughout training and is
+[30:59] a key reason why modern GANs are able to
+[31:03] converge to highquality solutions.
+[31:05] As a side note, jointly training two
+[31:07] networks in this adversarial manner is
+[31:10] inherently challenging and can be quite
+[31:12] unstable. The two networks are
+[31:14] constantly competing and if one becomes
+[31:17] too strong too quickly, the other may
+[31:20] fail to learn. This instability has been
+[31:23] the subject of extensive active research
+[31:25] with many proposed techniques to improve
+[31:27] G training including modified loss
+[31:30] functions, architectural guidelines like
+[31:31] batch normalization and spectral
+[31:35] normalization, regularization strategies
+[31:37] and careful tuning of hyperparameters
+[31:39] such as the relative learning rates and
+[31:41] update schedules.
+[31:43] Putting it all together, here is the GAN
+[31:47] training algorithm. First, we initialize
+[31:49] both the generator and discriminator
+[31:52] networks with random weights. Then, for
+[31:54] each training iteration, we perform two
+[31:57] steps. Step one, we take a batch of real
+[31:59] samples from our training data and a
+[32:02] batch of random noise vectors. We pass
+[32:03] the noise through the generator to
+[32:06] produce fake samples. We then update the
+[32:08] discriminator by taking a gradient
+[32:11] ascent step on its objective, rewarding
+[32:13] it for correctly classifying real
+[32:15] samples as real and fake samples as
+[32:18] fake. Step two, we take another batch of
+[32:21] random noise, generate new fake samples,
+[32:23] and update the generator by taking a
+[32:26] gradient ascent step on its modified
+[32:28] objective, maximizing the probability
+[32:30] that the discriminator mistakes these
+[32:33] fakes for real. We repeat these two
+[32:35] steps alternately for many thousands or
+[32:38] even millions of iterations.
+[32:40] Over time, the generator learns to
+[32:43] produce increasingly realistic samples.
+[32:45] And ideally, we reach an equilibrium
+[32:47] where the discriminator can no longer
+[32:50] tell real from fake.
+[32:51] Some people find that doing one
+[32:53] discriminator update per generator
+[32:57] update K equals 1 is more stable. Others
+[32:59] prefer K greater than one. Updating the
+[33:01] discriminator multiple times before
+[33:03] updating the generator. There's no
+[33:06] single best rule, but more recent GAN
+[33:08] variants have been designed to alleviate
+[33:10] this problem, offering much better
+[33:13] training stability overall.
+[33:15] After training is complete, we discard
+[33:18] the discriminator entirely. We only keep
+[33:21] the generator network. Now to generate
+[33:24] new images, we simply sample a random
+[33:26] noise vector Z from the prior
+[33:29] distribution, typically a Gaussian, and
+[33:31] pass it through the generator. The
+[33:33] generator outputs a synthetic image that
+[33:35] should resemble those in the training
+[33:38] data set. We can do this as many times
+[33:40] as we want, generating an unlimited
+[33:42] number of new samples that capture the
+[33:44] statistical patterns of the original
+[33:46] data.
+[33:48] GS have been successfully applied to
+[33:51] medical image synthesis. For example,
+[33:54] Fry Dadar and colleagues in 2018 use
+[33:57] GANs to generate liver lesions of
+[33:59] different types such as cysts,
+[34:02] metastasis and hemangiomas to augment
+[34:04] small training data sets for lesion
+[34:07] classification. Similarly, Han and
+[34:10] colleagues in 2018 applied GS to
+[34:13] synthesize brain MRI scans containing
+[34:15] lesions, helping to address the scarcity
+[34:18] of annotated pathological images.
+[34:21] In both cases, the synthetic images were
+[34:22] shown to improve the performance of
+[34:24] downstream diagnostic models when used
+[34:27] as data augmentation.
+[34:30] GANs can be used to synthesize brain MRI
+[34:32] scans containing lesions. The key
+[34:35] application here is data augmentation.
+[34:38] In medical imaging, labeled data,
+[34:40] especially for rare diseases or specific
+[34:43] lesion types, is often scarce. By
+[34:45] generating synthetic brain MRIs with
+[34:48] realistic looking lesions, the GN can
+[34:51] artificially expand the training set.
+[34:53] This has been shown to improve the
+[34:54] performance of segmentation and
+[34:57] classification models as the network
+[34:59] sees more varied examples and becomes
+[35:02] more robust without needing additional
+[35:04] real patient scans.
+[35:07] Finally, let's turn to diffusion models,
+[35:10] an emerging class of generative models
+[35:12] that now produce state-of-the-art image
+[35:14] quality. The core idea is simple but
+[35:17] powerful. First, you take your training
+[35:19] data and progressively corrupt it by
+[35:21] adding small amounts of noise over many
+[35:24] steps until the image becomes pure
+[35:27] random noise. Then, you train a neural
+[35:29] network to reverse this process to
+[35:31] gradually den noiseise a noisy image
+[35:33] back toward a clean one.
+[35:36] Once trained, you can generate new
+[35:38] images by starting from pure noise and
+[35:40] running the reverse chain step by step.
+[35:42] Diffusion models trade off slower
+[35:45] sampling. They require many iterative
+[35:48] steps to generate a single image for
+[35:50] exceptionally high quality and strong
+[35:52] mode coverage, meaning they reliably
+[35:54] capture the full diversity of the
+[35:56] training distribution.
+[35:58] This approach was popularized in a 2020
+[36:01] paper by Ho and colleagues.
+[36:03] The key idea behind diffusion models is
+[36:05] to progressively corrupt your training
+[36:08] data by adding noise over many steps
+[36:10] moving from left to right in the figure
+[36:13] from a clean image to pure noise. You
+[36:15] then train a model to reverse this
+[36:17] noising process, learning to den
+[36:20] noiseise a little bit at each step. Once
+[36:22] training is complete, you have a model
+[36:25] that can start from pure noise far right
+[36:27] and run the reverse chain step by step,
+[36:29] gradually removing noise until you
+[36:31] obtain a clean, realistic generated
+[36:33] image at the far left. That's how
+[36:37] diffusion models generate new samples.
+[36:38] Now, let's discuss reinforcement
+[36:41] learning. This is the paradigm of an
+[36:43] agent interacting with an environment,
+[36:46] taking actions, receiving rewards, and
+[36:48] learning to maximize long-term reward
+[36:49] through experience.
+[36:52] The framework is enormously powerful
+[36:54] game-playing AIs like Alph Go, robotic
+[36:57] control, and increasingly clinical
+[37:00] decision support all use it. Clinical
+[37:02] applications are the hardest because we
+[37:04] cannot let an agent freely explore in a
+[37:06] hospital environment.
+[37:08] However, offline reinforcement learning
+[37:10] from observational data learning from
+[37:12] existing patient records rather than
+[37:14] live interaction is a tractable
+[37:16] approach.
+[37:18] In essence, reinforcement learning
+[37:20] addresses problems where an agent
+[37:22] interacts with an environment that
+[37:25] provides numeric reward signals and the
+[37:27] goal is to learn how to take actions in
+[37:30] order to maximize that reward over time.
+[37:32] Reinforcement learning methods fall into
+[37:34] two main families. The first is
+[37:37] Q-learning where we learn a Q function
+[37:41] denoted Q of S a parameterized by theta
+[37:43] which estimates the expected future
+[37:47] reward of taking action A in state S.
+[37:49] Once we have this Q function, the
+[37:51] optimal policy is simply to choose the
+[37:53] action with the highest Q value in any
+[37:56] given state. The second family is policy
+[37:59] gradients. Here we define a value
+[38:01] function J of theta as the expected
+[38:03] discounted reward we collect by
+[38:05] following a policy parameterized by
+[38:07] theta. We then find the optimal
+[38:11] parameters theta star by maximizing J
+[38:13] performing gradient ascent directly on
+[38:15] the policy parameters.
+[38:17] This approach learns the policy itself
+[38:19] rather than first learning a value
+[38:21] function.
+[38:23] At its core, reinforcement learning
+[38:26] involves two key components, an
+[38:29] environment and an agent.
+[38:31] The environment is the world the agent
+[38:33] operates in. It has a certain state at
+[38:36] any given time.
+[38:38] The agent observes this state and then
+[38:40] takes an action.
+[38:43] When the agent takes that action, the
+[38:45] environment transitions to a new state
+[38:48] and also returns a reward, a numerical
+[38:50] signal indicating how good or bad that
+[38:52] action was.
+[38:55] The agent's goal is to learn a policy, a
+[38:57] mapping from states to actions that
+[39:00] maximizes the total cumulative reward it
+[39:03] receives over time. The agent learns
+[39:05] purely through trial and error, updating
+[39:07] its behavior based on the rewards it
+[39:09] experiences.
+[39:12] In Q-learning, we learn a function
+[39:14] called the Q function. This function
+[39:16] estimates the expected future reward
+[39:18] from taking a particular action in any
+[39:22] given state. More formally, Q of SNA
+[39:24] tells you if you are currently in state
+[39:27] S and you choose action A and then
+[39:29] follow your optimal policy afterwards,
+[39:31] what total discounted reward can you
+[39:34] expect to accumulate in the future. Once
+[39:37] we have an accurate Q function, the
+[39:39] optimal action in any state is simply
+[39:42] the one with the highest Q value.
+[39:44] If we represent that Q function using a
+[39:47] deep neural network with the network's
+[39:49] weights data determining how we map
+[39:52] states and actions to expected rewards,
+[39:54] then we have what's called deep Q
+[39:56] learning. The deep neural network allows
+[39:58] us to handle highdimensional state
+[40:01] spaces like raw pixels from a video game
+[40:03] or clinical time series data from
+[40:06] electronic health records.
+[40:08] This combination of Q-learning with deep
+[40:10] neural networks is what enabled
+[40:12] breakthroughs like playing Atari games
+[40:16] directly from screen pixels.
+[40:19] As a concrete example, consider training
+[40:21] an agent to play Atari games. The
+[40:23] objective is to complete the game with
+[40:25] the highest possible score. The state is
+[40:27] the raw pixel inputs of the game screen
+[40:30] at each moment. The actions are the game
+[40:34] controls such as left, right, up, down,
+[40:36] and fire. The reward is simply the
+[40:38] increase or decrease in the game score
+[40:41] at each time step. The agent learns to
+[40:43] associate pixel patterns with actions
+[40:46] that lead to score increases, enabling
+[40:48] it to play the game at superhuman levels
+[40:50] in many cases.
+[40:52] The Q network architecture in deep
+[40:55] Q-learning for Atari takes as input the
+[40:59] current state of STS, which is a stack
+[41:02] of the last four frames. Specifically,
+[41:04] each frame is pre-processed by
+[41:07] converting from RGB to grayscale,
+[41:09] downsampling to a smaller resolution,
+[41:11] and cropping to remove irrelevant areas
+[41:14] like the score display. This results in
+[41:19] a 84x 84x4 tensor 84 pixels high, 84
+[41:22] pixels wide, and four channels deep,
+[41:24] where each channel is one grayscale
+[41:27] frame from the recent past. This stacked
+[41:29] representation gives the network a sense
+[41:32] of motion and temporal dynamics, not
+[41:35] just a single static image.
+[41:38] The Q network then outputs a vector of
+[41:39] four numbers, one for each possible
+[41:42] action. Each number represents the
+[41:45] expected future reward the agent will
+[41:47] accumulate if it takes that specific
+[41:49] action from the current state and then
+[41:52] follows its optimal policy thereafter.
+[41:54] The agent selects the action with the
+[41:56] highest predicted value, performing
+[42:00] what's known as greedy action selection.
+[42:02] What's a problem with Q-learning? The Q
+[42:05] function can be extremely complicated.
+[42:08] Consider a robot grasping an object. Its
+[42:10] state includes the precise positions of
+[42:13] every joint, the shape of the object,
+[42:16] the contact points, and so on. That's a
+[42:18] very highdimensional continuous state
+[42:20] space. In such settings, it becomes
+[42:22] impractical, if not impossible, to learn
+[42:25] the exact value of every possible state
+[42:28] action pair. Even with a deep neural
+[42:30] network, the Q function may require
+[42:32] enormous amounts of data and careful
+[42:35] tuning to approximate well.
+[42:37] But here's the key insight. Even if the
+[42:40] Q function is extremely complicated, the
+[42:42] optimal policy itself might be very
+[42:45] simple. For example, in the robot
+[42:47] grasping task, the best action in most
+[42:49] states might simply be to close your
+[42:52] hand. That's a much simpler mapping than
+[42:54] the full Q function. So the question
+[42:57] becomes, can we learn a policy directly
+[42:59] rather than learning the Q function
+[43:02] first? And more specifically, can we
+[43:04] search for the best policy from a
+[43:06] collection of possible policies without
+[43:08] ever explicitly estimating values for
+[43:11] every state action pair? That's exactly
+[43:13] what policy gradient methods are
+[43:15] designed to do.
+[43:17] Formally, let's define a class of
+[43:20] parameterized policies. A policy is a
+[43:22] mapping from states to actions, and we
+[43:24] represent it using a set of parameters
+[43:28] commonly denoted as theta. For example,
+[43:30] the policy could be a neural network
+[43:32] that takes the state as input and
+[43:34] outputs and action with theta being the
+[43:37] network's weights. For each such
+[43:40] parameterized policy, we can define its
+[43:43] value denoted J of theta. The value is
+[43:45] the expected total discounted reward
+[43:47] that the agent will collect if it
+[43:49] follows that policy from the beginning.
+[43:51] Our goal then becomes finding the
+[43:54] parameter theta that maximizes this
+[43:57] value. In other words, finding the best
+[44:00] policy within our chosen class.
+[44:02] We want to find the optimal policy, the
+[44:04] one that maximizes the expected total
+[44:08] reward. So how can we do this?
+[44:10] We use gradient ascent on the policy
+[44:12] parameters. We treat the policies value
+[44:15] J of theta as an objective function to
+[44:17] be maximized.
+[44:20] At each step, we compute the gradient of
+[44:22] J with respect to the policy parameters
+[44:25] theta and then update theta by taking a
+[44:27] step in the direction of that gradient.
+[44:29] In other words, we move uphill in terms
+[44:33] of expected reward. By repeatedly
+[44:35] applying this gradient ascent update,
+[44:37] the policy parameters gradually improve
+[44:40] and we converge to a locally optimal
+[44:42] policy. This is the core idea behind
+[44:45] policy gradient methods directly
+[44:47] optimizing the policy itself by
+[44:48] following the gradient of its
+[44:50] performance.
+[44:52] An important example of clinical
+[44:54] reinforcement learning comes from Ragu
+[44:56] and colleagues in 2017
+[44:58] who learned a deep Q-learning policy for
+[45:02] sepsis care using the mimic data set. In
+[45:04] their formulation, the state consisted
+[45:06] of patient physiology measurements,
+[45:09] vital signs, lab values, and other
+[45:11] clinical variables.
+[45:13] The reward was tied to survival, giving
+[45:15] the agent a positive signal if the
+[45:19] patient lived. The actions formed a 5x5
+[45:21] grid of possible combinations of IV
+[45:23] fluid and vasopressor doses at each time
+[45:26] step. After training, they compared the
+[45:29] learned policy against actual physician
+[45:31] policy across different levels of sofa
+[45:34] severity, a measure of organ failure.
+[45:36] They found that the deep Q learning
+[45:37] policy often recommended different
+[45:40] treatment decisions than physicians and
+[45:42] these differences were associated with
+[45:45] potentially improved outcomes.
+[45:47] In summary, we covered two paradigms
+[45:49] today. Unsupervised learning
+[45:54] autoenccoders, VAES, GNS, and diffusion
+[45:56] models for learning representations and
+[46:00] generating data from unlabeled inputs.
+[46:02] Reinforcement learning Q-learning and
+[46:05] policy gradients for learning policies
+[46:07] from sequential interactions and
+[46:09] rewards. Both have substantial promise
+[46:12] in clinical AI, but neither has matched
+[46:14] the deployment success of supervised
+[46:17] learning. The reasons differ.
+[46:19] Unsupervised methods compete with
+[46:22] self-supervised contrastive learning
+[46:24] which has dominated since lecture 8.
+[46:26] Reinforcement learning struggles with
+[46:28] the offlineon only constraint,
+[46:31] observational confounding, and reward
+[46:34] design. The AI clinician remains the
+[46:36] field's flagship work with the right
+[46:38] combination of impact and limitations to

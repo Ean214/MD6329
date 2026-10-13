@@ -1,0 +1,47 @@
+{
+  "n": 22407,
+  "prevalence": 0.0586,
+  "auprc": 0.1675,
+  "auroc": 0.733,
+  "brier": 0.1162,
+  "sens_at_spec0.8": 0.5479,
+  "model": "xgboost",
+  "horizon_T": 60,
+  "train_time_s": 2.4,
+  "n_train": 99972,
+  "n_test": 22407,
+  "top_features": [
+    [
+      "nadir_so_far",
+      0.1628
+    ],
+    [
+      "gender_m",
+      0.1152
+    ],
+    [
+      "mean_uf_so_far",
+      0.1128
+    ],
+    [
+      "DM",
+      0.1041
+    ],
+    [
+      "dryweight",
+      0.0732
+    ],
+    [
+      "idwg",
+      0.0696
+    ],
+    [
+      "age",
+      0.0664
+    ],
+    [
+      "weightstart",
+      0.0539
+    ]
+  ]
+}

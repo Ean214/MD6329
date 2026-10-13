@@ -1,0 +1,1064 @@
+[00:02] Welcome back. Today's lecture sits at
+[00:04] the intersection of three ideas that
+[00:06] have shaped the last few years of
+[00:08] healthcare AI more than any other.
+[00:11] Multimodal learning, how to combine
+[00:13] different kinds of medical data into a
+[00:16] single model. Self-supervised learning,
+[00:18] how to extract useful representations
+[00:21] from unlabeled data, which is most of
+[00:23] the data we have. and contrastive
+[00:25] learning, a specific technique for
+[00:28] self-supervision that has dominated the
+[00:31] multimodal field since around 2020.
+[00:33] By the end of today, you should be able
+[00:35] to read a clip paper, understand how
+[00:38] Convert and Gloria adapt clip to chest
+[00:41] X-ray and radiology report data and
+[00:43] explain why this research direction is
+[00:45] so well suited to the structure of
+[00:49] medical data. One, multimodal data and
+[00:51] models, including the three classical
+[00:55] fusion strategies. Two, self-supervised
+[00:57] learning as a family of techniques for
+[01:00] extracting signal from unlabelled data.
+[01:03] Three, contrastive learning with SIM CLR
+[01:05] as the canonical single modality
+[01:09] example. Four, multimodal contrastive
+[01:13] learning with convert, gloria, and clip.
+[01:16] Five, weak supervision. the complement
+[01:19] to self-supervision with the snorkel
+[01:22] style data programming approach.
+[01:24] Multimodal data in healthcare is data
+[01:27] from multiple sources or sensors for the
+[01:29] same clinical question. Chest X-rays
+[01:33] paired with radiology reports. CT scans
+[01:36] paired with EHR records.
+[01:39] Ultrasound combined with ECG. Pathology
+[01:42] slides paired with genomic profiles.
+[01:44] Each modality captures something
+[01:47] different about the patient. The premise
+[01:49] of multimodal learning is that combining
+[01:51] them produces predictions and
+[01:54] representations that are more reliable
+[01:57] than any single modality alone.
+[02:00] The challenge is how to combine them.
+[02:02] Multimodal can mean two quite different
+[02:05] things. Similar modalities are different
+[02:07] acquisition variants of the same kind of
+[02:10] data. For example, the four MRI
+[02:14] sequences in Bratz T1 T1 with contrast
+[02:18] T2 flare which are co-registered to the
+[02:21] same voxal grid. These can often be
+[02:24] fused at the input level by stacking as
+[02:27] channels of a multi-channel input. The
+[02:31] Dong at al 2017 brain tumor segmentation
+[02:35] paper is a representative example.
+[02:37] Very different modalities are different
+[02:40] kinds of clinical data entirely. A chest
+[02:44] X-ray and the discharge summary, an ECG
+[02:46] trace, electronic health record, and a
+[02:48] genomic profile,
+[02:51] no pixel level correspondence, no shared
+[02:54] dimensionality, no shared semantic
+[02:56] structure. Combining them requires
+[02:59] modality specific encoders and a careful
+[03:00] design for how to fuse the
+[03:03] representations.
+[03:06] The Raj Koma at AL 2018 for electronic
+[03:09] health record work is an example in this
+[03:12] category.
+[03:15] Pre-classical fusion strategies. Early
+[03:17] fusion is the first. Combine the
+[03:19] modalities at the input level,
+[03:21] concatenate them, stack them as
+[03:24] channels, and feed the combined input
+[03:27] into a single shared model. Simplest to
+[03:30] implement and most parameter efficient.
+[03:32] works well when the modalities are
+[03:34] spatially or structurally aligned, less
+[03:37] well when they are not.
+[03:40] The work on brain tumor segmentation
+[03:44] stack T1 T2 flare T1 with contrast as
+[03:47] four channels of a single input image.
+[03:51] Feed it to one C and N. One set of
+[03:53] gradient updates flows through one set
+[03:56] of weights. Simple parameter efficient
+[03:58] works well when the modalities are
+[04:01] spatially aligned as the four MRI
+[04:03] sequences are by construction.
+[04:06] You can stack modalities such that each
+[04:07] channel of input is a different
+[04:10] modality. Early fusion is appropriate
+[04:12] when your modalities have natural per
+[04:15] element correspondence. Same pixels,
+[04:19] same time steps, same patient context.
+[04:22] Joint fusion. Each modality goes through
+[04:25] its own modality specific encoder
+[04:28] producing a per modality representation.
+[04:31] The representations are then combined,
+[04:33] concatenated, averaged or fused through
+[04:37] a small further network into a joint
+[04:38] representation that goes to the
+[04:41] prediction head. The two encoders and
+[04:43] the fusion module are trained end to end
+[04:46] together. Most modern multimodal
+[04:49] architectures are designed in this way.
+[04:53] Wu al 2019 deep neural networks improved
+[04:55] radiologist
+[04:57] performance in breast cancer screening
+[04:59] NYU.
+[05:01] The clinical task is binary
+[05:03] classification. Given a screening
+[05:05] mamogram, does the patient have breast
+[05:09] cancer in the next year? The data set is
+[05:11] roughly 1 million screening exams. The
+[05:13] architecture is a joint fusion design
+[05:15] that we will walk through over the next
+[05:17] several slides.
+[05:21] Each mamogram exam contains four views.
+[05:23] Left cranio cordal, right cranio cordal,
+[05:27] left medial oblique, right medial
+[05:30] oblique. Each view is its own image. The
+[05:33] model has four input streams, one per
+[05:36] view. Each stream uses a restnet
+[05:38] backbone. The four perview
+[05:40] representations are then combined into a
+[05:43] single decision.
+[05:45] When the modalities are different but
+[05:47] related like four views of the same
+[05:50] patient, joint fusion is the natural
+[05:52] choice. Each modality has its own
+[05:55] encoder so that modality specific
+[05:57] features are learned but the fusion
+[05:59] happens early enough that the joint
+[06:01] representation captures correlations
+[06:04] across modalities. Correlations also
+[06:06] allow sharing of weights across the two
+[06:08] networks.
+[06:10] The restnet backbone for each view
+[06:12] processes its input independently
+[06:15] producing a feature map. The four
+[06:17] feature maps are then pulled across
+[06:19] spatial positions to produce a perview
+[06:21] feature vector.
+[06:24] Four such vectors per exam fed into the
+[06:26] fusion step.
+[06:28] The four perview feature vectors are
+[06:31] concatenated into a single longer vector
+[06:34] representing the entire exam. The
+[06:36] concatenated vector is fed through a
+[06:39] small fully connected head that produces
+[06:42] the final binary classification cancer
+[06:45] present or absent. The whole pipeline is
+[06:47] trained end to end against the binary
+[06:51] label. Standard joint fusion recipe.
+[06:54] Woo at L also use auxiliary supervision
+[06:56] in the form of bounding box annotations
+[06:59] on a subset of mamogs.
+[07:01] The model is trained to produce per
+[07:03] spatial position heat maps that align
+[07:05] with the bounding boxes.
+[07:08] This auxiliary task regularizes the
+[07:10] representation toward attending to the
+[07:12] right anatomical regions which improves
+[07:15] both classification accuracy and
+[07:20] The model predicts all four binary
+[07:23] outputs from each view. The model
+[07:25] performs comparably to radiologists on
+[07:28] the same exams. When the model's output
+[07:30] is combined with the radiologist's
+[07:33] reading, a simple averaging, the
+[07:35] combined performance exceeds either
+[07:37] alone. This was one of the influential
+[07:40] demonstrations that AI plus radiologist
+[07:44] outperforms either in isolation.
+[07:46] The model is a clean example of joint
+[07:49] fusion done well. The four modality
+[07:50] specific streams are trained
+[07:53] simultaneously. The fusion happens at an
+[07:56] intermediate layer and the auxiliary
+[07:59] heat map supervision adds robustness.
+[08:01] It also allows late fusion of
+[08:04] predictions through averaging.
+[08:06] A different way to handle multimodal
+[08:08] data is to flatten everything into a
+[08:10] sequence and run a recurrent network
+[08:12] over it.
+[08:14] This is the work of Wong to jointly
+[08:16] process chest X-rays and associated
+[08:19] reports to produce disease labels that
+[08:21] can be used to produce auto annotation
+[08:24] disease labels. The fusion happens
+[08:26] implicitly inside the LSTM's hidden
+[08:29] state which carries information about
+[08:32] all preceding tokens.
+[08:35] Initially, you can use NLP approaches to
+[08:37] generate word embedding representations
+[08:40] of words in text.
+[08:44] Next is feature level fusion. Run a CNN
+[08:46] over the image to produce a fixed
+[08:48] dimensional feature vector. Run a
+[08:51] separate encoder over the EHR sequence
+[08:54] to produce another feature vector.
+[08:56] Concatenate the two vectors feed to a
+[08:58] classifier.
+[09:00] This decouples the per modality encoding
+[09:02] from the fusion which is more flexible
+[09:05] than token level fusion when modalities
+[09:08] are dissimilar. Attention-based
+[09:10] fusion is a third option increasingly
+[09:13] popular in modern architectures.
+[09:17] Here you use LSTM to process sequence of
+[09:20] text data embedding representations.
+[09:23] Each modality produces a sequence of
+[09:25] token level embeddings.
+[09:28] A cross attention mechanism lets one
+[09:31] modality query into the other producing
+[09:33] fuse per token representations that
+[09:35] depend on both modalities.
+[09:37] The architecture is more expressive than
+[09:40] concatenation and is the basis of modern
+[09:44] multimodal transformer architectures.
+[09:46] Image data is an additional input to the
+[09:49] LSTM at each time step with soft
+[09:54] attention waiting. Birectional LSTMs
+[09:56] allow both forward and backward context.
+[10:00] Stacked LSTMs at capacity. Attention
+[10:03] mechanisms layered on top of the LSTM
+[10:05] allow the network to selectively focus
+[10:08] on relevant time steps.
+[10:10] Final fully connected layer fusion and
+[10:12] prediction of disease labels at the
+[10:14] output.
+[10:16] When to use recurrent multimodal
+[10:18] approaches when at least one of your
+[10:23] modalities is naturally a sequence. Eh R
+[10:26] time series vital sign waveforms.
+[10:28] when the temporal structure carries
+[10:30] clinical signal and you want the model
+[10:33] to use it. When the modalities can be
+[10:36] combined at the token or feature level
+[10:39] for pure image plus image fusion multi-
+[10:42] view multisequence joint fusion with
+[10:45] parallel CNN encoders is usually a
+[10:46] better fit.
+[10:48] Another form of learning multimodal
+[10:51] embedding spaces. The work of Hedu in
+[10:55] 2018 learns mapping from images and text
+[10:58] to vectors in the same embedding space
+[11:00] such that images are embedded closer to
+[11:02] their corresponding reports than other
+[11:04] reports. This can be used for
+[11:06] cross-domain retrieval. Rather than
+[11:09] training a multimodal model end to end
+[11:11] for a specific clinical task, learn a
+[11:13] shared embedding space in which
+[11:15] different modalities are mapped to
+[11:18] vectors that can be compared directly.
+[11:20] Image embeddings and text embeddings end
+[11:23] up in the same space. Distances in the
+[11:25] space carry semantic meaning across
+[11:27] modalities.
+[11:29] This is the conceptual foundation of
+[11:31] clip style models that we see in detail
+[11:33] later.
+[11:37] Here we have a CNN containing 121 layers
+[11:40] and uses a highly efficient dense
+[11:42] connectivity pattern for image specific
+[11:44] processing.
+[11:47] We then do text specific processing say
+[11:49] using word tove vec with semantic
+[11:52] structure encoded in geometry.
+[11:54] Each step refineses the idea that
+[11:56] semantic meaning can be encoded in a
+[12:01] shared vector space across modalities.
+[12:02] We then have a mapping to joint
+[12:05] embedding space.
+[12:07] Different loss objectives can be used to
+[12:09] encourage desired embedding space
+[12:12] relationships between images and text.
+[12:14] Some clinical examples of shared
+[12:16] multimodal embedding spaces are chest
+[12:20] x-rays paired with radiology reports.
+[12:23] You can build broader medical image text
+[12:25] corpus, say figures in medical
+[12:27] publication paired with their captions.
+[12:30] Each has the same recipe, paired
+[12:33] multimodal data, contrastive objective,
+[12:36] shared embedding space.
+[12:38] Returning to the three fusion strategies
+[12:41] now in a more systematic form.
+[12:45] Early fusion combines raw inputs. Joint
+[12:46] fusion combines intermediate
+[12:48] representations.
+[12:50] Late fusion combines per modality
+[12:52] predictions. Each has different design
+[12:55] trade-offs and different appropriate use
+[12:57] cases.
+[12:59] Let's walk through the comparison
+[13:02] between the three fusion types. Early
+[13:05] fusion on the left concatenate and
+[13:06] combine data before any model
+[13:08] processing.
+[13:10] Type two includes using extracted
+[13:13] features as input if model gradients are
+[13:15] not back propagated to update feature
+[13:17] extractor parameters.
+[13:19] The combined input then flows through a
+[13:21] single network.
+[13:24] Joint fusion both modality specific
+[13:27] components with learnable parameters and
+[13:29] combined modality components within the
+[13:31] model that are updated during model
+[13:32] training.
+[13:35] Each modality has its own encoder.
+[13:37] Intermediate representations are
+[13:38] combined and passed through a fusion
+[13:41] network. Type two is a special case of
+[13:45] type one. Pros modality specific feature
+[13:49] learning jointly trainable flexible.
+[13:52] Cons more parameters more complex
+[13:54] training.
+[13:56] Late fusion main learnable model
+[13:59] components are only model specific.
+[14:01] Individual modality outputs are then
+[14:04] aggregated. Each modality has its own
+[14:07] complete prediction network. The per
+[14:09] modality predictions are combined at the
+[14:12] end, typically by averaging or by a
+[14:15] small meta classifier. Pros: modular,
+[14:18] easy to maintain, robust to missing
+[14:21] modalities at inference time. Cons: No
+[14:24] shared representation, no intermodality
+[14:26] interaction during feature learning.
+[14:29] Choosing among the three, ask three
+[14:32] questions. Are the modalities
+[14:35] structurally aligned? If yes, early
+[14:37] fusion is viable. Are the modalities
+[14:39] semantically related but structurally
+[14:43] different? If yes, joint fusion is
+[14:45] appropriate. Are the modalities
+[14:47] independently informative with limited
+[14:50] cross modality correlation?
+[14:53] If so, late fusion may be the safest.
+[14:55] There is no universal answer. The right
+[14:59] choice depends on the data and the task.
+[15:02] A short check question. What fusion
+[15:04] strategy do we have here? The answer
+[15:08] early fusion specifically the four MRI
+[15:13] modalities T1, T1 seat go, T2 and flare
+[15:15] are stacked as a single four channel
+[15:18] input volume and fed into the first
+[15:21] convolutional layer of the network.
+[15:22] This approach allows the network to
+[15:25] learn crossmodal correlations from the
+[15:27] very beginning of the feature extraction
+[15:28] process.
+[15:32] You see a two pathway CNN architecture
+[15:35] that simultaneously exploits local
+[15:37] features and global contextual
+[15:39] information combined with a cascaded
+[15:41] architecture where the output of an
+[15:44] initial CNN is treated as additional
+[15:47] input for a subsequent CNN.
+[15:50] How about here? What fusion strategy do
+[15:53] we have here? The answer joint fusion.
+[15:56] Each view had its own RestNet backbone.
+[15:58] The purview feature vectors were
+[16:01] concatenated at an intermediate layer
+[16:03] and the concatenated vector went through
+[16:06] a shared classifier head trained end to
+[16:09] end joint fusion in the textbook sense.
+[16:12] Conceptually simple four parallel
+[16:15] restnets concatenate classify and
+[16:18] clinically effective.
+[16:20] The overall pattern of modality specific
+[16:23] encoders followed by joint fusion is one
+[16:25] of the most reusable templates in
+[16:28] multimodal medical AI.
+[16:31] Another example of joint fusion Wang at
+[16:35] al 2018 tinet text image embedding
+[16:38] network. The task is joint chest x-ray
+[16:41] classification and report generation.
+[16:44] The model has two encoders, a CNN over
+[16:47] the image and LSTM
+[16:50] over the report with attention
+[16:52] mechanisms allowing one modality to
+[16:55] inform the other.
+[16:57] Tinet's contribution beyond architecture
+[16:59] was demonstrating that the same model
+[17:01] could perform classification and
+[17:04] language generation jointly. The shared
+[17:06] representation captures structure useful
+[17:09] for both tasks. This is the conceptual
+[17:12] seat of modern medical foundation models
+[17:14] that produce free text outputs as well
+[17:17] as classifications.
+[17:18] Returning to multimodal embedding
+[17:22] spaces, the key goal map images and text
+[17:25] to the same vector space so matching
+[17:27] pairs are close together with a
+[17:29] contrastive objective and sufficient
+[17:31] paired data. You can learn embedding
+[17:35] such that paired image text pairs end up
+[17:37] close in the embedding space while
+[17:40] unpaired examples end up far.
+[17:42] The shared space then supports
+[17:44] crossmodal retrieval, zeroshot
+[17:46] classification and reusable
+[17:49] representation learning.
+[17:51] The shared space framing matters because
+[17:53] it decouples representation learning
+[17:56] from any specific downstream task. The
+[17:59] model learns a general purpose space.
+[18:01] Downstream applications then sit on top
+[18:04] often with no further training.
+[18:06] Different loss objectives can be used to
+[18:08] encourage desired embedding space
+[18:11] relationships. This is the foundation
+[18:13] model paradigm.
+[18:15] Learning multimodal embedding spaces is
+[18:17] most often done through contrastive
+[18:19] learning. The objective is to pull
+[18:21] paired examples together in the
+[18:23] embedding space and push unpaired
+[18:25] examples apart.
+[18:28] To explain why this works and why it has
+[18:31] become the dominant paradigm, we need to
+[18:33] step back and discuss self-supervised
+[18:36] learning more broadly.
+[18:39] Self-supervised learning, the paradigm
+[18:41] of using unlabelled data to learn useful
+[18:43] representations.
+[18:44] The trick is that you construct a
+[18:48] pretext task, a task whose labels can be
+[18:50] generated automatically from the raw
+[18:53] data itself and train a network to solve
+[18:56] it. The representations learned in the
+[18:58] process turn out to be useful for
+[19:01] downstream supervised task. The pretext
+[19:04] task is a means. The representation is
+[19:07] the end. The key idea is to enable
+[19:09] pre-training on much larger amounts of
+[19:12] unlabelled data then fine-tuning with
+[19:15] small labelled data sets. This directly
+[19:17] addresses the challenge of limited label
+[19:20] data in healthcare.
+[19:22] Why self-supervised learning matters?
+[19:25] Traditional supervised learning trains a
+[19:27] model to perform a prediction task using
+[19:30] paired training data of inputs with
+[19:32] corresponding ground truth labels for
+[19:34] the desired task.
+[19:37] In medical AI, labeled data is the
+[19:40] bottleneck. Labeled data is scarce.
+[19:44] Unlabeled data in contrast is abundant.
+[19:46] Every hospital has terabytes of
+[19:49] unlabeled images and notes.
+[19:51] Self-supervised learning lets us extract
+[19:53] signal from the abundant unlabeled
+[19:56] portion and use the scarce labeled
+[19:59] portion only for final task specific
+[20:00] fine-tuning.
+[20:03] Self-supervised learning comes in three
+[20:05] broad categories. Generative methods
+[20:08] reconstruct input from a corrupted or
+[20:11] masked version. Autoenccoders, for
+[20:14] example, mass language modeling in BERT.
+[20:16] Predictive methods predict one part of
+[20:19] the input from another. Would two vex
+[20:23] skip gram is the classical example.
+[20:26] Contrastive methods learn embedding such
+[20:28] that similar examples are close and
+[20:31] dissimilar examples are far.
+[20:33] All three are useful. Contrastive is the
+[20:35] dominant paradigm in the multimodal
+[20:37] world today.
+[20:39] Related to earlier discussion on
+[20:41] pre-training on larger data sets and
+[20:44] transfer learning. Now we can also use
+[20:46] self-supervised learning to pre-train on
+[20:49] larger amounts of unlabeled data from
+[20:51] the same domain.
+[20:53] Some common types of self-supervised
+[20:56] learning objectives. Innate relationship
+[20:59] objective for example predict rotation
+[21:01] angle or some other innate property of
+[21:03] an image.
+[21:05] Self-prediction objective by masking
+[21:07] parts of input data and predicting these
+[21:10] parts. The network learns embeddings
+[21:12] that capture statistical structure of
+[21:15] co-occurrence.
+[21:17] A contrastive objective requires that
+[21:19] different views of the same input should
+[21:21] have more similar representation to each
+[21:25] other than with a different input.
+[21:27] A contrastive self-supervision thus
+[21:30] identifies which examples are similar to
+[21:32] which other examples and train the model
+[21:34] so that views of the same example are
+[21:37] close in the embedding space and views
+[21:40] of different examples are far. The
+[21:42] result is an embedding space that
+[21:44] captures semantic structure without
+[21:48] requiring any external labels
+[21:50] can have varied formulations of these
+[21:52] objectives within each type. Why
+[21:55] contrastive has become dominant? Three
+[21:57] reasons. One, strong empirical
+[21:59] performance. Contrastive embeddings
+[22:01] transfer well to a wide range of
+[22:05] downstream tasks. Two, natural extension
+[22:08] to multimodal. Paired modalities provide
+[22:11] built-in similar example pairs without
+[22:14] any augmentation design. Three,
+[22:17] conceptual simplicity. The objective is
+[22:19] geometrically intuitive and easy to
+[22:21] implement.
+[22:23] The combination of these three has made
+[22:24] contrastive learning the default
+[22:26] starting point for representation
+[22:28] learning across most modalities since
+[22:31] 2020.
+[22:34] SIM CLR simple framework for contrastive
+[22:37] learning of visual representations.
+[22:42] Chen Cornblit Nuzi Hinton Google Brain.
+[22:45] The 2020 paper that crystallized
+[22:47] contrastive self-supervised learning
+[22:49] into a clean recipe.
+[22:52] The next few slides walk through SIM CLR
+[22:54] in detail.
+[22:57] The SIM CLR recipe at a glance. Take an
+[23:00] unlabelled image. Apply two random
+[23:02] augmentations to produce two views of
+[23:05] the same image. Call them positive pair.
+[23:07] Encode each view through a shared C and
+[23:10] N to produce embeddings. The training
+[23:12] objective pulls the positive pair close
+[23:14] in the embedding space and pushes them
+[23:16] away from embeddings of other images in
+[23:18] the same batch.
+[23:22] Repeat for many images. The CNN learns a
+[23:25] representation that captures invariance
+[23:26] to the augmentations and meaningful
+[23:30] semantic structure.
+[23:33] SIM CLR relies on a specific sequence of
+[23:35] random augmentations to generate diverse
+[23:38] but semantically identical views of an
+[23:41] original image.
+[23:45] The original image X is input.
+[23:48] The choice of augmentation is critical.
+[23:50] This leads to different transformation
+[23:53] operator. SIM CLR's experiments showed
+[23:55] that the combination of random cropping
+[23:58] plus color distortion was the single
+[24:01] most effective augmentation pair.
+[24:04] Bad augmentation choices, too weak, too
+[24:07] strong or wrong for the data can render
+[24:09] the whole approach useless. For medical
+[24:12] imaging, the natural augmentations
+[24:15] differ from natural image augmentations
+[24:18] and need to be designed carefully.
+[24:20] Some examples of transformation are
+[24:22] random crop with flip and resize, color
+[24:25] distortion, goian blur. There are a
+[24:27] variety of many other transformations
+[24:29] mentioned in the paper such as cutouts,
+[24:33] so filtering and so on.
+[24:35] The transform versions of the input are
+[24:38] then processed downstream.
+[24:40] transfer to downstream tasks. In
+[24:43] particular, the same encoder network F,
+[24:45] meaning the same model is applied to
+[24:48] both image transformers.
+[24:51] A projection head implemented as a
+[24:54] multi-layer perceptron MLP with one
+[24:57] hidden layer is applied identically to
+[25:02] both representations H subi and H subj.
+[25:04] This same network transforms each
+[25:07] representation into a latent space where
+[25:11] a contrastive loss is typically computed
+[25:13] without sharing parameters in a Siamese
+[25:16] sense but rather using the exact same
+[25:19] MLP weights for both inputs. The hidden
+[25:21] layer allows the model to learn a
+[25:23] nonlinear mapping that retains task
+[25:25] relevant information while stripping
+[25:28] away unwanted features.
+[25:31] Now the contrastive loss or the NTZ loss
+[25:33] in more detail because the formula
+[25:35] matters and you will see variance of it
+[25:38] across every contrastive method. The
+[25:42] loss for the positive pair I do eat J is
+[25:46] the negative log of expo of similarity e
+[25:49] i j divided by temperature divided by
+[25:52] the sum over all other candidates cur of
+[25:56] expo of similarity edit k divided by
+[25:58] temperature cosine similarity is the
+[26:01] standard similarity function the
+[26:03] denominator is the partition function
+[26:04] over all candidates including the
+[26:07] positive
+[26:11] Intuition for the NTZ loss. It is a
+[26:12] classification loss where the classes
+[26:15] are the candidate views and the correct
+[26:18] class is the positive pair. The softmax
+[26:20] over similarities makes this a
+[26:22] probability distribution.
+[26:25] Contrastive loss can take the form of a
+[26:27] familiar cross entropy loss. The cross
+[26:29] entropy against the one hot positive is
+[26:32] correct. Target produces the loss. The
+[26:34] temperature parameter shapes how sharp
+[26:38] the softmax is. pulling positives close
+[26:40] and pushing negatives away emerges from
+[26:43] gradient descent on this loss.
+[26:46] Given a mini batch of n examples, two
+[26:48] augmented views are generated per
+[26:51] example producing two n data points. The
+[26:54] contrastive loss is designed so that for
+[26:57] any pair I a j that are augmentations of
+[27:00] the same original example, their
+[27:01] representations are more similar than
+[27:04] those from different examples. This is
+[27:06] achieved using a cross entropy
+[27:09] formulation. For each anchor I, the
+[27:11] similarity with its positive pair J is
+[27:14] treated as the correct class and the
+[27:16] loss encourages that similarity score to
+[27:19] exceed those with all other two N minus
+[27:23] two negative points in the batch.
+[27:25] This is the loss for a pair of data
+[27:27] points J.
+[27:29] This is the similarity score between
+[27:34] final layer representations of I and J.
+[27:36] You can use cosine similarity to capture
+[27:39] the similarity of the two vectors.
+[27:41] Now summing up and from here the
+[27:43] expression looks very similar to the
+[27:45] softmax loss function which is the
+[27:47] generalized cross entropy for multiple
+[27:49] classes.
+[27:52] The contrastive loss uses a temperature
+[27:53] hyperparameter.
+[27:55] This controls peakiness of the final
+[27:57] probability distribution for better
+[27:59] learning dynamics.
+[28:03] This is another degree of freedom.
+[28:05] Normalize over scores of similarity
+[28:07] between I and all other data points in
+[28:09] the mini batch altogether two n data
+[28:11] points.
+[28:13] This gives us the contrastive loss as a
+[28:16] negative lock likelihood as in softmax
+[28:19] or cross entropy.
+[28:21] For a mini batch of n examples yielding
+[28:24] two n augmented views, the contrastive
+[28:26] loss is computed over all corresponding
+[28:29] positive pairs i, j as well as the
+[28:33] symmetric pairs j, i. Thus resulting in
+[28:36] two n loss terms. Each term encourages
+[28:38] the representations of the two
+[28:40] augmentations of the same original
+[28:42] example to be more similar than those of
+[28:45] different examples. These two and its
+[28:48] individual loss values are then averaged
+[28:50] to produce the final loss for the mini
+[28:52] batch.
+[28:55] A final set of practical notes. S train
+[28:57] for as many epochs as your compute
+[29:00] budget allows. Longer is generally
+[29:02] better. Tune the temperature parameter
+[29:05] on a small validation downstream task.
+[29:07] Choose augmentations appropriate to your
+[29:10] modality. Use a small projection head
+[29:12] and discard it after training.
+[29:14] After self-supervised training, the
+[29:17] encoder F can be fine-tuned on smaller
+[29:19] label data sets by adding a task
+[29:21] specific classifier and updating the
+[29:25] encoder weights via supervised learning.
+[29:27] Alternatively, the learned
+[29:31] representations h= f ofx can be directly
+[29:33] extracted and used as fixed feature
+[29:35] vectors for downstream tasks such as
+[29:38] classification or clustering without
+[29:41] further training. This flexibility makes
+[29:43] self-supervised learning particularly
+[29:47] valuable when labeled data is scarce.
+[29:49] Single modality contrastive learning
+[29:52] like SIM CLR produces a paired positive
+[29:56] from an image by augmenting it. Convert
+[29:58] which is work published by Stanford
+[30:01] folks Jang Atal. Contrastive learning of
+[30:03] medical visual representations from
+[30:07] paired images and text in 2020 is a
+[30:09] multimodality approach designed for
+[30:11] paired image and text data from the same
+[30:14] patient case. Specifically a medical
+[30:17] image and its corresponding radiology
+[30:18] report.
+[30:21] The method uses two separate modality
+[30:24] specific encoders, one for images and
+[30:27] one for text. A positive pair consists
+[30:29] of an image and its matched report,
+[30:31] while negative pairs are formed by
+[30:33] pairing the image with non-matching
+[30:36] reports from other cases.
+[30:38] The model is trained using the same NTZ
+[30:40] contrastive loss structure as in SIM
+[30:44] CLR, pulling representations of positive
+[30:46] pairs together and pushing negative
+[30:49] pairs apart in a shared embedding space.
+[30:52] On the left, we have the basic setup of
+[30:55] the SIM CLR we saw earlier. On the
+[30:57] right, the multimodal contrastive
+[31:00] learning, two encoders, one for each
+[31:04] modality. An image encoder, typically a
+[31:07] CNN or vision transformer, processes
+[31:08] images.
+[31:11] A text encoder, typically a transformer
+[31:13] like BERT, processes captions or
+[31:15] reports.
+[31:17] Each encoder produces a fixed
+[31:20] dimensional embedding. The embeddings
+[31:22] are projected to a shared embedding
+[31:25] space via small projection heads.
+[31:28] Both encoders are trained jointly via a
+[31:31] contrastive loss over pad examples.
+[31:34] In single modality contrastive learning
+[31:37] representations H are shared encoder
+[31:39] outputs of two different augmentations
+[31:42] of the same input. We want augmentations
+[31:44] corresponding to the same input to be
+[31:46] more similar to each other than to those
+[31:49] corresponding to different inputs.
+[31:52] In multimodality contrastive learning
+[31:54] representations h come from two
+[31:57] different modality specific encoders.
+[31:59] for example, an image and its
+[32:01] corresponding report.
+[32:03] The goal is to make these paired
+[32:05] representations more similar to each
+[32:07] other than to non-corresponding images
+[32:09] or reports from other cases. The
+[32:12] contrastive objective for multimodal
+[32:15] data for each paired example image I I
+[32:18] text J in the batch. The positive pair
+[32:23] is a AA by J the image and its caption.
+[32:26] The negatives are all other image text
+[32:29] combinations in the batch. Image I with
+[32:33] text K for K not equal to J and so on.
+[32:35] The loss pulls the paired image and text
+[32:38] together in the embedding space and
+[32:41] pushes apart the unpaired combinations.
+[32:45] NT zent is the standard loss. What gets
+[32:47] learned? The shared embedding space ends
+[32:49] up structured by the semantic content
+[32:53] that appears in both modalities.
+[32:56] Convert contrasted visual representation
+[32:57] learning is the first major
+[32:59] demonstration of multimodal contrastive
+[33:01] learning applied specifically to medical
+[33:03] imaging.
+[33:05] Chess X-rays paired with the radiology
+[33:08] reports as the multimodal data. The
+[33:11] model learns chess X-ray representations
+[33:13] that transfer well to downstream
+[33:15] classification tasks like pneumonia
+[33:19] detection. Convert predates OpenAI clip
+[33:21] by several months and is the conceptual
+[33:23] precursor for medical domain multimodal
+[33:26] contrastive methods.
+[33:28] Here is the convert architecture which
+[33:31] uses multimodal contrastive pre-training
+[33:33] on 217,000
+[33:37] image text from the mimic CXR data set.
+[33:39] On the left is the input image and text
+[33:43] data. Image encoder is a ResNet over the
+[33:46] chest X-ray. Text encoder is built over
+[33:49] the radiology report. Training data.
+[33:52] Convert was trained on mimic CXR.
+[33:55] Roughly 220,000 chest X-rays paired with
+[33:58] their radiology reports. Each report is
+[34:00] the radiologist's free text description
+[34:03] of findings, impressions, and
+[34:06] recommendations.
+[34:08] Modality specific sampling and
+[34:09] transformation.
+[34:12] Convert uses augmentation even though it
+[34:15] has paired multimodal positives. For
+[34:17] each chest X-ray, multiple augmented
+[34:20] views are produced. For each report,
+[34:23] sentences are sampled.
+[34:25] The contrastive objective treats all
+[34:28] augmented image sampled sentence pairs
+[34:32] from the same patient as positives. This
+[34:34] adds to the diversity of positive pairs
+[34:37] and improves learned representation
+[34:39] quality.
+[34:42] Modality specific encoders restnet 50
+[34:44] for images and bird initialized with
+[34:47] clinical bird for text only fine-tune
+[34:50] last six layers of bird encoder during
+[34:52] pre-training the pre-trained image
+[34:55] encoder was fine-tuned for downstream
+[34:58] chest X-ray classification pneumonia
+[35:01] plural eusion ataltoysis and other
+[35:04] findings on the checkpert and rsna data
+[35:06] sets convert pre-training outperform
+[35:09] image net supervised pre-training
+[35:11] SIM CLR pre-training on the same images
+[35:15] without text and from scratch training.
+[35:17] The text supervision was useful even
+[35:19] though no text was used at downstream
+[35:21] evaluation time.
+[35:23] At the output we have encoded
+[35:26] representations of image and text.
+[35:29] Each encoder's output is projected to a
+[35:31] shared embedding space via small ML
+[35:34] piece. The contrastive loss is applied
+[35:36] between the projected image and text
+[35:38] embeddings.
+[35:40] standard multimodal contrastive recipe
+[35:44] with medical domain encoders.
+[35:47] The same SIM CLR contrastive loss is
+[35:49] applied to projection outputs, but
+[35:51] positive pairs are now an image and its
+[35:54] matching report from the same patient
+[35:56] rather than two augmented views of the
+[35:57] same input.
+[36:01] Lastly, convert also enabled a form of
+[36:03] zeros classification
+[36:05] given an image and a set of candidate
+[36:08] text descriptions. pneumonia present,
+[36:11] pneumonia absent, etc. The model can
+[36:13] rank the descriptions by similarity to
+[36:15] the image in the shared embedding space
+[36:18] and pick the most similar one. This
+[36:20] zeroshot classification works without
+[36:23] any task specific training demonstrating
+[36:26] the generality of the learned multimodal
+[36:29] embedding space.
+[36:31] Gloria Global Local Representation
+[36:37] Learning Hang at AL ICV 2021 an
+[36:39] extension of convert that adds local
+[36:41] contrastive alignment in addition to
+[36:44] global contrastive alignment.
+[36:47] The motivation is that radiology reports
+[36:49] describe findings in specific anatomical
+[36:52] regions and the model should align text
+[36:55] words with image regions not just whole
+[36:57] reports with whole images. The local
+[36:59] contrastive objective is added to the
+[37:01] global one.
+[37:04] Many radiology reports are long.
+[37:06] Associating all parts of a report
+[37:08] equally with all regions of an image may
+[37:10] be too cost.
+[37:13] Gloria extends convert by introducing a
+[37:15] localized contrastive loss alongside the
+[37:17] global one. For each word in the
+[37:20] radiology report and each patch in the
+[37:23] image, similarity scores are computed
+[37:25] and an attention mechanism learns to
+[37:28] align words with relevant image regions.
+[37:30] This local objective is trained to
+[37:32] maximize alignment for matched image
+[37:34] report pairs and minimize it for
+[37:37] mismatched pairs. The result is that
+[37:39] Gloria captures fine grain
+[37:41] correspondences between specific
+[37:44] clinical phrases and anatomical regions
+[37:47] unlike convert which only aligns at the
+[37:49] global image report level.
+[37:52] Clip contrastive language image
+[37:56] pre-training Ratford at AL 2021
+[37:59] open AI the same recipe as convert but
+[38:02] at a much larger scale 400 million image
+[38:06] text pairs scraped from the web. The
+[38:08] model was trained for many GPU years on
+[38:11] what was then enormous compute. The
+[38:13] resulting embeddings transferred to a
+[38:15] remarkable variety of downstream image
+[38:18] classification benchmarks via zeroot
+[38:21] prompting without any task specific
+[38:22] training.
+[38:24] Clip redefined what was possible in
+[38:27] computer vision.
+[38:29] Clip architecture the same recipe as
+[38:32] convert paired image text data
+[38:34] contrastive loss in shared embedding
+[38:37] space. The differences are scale of
+[38:40] data, scale of model, scale of training
+[38:43] and breadth of text vocabulary.
+[38:45] The data set was constructed by
+[38:48] searching the web for image text pairs
+[38:50] where the text site was sourced from a
+[38:54] base query list of 500,000 queries.
+[38:55] This list included every word that
+[38:58] appeared at least 100 times in the
+[39:00] English version of Wikipedia.
+[39:02] These queries were then expanded and
+[39:04] processed through various augmentation
+[39:06] and filtering techniques such as
+[39:09] paraphrasing, language filtering, and
+[39:12] dduplication to generate a diverse set
+[39:14] of textual descriptions paired with
+[39:17] corresponding images.
+[39:20] Image encoder is a vision transformer.
+[39:22] Text encoder is a transformer over the
+[39:25] caption. Both are trained from scratch.
+[39:28] Clip's most striking capability is
+[39:31] zeroot classification.
+[39:33] Given an image and a set of class names,
+[39:36] for example, a photo of a dog, the model
+[39:39] computes text embeddings for each class
+[39:41] and ranks them by similarity to the
+[39:43] image embedding, selecting the top class
+[39:46] as the prediction, all without task
+[39:48] specific training.
+[39:51] At release, clip's zeroshot performance
+[39:53] approach or match fully supervised
+[39:55] models on many benchmarks.
+[39:57] Prompt engineering matters
+[39:58] significantly.
+[40:02] A photo of a dog works better than dog
+[40:04] for general tasks.
+[40:06] For medical imaging, templates must be
+[40:09] adapted. For example, a chest X-ray
+[40:12] showing pneumonia as prompt choice
+[40:15] affects zeroshot accuracy as much as
+[40:16] fine-tuning.
+[40:19] Moving to weak supervision.
+[40:21] Complimentary to self-supervised
+[40:23] learning. Self-supervised learning
+[40:26] extracts signal from unlabeled data.
+[40:28] Weak supervision extracts signal from
+[40:31] many imperfect labels. Labels that are
+[40:33] not as clean as a careful expert
+[40:35] annotation, but that are cheap to obtain
+[40:38] at scale. Both address the same root
+[40:41] problem of label scarcity. They are
+[40:43] often used together.
+[40:46] Sources of weak labels in medicine.
+[40:49] Diagnosis codes in the EHR.
+[40:52] ICD codes are present on virtually every
+[40:54] encounter, but they are noisy proxies
+[40:57] for actual conditions.
+[41:00] Free text mentions in clinical notes.
+[41:02] Patient has pneumonia in a discharge
+[41:07] summary is a label, but a noisy one.
+[41:10] Weak supervision from radiology reports.
+[41:12] One can mine structured labels from free
+[41:15] text reports using a rulesbased
+[41:18] pipeline. The resulting labels are noisy
+[41:20] but available at scale. Hundreds of
+[41:22] thousands of chess x-rays with
+[41:25] automatically extracted findings. So
+[41:27] rule-based approaches can be used to
+[41:30] obtain labels from free text reports.
+[41:32] How do we produce good labels from noisy
+[41:36] sources? Three strategies. One, improve
+[41:38] the label extraction pipeline to be less
+[41:42] noisy. Two, model the noise explicitly
+[41:44] during downstream training, learning to
+[41:47] weigh noisy labels appropriately.
+[41:51] Three, use majority voting. This
+[41:53] combines multiple noisy sources,
+[41:55] exploiting agreements and disagreements
+[41:58] to extract more reliable signal. Each
+[42:00] has been developed in the weak
+[42:03] supervision literature. Majority voting
+[42:05] is the most powerful and is the basis of
+[42:08] the data programming framework.
+[42:10] There are also other more sophisticated
+[42:13] approach. Learn models for how to best
+[42:16] aggregate noisy labeling functions.
+[42:18] These improved labelers reduce label
+[42:21] noise but do not eliminate it. They are
+[42:23] still weak supervision, just slightly
+[42:25] less weak.
+[42:28] We can also consider fusion by combining
+[42:30] multiple noisy sources. For example,
+[42:33] running LSTM over the text to build a
+[42:34] classifier.
+[42:37] If two independent labelers agree on a
+[42:39] label, the agreed label is more
+[42:42] trustworthy than either alone. If they
+[42:45] disagree, the disagreement itself is
+[42:47] informative. Both might be wrong, but
+[42:49] one is more likely to be right than
+[42:51] chance.
+[42:53] The data programming framework
+[42:55] formalizes this combination as a
+[42:57] learnable model that aggregates noisy
+[43:00] sources into a probabilistic label.
+[43:04] Data Programming Retina at AL 2016
+[43:07] Stanford. The framework that
+[43:09] operationalizes weak supervision at
+[43:12] scale. The system called Snorkel lets
+[43:15] users define many labeling functions,
+[43:17] simple heristics, reject patterns,
+[43:21] dictionary lookups, small neural models,
+[43:23] each of which assigns noisy labels to
+[43:26] examples. Snorkel then learns a
+[43:27] generative model that combines the
+[43:29] labeling functions into probabilistic
+[43:32] per example labels accounting for the
+[43:37] accuracy and overlap of each function.
+[43:41] Dunman at al 2020 detailed the data
+[43:43] programming paradigm in four steps.
+[43:47] First, domain experts define labeling
+[43:49] functions, heruristic rules, weak
+[43:52] supervision sources, or crossmodal
+[43:56] signals, for example, from text reports.
+[43:58] Second, these functions are applied to a
+[44:00] large unlabeled data set to produce
+[44:02] multiple potentially noisy labels per
+[44:06] example. Third, a generative model is
+[44:07] fit to combine the outputs of the
+[44:10] labeling functions, estimating the
+[44:12] accuracies and correlations to produce
+[44:15] probabilistic labels. Fourth, a
+[44:18] downstream discriminative model, for
+[44:21] example, a neural network is trained on
+[44:23] these probabilistic labels.
+[44:26] A key insight is that the downstream
+[44:28] model often outperforms one trained on a
+[44:31] smaller fully supervised data set
+[44:33] because the weak labels cover far more
+[44:35] examples.
+[44:37] This framework implemented in systems
+[44:40] like Snorkel has been deployed at scale
+[44:43] at Stanford Hospital, the VA, and in
+[44:45] industry settings.
+[44:47] It stands as one of the cleanest
+[44:49] examples of building clinical AI without
+[44:52] exhaustive expert labeling provided one
+[44:54] can encode expert knowledge into
+[44:56] labeling rules.
+[45:00] Quick summary multimodal data and the
+[45:04] three fusion strategies early joint late
+[45:06] self-supervised learning as the broad
+[45:08] family of methods for extracting signal
+[45:10] from unlabelled data with three
+[45:13] categories generative predictive
+[45:15] contrastive
+[45:18] sim as the canonical single modality
+[45:21] contrastive method with its anti-exent
+[45:23] loss and augmentationbased positive
+[45:24] pairs
+[45:27] multimodal contrastive learning
+[45:29] with Convert and Gloria as medical
+[45:31] domain pioneers and clip as the web
+[45:34] skill demonstration and weak supervision
+[45:36] via snorkel style data programming as
+[45:39] the complement that scales up labeling
+[45:42] rather than learning without labels.
+[45:44] Next lecture pushes the transformer
+[45:47] architecture further GPT and the decoder
+[45:50] only family and the medical applications
+[45:53] of the foundation model paradigm.

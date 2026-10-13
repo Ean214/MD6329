@@ -1,0 +1,1531 @@
+[00:02] Good afternoon everyone. So um glad to
+[00:04] see all of you here and today we have a
+[00:07] guest speaker. Uh but before I introduce
+[00:10] her, I thought of sharing with you um a
+[00:12] very recent video clip uh just for a
+[00:15] couple of minutes uh one given by Andra
+[00:17] Kapati right at Stanford. And when he
+[00:20] mentioned about uh this work, it makes
+[00:22] me think of our guest speaker. So let me
+[00:26] play that um uh video right. So
+[00:28] &gt;&gt; it's pretty incredible. But this was
+[00:30] amazing state-of-the-art at the time.
+[00:32] And at Tesla, I worked on the autopilot.
+[00:35] Uh so uh in in the instrument cluster
+[00:36] when you see the cars and the road and
+[00:38] the traffic lights and everything like
+[00:39] that, my team would create the neural
+[00:41] networks that uh create these
+[00:43] predictions.
+[00:45] Um but I suspect that the reason I was
+[00:46] invited to give a keynote here is
+[00:48] because is not any of that stuff, but
+[00:50] the fact that I love to hack. So I I do
+[00:52] a lot of things on the side. So for
+[00:54] example, I wrote a library for training
+[00:56] neural networks in JavaScript a while
+[00:59] ago. It was called comjs. At the time a
+[01:01] lot of people were like why? And I was
+[01:04] always like why not.
+[01:07] Um I I did it for the laws.
+[01:10] &gt;&gt; Yep. So you did it for the lows and
+[01:12] actually um um our guest speaker right
+[01:15] Dr. G man uh she was so much inspired by
+[01:18] Andra Kapati's work. she did it for
+[01:21] healthcare and we saw that work earlier
+[01:24] on right CNN play in our lecture right
+[01:27] on computer vision and deep learning so
+[01:29] today uh it is indeed a great pleasure
+[01:34] right to welcome u Dr. Gman. So let me
+[01:37] um briefly mention about the abstract.
+[01:39] She's going to give us a talk on
+[01:40] radiology, right? So which has always
+[01:43] been at the forefront of technology in
+[01:44] medicine
+[01:46] and strange bat fellows that do not
+[01:49] always coexist easily and she's going to
+[01:52] tell us why right and uh in this talk
+[01:55] she will introduce quite a bit of modern
+[01:59] um take on radiology with AI. I think
+[02:01] that is going to be very exciting
+[02:03] because she is indeed a true
+[02:05] practitioners not just theoretical side
+[02:08] but a practitioner and one who likes to
+[02:13] hack right and um she has she has many
+[02:15] many years of experience as I said uh
+[02:19] and also being a certified uh imaging um
+[02:21] professional with a passion for workflow
+[02:24] improvements. So in today's time we are
+[02:26] talking about agentic AI. I think that
+[02:29] is going to help with workflow. So maybe
+[02:31] later we can try to get her insights on
+[02:35] how agentic AI can help with radiology
+[02:38] workflow as well. Right. Uh Dr. uh Jit's
+[02:40] passion also lies in teaching medical
+[02:44] physics uh crafting radiology reports
+[02:46] and using JavaScript to code everything
+[02:48] right. So she's really a big fan of uh
+[02:51] diversity and inclusion uh as well as
+[02:53] old school Star Trek. So without further
+[03:01] Hi everybody. Thank you Fanan for your
+[03:06] very very kind introduction. Um yeah um
+[03:07] so
+[03:09] um first of all thank you for inviting
+[03:11] me to give this talk. I I love giving
+[03:13] this type of talks especially to uh
+[03:16] multi-disiplinary type of uh environ
+[03:19] audiences. Um so uh just a little
+[03:22] background I'm a radiologist. So um I do
+[03:24] a lot of uh basically that's my clinical
+[03:26] work but I'm also very interested in uh
+[03:30] informatics and those things. So uh
+[03:33] first I'm going to let me just open up
+[03:35] my my slides here so we can just get the
+[03:49] Okay. So a child of two worlds. uh
+[03:51] whoever knows the Star Trek reference uh
+[03:53] can can write it down in the text box.
+[03:55] [clears throat] Um the tools are
+[03:58] basically medicine and uh computers. So
+[04:00] you I'm sure you know a lot of doctors
+[04:03] if you're in the healthcare field um the
+[04:07] amount of uh IT knowledge the general
+[04:09] doctor has is not that not that great.
+[04:12] And those in the IT engineering field um
+[04:14] the amount of clinical knowledge is
+[04:16] actually quite complicated. And the
+[04:18] problem most of the time is um I think
+[04:20] this is one of the important things that
+[04:23] I've learned so far is that the language
+[04:26] that these two groups speak are not the
+[04:29] same. They can never make each other
+[04:31] understand what's going on. So um if you
+[04:34] were to ask a doctor say okay the doctor
+[04:36] knows this disease process and whatever
+[04:38] and when they try to explain it in a way
+[04:40] to the IT people so that okay look at it
+[04:42] this way and then I think people why
+[04:44] what are you talking about and the IT
+[04:46] people will kind of like say okay um you
+[04:47] know we can do this we can do this to
+[04:49] the system but what you're asking for is
+[04:51] not possible and doctors will say why
+[04:54] can't you do that so um if you are going
+[04:57] to progress in the uh AI in healthcare
+[05:00] type of field this is the I think this
+[05:01] the first thing you need to keep in mind
+[05:04] first. So that's why I love the way this
+[05:06] this uh course is structured for you
+[05:08] guys um where you have a nice mix of
+[05:11] clinical and uh and engineering type of
+[05:14] topics and so yeah so to get onto middle
+[05:16] ground. Now uh at any time during this
+[05:18] talk if there are any questions at all
+[05:20] anything you do not understand please
+[05:22] feel free to just uh type it up in the
+[05:24] text box. I I I'm leaving the chat open
+[05:27] on the on the Zoom viewer.
+[05:28] [clears throat]
+[05:31] Okay. So um first of all I'm just going
+[05:34] to go through some basic stuff. Um since
+[05:36] I'm a radiologist uh I'm just going to
+[05:38] talk a little bit about radiology and
+[05:42] how it pertains to the um how it
+[05:45] pertains to the the AI part of it and uh
+[05:46] whatever is relevant to what you guys
+[05:49] are going to go through in this course.
+[05:52] Um I'm going to introduce a radiology
+[05:55] workflow and the radiology workflow
+[05:57] basically is how the radiology system
+[05:59] the radi practice is structured in the
+[06:01] department. Um because once you start
+[06:03] doing production projects you are going
+[06:06] to be involved you're going to have to
+[06:09] know this workflow and uh this workflow
+[06:12] fortunately in a way it's pretty
+[06:14] standard all over the world. So um once
+[06:16] you know this workflow you can kind of
+[06:18] like uh be able to integrate your
+[06:22] products into it. Um I'm going to talk a
+[06:24] little bit about the diccom file. Um
+[06:26] this one is uh because if you guys are
+[06:29] interested in developing your own uh AI
+[06:32] models and so on and so forth. Um just a
+[06:34] little bit brief uh overview of the
+[06:36] daong file itself. I'm going to talk
+[06:39] about the AI uses in radiology, the
+[06:41] general topics and the challenges in
+[06:42] each one. And then finally, we just go
+[06:45] through quickly some of the uh CNN place
+[06:46] and the other things that I've done
+[06:50] using uh Connet GS.
+[06:54] Okay. So, imaging modalities. Um I'm not
+[06:56] sure how many of you here are from
+[06:57] medical side and how many of you from
+[07:00] the IT side. Um but I think it's
+[07:03] relevant to both imaging modalities.
+[07:05] When you go into a radiology department,
+[07:06] you're going to have uh different types
+[07:08] of imaging modalities. These are the
+[07:10] general the main the main modalities
+[07:14] that you have. Um an X-ray is the most
+[07:17] simple basic kind of thing. You go in
+[07:18] [clears throat]
+[07:20] and then you shoot and you get one 2D
+[07:23] image. So sometimes um a body part
+[07:26] consists of uh two views. For example,
+[07:27] this is the you can see there's a
+[07:29] fracture of the forearm in the middle
+[07:32] image there. So that fracture is the two
+[07:35] view uh one is uh projected in uh AP
+[07:37] projection one in lateral projection. So
+[07:41] we can make out the fractures. So uh
+[07:43] radio graph a digital radioraph is
+[07:47] usually two-dimensional. Uh so it's a 2D
+[07:50] image m the matrix is going to be quite
+[07:53] big pretty around 3 megapixels or so. Um
+[07:55] the matrix is different for different
+[07:58] types of uh different types of
+[07:59] manufacturers but generally they are
+[08:02] pretty big around three megapixels
+[08:06] and this actually uh is one of the first
+[08:08] few problems that you will face if
+[08:10] you're going to develop any sort of AI
+[08:12] that means your input matrix is already
+[08:15] going to be gigantic as opposed to uh
+[08:18] having like small uh inputs like 1 128 1
+[08:23] 8 and maybe 256 256 and X-ray is about 3
+[08:25] megapixels. That's the first issue. Um,
+[08:27] of course, the nice thing about X-rays
+[08:30] is that most of the time the details are
+[08:32] pretty obvious, is pretty big. So, even
+[08:33] if you squeeze the image down to a
+[08:35] smaller matrix, you tend to have the
+[08:38] clinical information still intact.
+[08:42] Um, the X-ray image in usually taken in
+[08:45] about 10 to 12 bit uh grayscale. So,
+[08:47] it's a single channel file. uh grayscale
+[08:51] that means uh between 4,000 to uh 4,000
+[08:54] gray levels or so um as opposed to the
+[08:57] usual 8 bits uh 8 bits that we are used
+[09:01] to 8 bit RGBs. So again um this 10 to 12
+[09:04] bit grayscale means there are um 4,000
+[09:08] let's say 496 levels of gray and not all
+[09:11] those the entire range carries image
+[09:13] information. So some parts may carry,
+[09:16] some parts may not. The darker ones, the
+[09:18] ages may not carry so much. So again,
+[09:21] this is a process that um sometimes
+[09:23] normalization helps for you to be able
+[09:24] to get kind of like a centered
+[09:27] histogram. Uh but keep that in mind. A
+[09:30] lot of the standard inputs. Um sorry,
+[09:31] this is actually not much of a problem
+[09:33] because usual usually your input for
+[09:35] your neural nets are usually uh
+[09:38] normalized to zero to one. So it doesn't
+[09:42] really matter that much. [clears throat]
+[09:44] uh mamogram is the imaging of the
+[09:47] breast. So uh it's basically x-rays.
+[09:49] It's still 2D pictures, but generally
+[09:51] it's uh two projections per breast. So
+[09:53] we take one kind of like a slanted view
+[09:55] and we take another one kind of like an
+[09:57] axial view. So we have two projections
+[09:59] per breast. Um and then let's say for
+[10:01] the right breast, you know, we want to
+[10:03] assess for something. We can see in this
+[10:04] image there are lumps in there's a big
+[10:06] lump in the right breast. So the right
+[10:07] side it was doing we're going to do one
+[10:11] oblique and one kind of like AP view. Um
+[10:13] again the problems the matrix is
+[10:15] gigantic. It's uh usually five to six
+[10:18] megapixels. um and they use the same
+[10:21] color dep [clears throat]
+[10:23] um at this point I just want to relate a
+[10:26] little story that um that I uh one of
+[10:29] your there was a AI developer um from
+[10:33] Singapore who started work on AI meogram
+[10:36] breast cancer detection few years ago.
+[10:39] So uh without the help of uh any doctors
+[10:41] he went ahead and he got tons of
+[10:44] mamogram images and he started running
+[10:46] all these images through the neuronet
+[10:48] networks. He ran it for I think three
+[10:50] days or four days and came out with a
+[10:53] model that absolutely doesn't work.
+[10:56] The reason was that um he treated these
+[11:00] four images as four separate isolated uh
+[11:05] inputs. Um whereas if you if you ask any
+[11:07] doctor immediately they can tell you
+[11:09] that these are not four equal images.
+[11:11] The the right two are basically the
+[11:13] right breast. So these need to be
+[11:15] interpreted separately from the left
+[11:17] sides and the different views have to be
+[11:19] interpreted separately. So um eventually
+[11:22] this guy managed got a doctor on board.
+[11:24] He did all the data clean up and
+[11:26] everything and I think his AI is in
+[11:28] production right now and selling quite
+[11:32] well. Um so that is one of the pitfalls
+[11:34] that uh initial if you're an IT
+[11:36] developer going into medical AI you need
+[11:39] to have a doctor or health health
+[11:41] trained stuff there to kind of guide you
+[11:43] a little bit.
+[11:46] Okay. Ultrasound is when they take that
+[11:47] little probe put gel on it and basically
+[11:50] rub all over wherever they want to scan.
+[11:53] So um in this type of uh images usually
+[11:55] you see in pregnancy we check the babies
+[11:59] and all that. So uh this is basically uh
+[12:02] multiple images. This is a sequence of
+[12:05] 2D images. Uh each 2D image is kept by
+[12:07] itself as a single frame. So there is no
+[12:09] um kind of like we don't use any sort of
+[12:12] like uh uh encoding so that the next
+[12:13] frame is based on the previous frame. We
+[12:15] have no such thing as that every frame
+[12:18] is a frame by itself. So if you want to
+[12:20] do any kind of like analysis, you have
+[12:22] to kind of like uh just analyze one
+[12:24] image at a time.
+[12:26] Um the thing about ultrasound is when we
+[12:28] acquire it when we are doing it is a
+[12:30] video because it's a series of send of
+[12:32] single images like this. So each image
+[12:35] can be interpreted independently but
+[12:37] when we kind of like store the images uh
+[12:39] we store them as a single image at a
+[12:43] time. So um again this is very operator
+[12:46] dependent. Uh a bit difficult to do AI
+[12:48] on this but people have done it. um the
+[12:51] matrix is uh very low since 4480 and
+[12:53] this is a standard 8 bit RGB most of the
+[12:56] time not much of an issue there.
+[12:58] [clears throat]
+[13:01] Okay. Uh CT scans. So CT scan is
+[13:02] basically using X-rays to kind of like
+[13:05] slice through the the body. So this is a
+[13:07] CT scan of the brain. We can see uh
+[13:09] multiple uh multiple uh levels of the
+[13:13] brain. Uh each of these is an individual
+[13:14] image.
+[13:17] Uh each of these is an individual image.
+[13:19] And then uh the thing because we are
+[13:22] scanning sequentially from top to down.
+[13:24] So each pixel on each image actually has
+[13:28] an XY Z position. So the XY Z position
+[13:31] is uh reference to the table of the CT
+[13:34] scanner as we we scan the patient. So we
+[13:37] are able to tell for example um the top
+[13:39] the top slice here is basically let's
+[13:41] say 10 cmters away from the middle slice
+[13:44] or 20 cm away from the top slice. So we
+[13:47] kind of have the XY Z position. The XYZ
+[13:51] position is encoded in DICOM. So um so
+[13:54] if you want to do any sort of AI and AI
+[13:57] production on this, you you need to be
+[14:00] able to extract the XY XYZ position from
+[14:03] the DICOM itself uh to do your uh
+[14:06] basically your your um your AI
+[14:08] development. [snorts]
+[14:11] So a CT scan has a different series. So
+[14:13] usually we scan them a few times. Um we
+[14:15] have non contrast arterial venus faces
+[14:18] those type of things. So again if you
+[14:20] are going to develop uh you just need to
+[14:22] ask your IP people real people what's
+[14:24] going on with all these things. Each
+[14:26] image has a pretty low matrix 512 512
+[14:30] they store around 12 bit grayscale.
+[14:35] Um and MRI uh same things logistically I
+[14:36] mean technically it's similar to CT is a
+[14:40] sequence of 2D images. Um but and again
+[14:42] each pixel has uh XY Z position
+[14:44] reference to the MRI scanner. Uh we have
+[14:47] different sequences T1, T2, flare. These
+[14:49] are all the fancy fancy names for MRIs
+[14:53] that we have. Um again if you're going
+[14:55] to develop any sort of AI, you need to
+[14:56] kind of know which sequence you want to
+[14:59] use. Uh because different sequences show
+[15:01] different types of disease processes. Uh
+[15:04] MRI matrix is usually quite small. um
+[15:08] sometimes it's 256 256 192
+[15:11] um and 512 512 is kind of at the highend
+[15:14] matrix for MRIs again this is thought as
+[15:16] a 12 bit gray scale although some have
+[15:18] some sort of RGB inside
+[15:20] [clears throat]
+[15:23] okay so that's the basics of um the
+[15:27] radiology modalities uh now we're going
+[15:30] to talk about IH so IH is the is what we
+[15:31] call integrating the healthcare
+[15:34] enterprise it's kind of like the
+[15:37] standard template used worldwide by all
+[15:40] uh hospitals basically an integration
+[15:42] between the hospital information system
+[15:44] and the radiology information system and
+[15:46] the tax. So that we kind of like have
+[15:48] the standard workflow. So if you have a
+[15:51] HIS that you bought from some vendor and
+[15:54] you have a radiology information uh uh
+[15:56] system from another vendor, you have a
+[15:58] modality from another vendor, you have
+[16:01] tax from another vendor, they you can
+[16:03] connect them all together because as
+[16:10] So let's go through um this let's go
+[16:13] through this chart here. Um all right.
+[16:15] So we start off at the at the on the
+[16:17] right side with where we have the
+[16:21] patient registration. So the the your
+[16:23] your the patient's journey through the
+[16:25] health information through the hospital
+[16:28] is reflected in a way through the
+[16:30] through the journey of the information
+[16:32] through the hospital information system
+[16:34] the risk and the facts uh using this
+[16:37] IHD. So once the patient registers so of
+[16:38] course when you register you have your
+[16:42] name your your ID your age your date of
+[16:45] birth and all sort of general bio data
+[16:47] then so that gets that those information
+[16:49] actually stored in the in the hospital
+[16:53] information system the his so um then
+[16:54] when the doctor sees the patient the
+[16:56] doctor will say okay it looks like you
+[16:58] need a CT scan so the so the doctor is
+[17:00] going to place the order for the CT scan
+[17:01] and they're going to write down a CT
+[17:03] scan okay this CT scan I want to rule
+[17:05] out a brain tumor or something so that
+[17:07] goes to the order entry and placing site
+[17:10] and this kind and this basically slides
+[17:12] on to the radiology department.
+[17:15] So at this point the interfaces between
+[17:18] uh these two these two entities is what
+[17:21] we use an interface called HL7. So I'll
+[17:24] give you a s a snippet of HL7 data but
+[17:26] HL7 is the language that is spoken
+[17:28] between these two systems. So HRS will
+[17:30] send the order or the patient data
+[17:35] whatever using HR7 uh to the other
+[17:36] entities.
+[17:38] Um now within the regy department the
+[17:40] radology department is going to give you
+[17:42] a date for your exam for for the CT scan
+[17:45] that's called scheduling. Then the data
+[17:48] basically flows into the the machine the
+[17:50] CT scanner for example. So when you
+[17:52] enter your name at the front counter at
+[17:54] the very beginning of the process you do
+[17:56] not have to enter the name again. The
+[17:58] name basically flows all the way into
+[18:01] the CT scanner into the machine. So the
+[18:03] machine scans the patient and then from
+[18:06] there you get the image. The image is
+[18:08] stored in what we call the pack system.
+[18:11] The pack system is the picture archiving
+[18:12] picture archiving and communication
+[18:14] system. So that basically stores all the
+[18:16] images that all the X-ray images that
+[18:19] you have and then um those images are
+[18:22] the ones that radiologists use to
+[18:24] retrieve it to do our reporting. We look
+[18:25] at the images, we tell you what's wrong
+[18:29] with it. And this entire process on the
+[18:30] on the left side of the image, the
+[18:34] interface is DICOM. So DICOM is for
+[18:35] digital imaging and communications in
+[18:37] medicine. That's the standard that is
+[18:40] used on the left side of the image.
+[18:45] Okay. A HR7 message is pretty d is uh
+[18:50] CSV. It's a very simple CSV. So um each
+[18:53] each segment has a each segment has a
+[18:56] set mean a kind of like a set definition
+[18:57] where to put the patient's name where to
+[19:00] put the hospital name um the action that
+[19:03] you want to do with the HR7 for example
+[19:04] you want to register a patient you want
+[19:07] to change the patient's uh details you
+[19:09] want to place an order so everything is
+[19:11] encoded and standardized in HL7 so this
+[19:14] is actually HL7 version two which is the
+[19:17] most common version of H7 used right now
+[19:18] all over the
+[19:25] uh HL7 version 3 is uh is is uh has some
+[19:29] semantics uh embedded into it. H7
+[19:33] version 3 is basically an XML file. Um
+[19:35] but then there's not widely used right
+[19:38] now. So we're still using H7 version two
+[19:40] and basically these are CSV messages
+[19:43] that are sent from here to there.
+[19:46] Now the relevance of um having this
+[19:49] knowledge is that if you're going to um
+[19:52] do an AI product in production to use um
+[19:54] sometimes your AI product will need
+[19:56] certain types of information and this
+[19:58] type of information you may need to get
+[20:00] it from another service and that service
+[20:03] will send the message in HS7. So you
+[20:05] must be able to provide kind of like
+[20:06] usually what we use is a broker in the
+[20:09] middle and the HSM goes to the broker.
+[20:11] We can route the message from the broker
+[20:23] is basically a CSV version in binary.
+[20:25] It's a basically uh so this was actually
+[20:27] DOM the technology is really really old.
+[20:30] is from the I think it was developed the
+[20:33] first version was in the 80s I think 70s
+[20:35] ' 80s so what happens is that the data
+[20:38] that you send is uh sequential so it's
+[20:40] basically exactly like a CSV so the
+[20:43] first part of the of the don file will
+[20:45] contain the certain headers for you to
+[20:47] know then you will have the transfer
+[20:50] transfer information meaning that um how
+[20:53] the entity is supposed to decipher this
+[20:55] binary file that means you have uh
+[20:56] different slightly different formats for
+[20:58] different types of back on files and
+[21:01] then followed by um certain information
+[21:02] that you must have the scanning
+[21:04] information, patient information. For
+[21:06] example, this is an X-ray. This X-ray
+[21:08] was taken on this date and uh this X-ray
+[21:10] taken at this time. It has this certain
+[21:13] uh UID and then you have the patient
+[21:15] information, the name, the age, the
+[21:17] gender, so on. Then you have image
+[21:19] information and finally at the end of
+[21:21] the don file you have the image data
+[21:24] itself which is the pixel data.
+[21:27] So a dyom file is uh basically a binary
+[21:30] CSV but there's no comma to separate
+[21:33] it's uh sequential.
+[21:34] [clears throat]
+[21:37] So diccom basically has two components
+[21:39] you can see the name there digital image
+[21:41] and communication. So the standard
+[21:43] consists of two things the image itself
+[21:47] and the communication method. Um so
+[21:49] again this is the don file. So for
+[21:52] example, if this uh 3x this is an image
+[21:56] uh sample image very simple one a 3x3 uh
+[21:59] 3 pixel by 3 pixel 9 pixel image and
+[22:01] actually this is encoded at the end
+[22:05] there the the end part of the file and
+[22:08] then it's encoded um as pure binary uh
+[22:11] 16 bits here. So each two bits consist
+[22:15] of uh one pixel. So you can see that uh
+[22:21] o uh o o not o90
+[22:25] 000000 uh ff 68 and these are the these
+[22:27] are basically the the the pixels for
+[22:30] this and the thing is that you can
+[22:32] actually compress this uh n pixels using
+[22:36] JPEG and this will be the JPEG uh this
+[22:37] will be the much larger JPEG file you
+[22:40] encode which has compressed this 9 pixel
+[22:42] image.
+[22:50] &gt;&gt; Okay. Uh so um anything so far or
+[22:53] any questions so far? If nothing yet, uh
+[22:56] feel free to type out the text because
+[22:59] anything anything there. Okay. So AI
+[23:03] uses in radiology. So um AI radius
+[23:06] radiology we have uh I'm going to we
+[23:07] have three different types of uses
+[23:09] basically uh classification,
+[23:12] segmentation and generative. So three
+[23:14] times and I'm going to talk a little bit
+[23:16] about the integration after this and
+[23:17] you'll see why I had to go through all
+[23:20] those IH parts.
+[23:24] Okay. Um classification problem is
+[23:26] basically if I give you an image I need
+[23:28] you to tell me whether there's something
+[23:30] wrong with it. Yes or no. So for example
+[23:33] if I fit a chest X-ray in and then the
+[23:35] model needs to tell me whether this is
+[23:38] COVID 19 or this is not COVID 19. So um
+[23:40] classification classification problems
+[23:44] in radiology um this was the one that we
+[23:47] kind of like um started at the very
+[23:49] beginning that everybody was saying that
+[23:50] okay this is going to replace
+[23:52] radiologist because the AI will be able
+[23:54] to detect all sorts of diseases and
+[23:57] conditions. Um
+[24:00] so far um the the biggest challenge is
+[24:03] actually finding an actual clinical need
+[24:06] for this type of uh models.
+[24:08] [clears throat] So if let's say um a
+[24:10] chest X-ray for example that comes in
+[24:12] and the chest X-ray and the AI model
+[24:14] tells us whether there's a disease
+[24:17] process going on in the chest X-ray.
+[24:19] So the thing is that the radiologist
+[24:21] who's actually looking at the chest
+[24:23] X-ray um
+[24:25] uh what information what what use is
+[24:28] this information to the radiologist um
+[24:30] if the if the if the X-ray is kind of
+[24:32] like if it's obvious for example like a
+[24:35] fracture so if you develop an AI for
+[24:36] fracture the fracture is obvious and
+[24:38] your AI captures obvious fractures
+[24:40] that's not really very useful because
+[24:42] there's no clinical need the doctor can
+[24:43] look at the X-ray and say yeah look
+[24:45] there is a fracture there so we don't
+[24:48] need your AI So the we still having
+[24:50] trouble finding an actual clinical need.
+[24:53] Um a lot of our radology eyes are
+[24:56] centered around chest x-rays, mamograms
+[24:58] and CT brain brains CT scans of the
+[25:01] brain. Uh these are fairly simple kind
+[25:05] of problems. Um so that's why it's very
+[25:07] difficult to to to find to fit them into
+[25:10] clinical use.
+[25:11] The second issue of course is because
+[25:14] you're using AI to make a diagnosis,
+[25:16] there's always the issue of sensitivity
+[25:19] versus specificity and the ethical
+[25:22] consideration of whether this actual um
+[25:25] this actual information is um kind of
+[25:28] like who who takes responsibility for
+[25:30] the diagnosis that the AI makes. So if
+[25:31] the AI says there's something wrong and
+[25:34] then uh you say no, there's nothing
+[25:35] wrong but in the end the patient has
+[25:36] something else, something going on. So
+[25:40] who's at fault? So again classification
+[25:43] those are the challenges that you have.
+[25:46] Um segmentation is uh is a little bit
+[25:49] easier. Basically we use the AI to cut
+[25:51] out a certain part mark certain part of
+[25:53] the image. So for example this is the
+[25:56] chest X-ray and uh this X-ray was
+[25:59] basically built to basically center the
+[26:01] image onto the chest. They basically the
+[26:03] two lungs the two lungs and the heart in
+[26:05] the middle. So the purple image is
+[26:08] basically the entire image. The yellow
+[26:10] part is the central part of the of the
+[26:15] lung. So um so segmentation is to
+[26:17] identify certain parts of the of the
+[26:20] image because we need to use that to do
+[26:22] further analysis on the image. The thing
+[26:25] is that um the segmentation has very
+[26:26] little margin for error. It has to be
+[26:29] really accurate because usually we want
+[26:31] to quantify this type of problems as
+[26:33] opposed to just diagnose it. So the
+[26:35] quantification is to be accurate. So
+[26:37] segmentation has to be accurate. So the
+[26:41] bar that we set here is pretty high. Um
+[26:44] just a quick side note, this uh this
+[26:47] example here was uh something I built uh
+[26:51] at the uh many years ago. Uh this was
+[26:54] for the Neumotox challenge um that they
+[26:59] had in 2020 2019 I think. Um so we were
+[27:02] trying to look for pneumotox basically
+[27:03] leaking air in the chest on chest
+[27:06] X-rays. So I thought the first I wanted
+[27:07] to solve the first part of the problem
+[27:09] was basically to normalize the data to
+[27:12] center the image onto the lungs and the
+[27:15] chest uh lungs and the heart so that we
+[27:17] can kind of like do the uh the next step
+[27:20] of detection. Um but this is as far as I
+[27:23] got. I did I I fa I failed to to develop
+[27:26] it any further. But the thing is that
+[27:28] the segmentation part was actually not
+[27:29] that difficult. It was actually quite
+[27:32] easy. It took me around I think the the
+[27:34] training took only about 6 hours. But
+[27:37] that was running on Python.
+[27:38] [clears throat]
+[27:41] Okay. Generative AI is when you take
+[27:44] when you try to generate images. Uh
+[27:46] usually in the sense of radiology you
+[27:48] have a low quality image that you use AI
+[27:51] to improve the quality. Uh the thing
+[27:54] about generative AI is uh thing about
+[27:57] this is that in radology generally
+[28:00] speaking the faster you scan the less
+[28:03] radiation you use the lower the image
+[28:06] quality. So that means that there's a
+[28:07] trade-off if you want a good image
+[28:10] quality you have to give more X-rays you
+[28:12] have to take longer to do the scan and
+[28:15] and those are not things that we want.
+[28:18] So basically AI can basic can we can use
+[28:20] a low low quality image that means a
+[28:23] fast uh low do scan and we use AI to
+[28:26] improve the image. So this actually um
+[28:29] has been the most widespread at the
+[28:32] moment. We have a lots of uh lots of uh
+[28:34] uh vendors who are actually selling this
+[28:35] and we actually using this quite
+[28:37] actively. Of course, we are worried
+[28:40] about hallucinations which occasionally
+[28:43] can happen. And the thing is that
+[28:45] because the AI is a black box and we do
+[28:47] not know, we can't explain certain new
+[28:50] artifacts that can happen. For example,
+[28:52] uh this is supposed to be an ultrasound
+[28:55] of the uh kidney. We can see that the AI
+[28:58] has improved the the image of the of the
+[29:00] kidney so that it looks a little bit
+[29:03] nicer. Um again this was one of the
+[29:05] things I just tried out tried tried
+[29:08] tried uh doing basically this was a
+[29:11] convoluted neural network. Um I used a
+[29:14] very simple UN net autoenccoder uh to to
+[29:17] generate this. Uh so actually it's not
+[29:21] again not too difficult.
+[29:22] Okay. [clears throat] So now let's say
+[29:23] you have an AI product you can do this
+[29:26] you can do that. So uh the question is
+[29:28] where are you going to put it into your
+[29:31] hospital system? So for example, if you
+[29:32] have uh something that can help you
+[29:34] diagnose breast cancer and mamograms, of
+[29:36] course, you're going to put it uh at the
+[29:38] radiologist site. So the radiologist
+[29:41] will be able to access the the the AI
+[29:43] prediction while the realologist is uh
+[29:45] looking at the mamograms. So this
+[29:49] requires the product to be able to
+[29:52] accept DICOM images from the modality.
+[29:55] It has to be able to do inference. You
+[29:56] have to convert that DICOM to some
+[29:57] format that you can perform your
+[30:00] inference in. And then you have to
+[30:03] generate some sort of output. So this
+[30:07] output is the one that is that is
+[30:10] uh a is the is kind of like something we
+[30:12] haven't really solved that in radiology
+[30:16] because like I said da is 40 years old.
+[30:20] The technology is 40 years old. We do
+[30:24] not have uh AI 40 years ago. So, DICOM
+[30:27] is not made for you to kind of like have
+[30:31] an AI output that is uh native in the
+[30:33] system. So, we have to usually work
+[30:36] around whatever dyon kind of has uh so
+[30:40] that we can display the AI uh results.
+[30:42] So, that is kind of a hit and a miss. Um
+[30:45] some radologists like it, some cannot
+[30:48] cannot cannot tolerate it and again it's
+[30:50] not fully seamless. So, those are kind
+[30:52] of lot of issues that we have right now.
+[30:56] basically all integration. Um
+[30:59] so uh and again if you're going to use
+[31:01] like information from the HR7 let's say
+[31:02] you want to do some sort of uh
+[31:04] predictive model or something based on
+[31:07] the on the data that you have from the
+[31:09] patient then again you need to have a
+[31:12] broker there's a patient privacy issues
+[31:15] and then um those those kind of issues
+[31:18] over there.
+[31:20] Um also keeping in mind that the people
+[31:21] who set these things up do not like you
+[31:24] touching their stuff. So um asking for
+[31:26] access to text images to the modity and
+[31:29] to the broker can be quite difficult
+[31:32] unless you have the seuite at the top
+[31:33] there to kind of like say look I know
+[31:35] you have to open it up because we want
+[31:37] to do some sort of integration. So
+[31:39] that's uh that's one thing to keep in
+[31:42] mind.
+[31:45] Okay. So I'm going to talk a little bit
+[31:48] on uh CNN play. I think I'm going to I I
+[31:49] feel like the best way to approach this
+[31:52] is to start from uh the beginning from
+[31:56] from my experience. Um and and and why I
+[31:57] kind of like do this type of things.
+[32:00] Again, uh the text box is really empty.
+[32:01] The chat is really empty. I'm not sure
+[32:03] whether I'm getting through to anybody
+[32:06] or not. Uh if there's uh any issues, any
+[32:09] questions at all, please do ask in the
+[32:10] text box.
+[32:11] &gt;&gt; Okay. So,
+[32:13] &gt;&gt; how about how about we ask the students
+[32:14] any question?
+[32:14] &gt;&gt; Yeah.
+[32:16] &gt;&gt; So, there's two parts actually. The
+[32:18] first part was very interesting because
+[32:21] it's like a very deep insights into uh
+[32:25] the workflow medical imaging. Uh just
+[32:27] now uh Dr. G has also mentioned where AI
+[32:30] might fit and where it might encounter
+[32:33] difficulty right so that's very overview
+[32:36] and this second part uh is um her own
+[32:39] work right um her you know passiondriven
+[32:42] kind of a hacking so she's going to
+[32:46] share with us you know many nitty-gritty
+[32:49] about uh the CNN play that you guys have
+[32:51] um seen earlier on so it's two different
+[32:53] parts so any question about the first
+[32:55] thought.
+[32:58] &gt;&gt; Um well, yes, I have one.
+[33:00] &gt;&gt; Yes, I have one question about the
+[33:04] integration points and may I ask how
+[33:07] uh how should we handle the
+[33:09] synchronization between the HS7 message
+[33:13] and the the com metadata especially if
+[33:15] there is a mismatch or a delay between
+[33:18] the two.
+[33:21] &gt;&gt; Okay, thank you for the question. Um
+[33:24] usually for HL7
+[33:26] um this is a very simplified diagram
+[33:29] where the HL7 message flows from the HIS
+[33:31] for example to the RAIS. In production
+[33:34] systems they usually use a broker and
+[33:39] that's usually based on MH. So um for
+[33:41] the the the key is to be able to
+[33:43] assemble to to grab the HSL message
+[33:46] messages from MH. So you have to ask the
+[33:49] the the people controlling MUF to divert
+[33:51] some of those uh HS7 messages over to
+[33:55] your system. Um the thing about HS7 is
+[33:59] that H7 the the header the MSH and the P
+[34:02] header. The P header has information
+[34:04] about the patient. So no matter which
+[34:07] type of HS7 messages you have you have
+[34:09] different types of ADTS which are
+[34:11] admission discharge transfer. You have
+[34:14] OMS which is order placement, O use
+[34:18] which is uh order in uh order order
+[34:20] result and all those type of messages
+[34:23] they always have a P segment. So you use
+[34:25] the P the patient information the P
+[34:27] segment to reconcile with the patient
+[34:29] and the study that you're using and
+[34:32] again the DICOM file the metadata at the
+[34:35] top there consists of uh the match data
+[34:38] from the H7. So the patient name the
+[34:40] patient uh usually what we call MRN the
+[34:43] patient ID the medical the medic the the
+[34:45] patient number is usually matched there
+[34:47] and you can kind of like match the order
+[34:49] number where we call ascension number so
+[34:51] these are the things that you match
+[34:54] again it's not in real time so whenever
+[34:57] whenever you have the um when you have
+[34:59] the you have to collect the messages for
+[35:01] 7 and reconcile them on your site so
+[35:03] that you can attach them to whatever
+[35:10] Okay. Thank you so much.
+[35:14] &gt;&gt; In fact, uh uh Dr. G, uh this dcom thing
+[35:16] is very interesting as you say, this is
+[35:21] like 40 50 years um um kind of uh
+[35:23] &gt;&gt; um
+[35:24] you know things that people have to have
+[35:26] to deal with. So all [clears throat]
+[35:30] this AI software 2.0 software 3.0 zero.
+[35:32] &gt;&gt; How can they come in
+[35:34] &gt;&gt; to that mean is there any
+[35:38] standardization body now that tries to
+[35:41] bring in deep learning software into all
+[35:45] these uh um um you know systems.
+[35:45] &gt;&gt; Okay. So
+[35:48] &gt;&gt; legacy systems but also maybe you know
+[35:51] you can build new medical imaging
+[35:54] systems going forward. Yeah. DICOM is is
+[35:58] is it own um let's say okay let's talk
+[35:59] about the image let's talk about the
+[36:02] image file itself is unwieldy because
+[36:03] for example in this city scan every
+[36:07] image is one dicon file so every image
+[36:09] one dicon file how the first and second
+[36:12] image relates is the the relation is in
+[36:15] the meta data they will share certain UU
+[36:17] ids they will have certain different UU
+[36:20] ids so uh based on that we are able to
+[36:23] to to like to to know what we're dealing
+[36:25] with. But because of that, it's really
+[36:28] really unwieldy because imagine if you
+[36:30] have a thousand images in one study, the
+[36:32] same information is repeated 1,000
+[36:35] times. For example, the patient's name
+[36:37] is repeated 1,000 times, the ID is 1,000
+[36:40] times, the study date is 1,000 times. So
+[36:44] because it's unwieldy but um in a way
+[36:47] it's kind of robust so that once you so
+[36:50] when you try to use that data your
+[36:52] injection for your dyon file there are
+[36:54] libraries for this that you can use that
+[36:56] will that will kind of like break down
+[36:58] the meta data and then you just dump it
+[37:01] into a SQL or SQL table or something and
+[37:02] then they will keep the pixel data
+[37:05] separate from the meta data. So that's
+[37:07] usually the the first step on how to
+[37:10] what we want to do to uh do the data
+[37:13] processing for for diccom files. Um that
+[37:15] is for the don file itself. The
+[37:18] integration points again the integration
+[37:21] points um diccom the communication part
+[37:24] is meant to transfer the images from one
+[37:27] system to another. So there is no
+[37:29] there's no actual way for a diccom to
+[37:31] kind of like alert you and say hey look
+[37:33] there's a there's a there's a there's a
+[37:36] emergency going on in this image. Uh we
+[37:38] don't have that type of knocking system.
+[37:40] Uh in fact we have unsolicited messages
+[37:42] in DICOM. Uh there's one particular
+[37:45] format that unsolicited uh message
+[37:48] sometimes breaks the modalities. So even
+[37:50] though it's part of Don a lot of vendors
+[37:52] do not use it because when you open up a
+[37:54] port for the communication you expect to
+[37:57] you don't expect a message to come in.
+[37:59] So that that is some of the limitations
+[38:02] of the communication parts of DICOM. Um
+[38:05] that is why um a lot of the the the
+[38:07] integration of AI it works on uh kind of
+[38:10] like very superficial level. You need to
+[38:12] have some sort of work around to display
+[38:14] the thing. interesting because actually
+[38:18] it reminds me I I I met a startup uh I
+[38:21] think two years ago in Singapore and he
+[38:23] introduced to me the idea of
+[38:26] opportunistic screening for example you
+[38:27] have you have this X-ray and then you
+[38:31] can discover new problems like diagnosed
+[38:35] on the side so how does that fit is
+[38:37] there is there a future for opport
+[38:39] opportunistic screening
+[38:40] &gt;&gt; um
+[38:43] &gt;&gt; with this integration point and diccom
+[38:45] Yeah. So the thing is that the thing is
+[38:47] that for example if you have
+[38:50] &gt;&gt; if you have the the image from the X-ray
+[38:51] coming into the pack system that means
+[38:54] it's being stored you can actually route
+[38:57] the information over to uh your
+[38:59] inference engine. So your inference
+[39:00] engine will able to generate some sort
+[39:02] of output and if there's an abnormal
+[39:05] output or whatever you can generate a
+[39:07] report an alert or something but again
+[39:11] that alert can't really flow back into
+[39:14] the IH system that alert has to go
+[39:18] somewhere else. So that's that means an
+[39:20] additional proprietary system. So that
+[39:22] proprietary system that you have can
+[39:23] alert you on certain findings but it has
+[39:26] proprietary it cannot be part of the IH
+[39:29] system there. So if you have 10 setups
+[39:31] then you have 10 systems.
+[39:47] &gt;&gt; Yeah. If not I think Dr. Gate you can
+[39:49] start the next part. Yeah. Thank you.
+[39:53] &gt;&gt; Okay. So um right
+[40:07] okay so um this is my this was the first
+[40:11] my first neuronet um this disclaimer uh
+[40:13] I started I started programming in the
+[40:16] '9s I'm that old so uh I started
+[40:19] programming in JavaScript and Pearl so
+[40:22] My go-to language is is JavaScript. Um I
+[40:24] know a little bit of Python but I'm very
+[40:27] I'm much more comfortable in JavaScript.
+[40:30] So when I heard about Kapati um Connet
+[40:33] mean ConnetJS I was really excited about
+[40:36] it. In fact it was in 2018
+[40:39] there was a talk radiology talk that we
+[40:41] invited a professor from the US to
+[40:44] Malaysia and he introduced uh CompnetJS.
+[40:47] Uh in one of his slides I said wow okay.
+[40:49] I took a photo I found it. started build
+[40:51] I started playing around with it. Okay.
+[40:54] So this so the first thing is basically
+[40:57] my first neural network is uh is to
+[40:58] solve the problem of adding two numbers
+[41:00] together.
+[41:03] Okay. So the reason that um I wanted to
+[41:05] use this simple problem add two numbers
+[41:07] together is it's very easy to get the
+[41:10] training data. The training data is you
+[41:12] have two two variables and you add them
+[41:15] together and that's your training data.
+[41:17] It's very easy to test. So um you add
+[41:21] those two numbers together. So um this
+[41:23] if uh this is the source for that file
+[41:27] um include uh mean uh confnet js and
+[41:29] this was the simple neural network that
+[41:31] I built. Um since this is just adding
+[41:33] two numbers and numbers are quantitative
+[41:37] variables scala variables. Uh again um
+[41:39] knowledge of v data types is important.
+[41:42] Uh in this case uh you don't want to
+[41:44] accidentally use ordinal variable as a
+[41:47] scala variable. you don't to use uh uh
+[41:50] uh those type of those type of uh
+[41:53] errors. So two numbers are scala
+[41:55] variables. So we use uh sigmoid
+[41:58] activation instead of using relu. Uh so
+[42:00] the number of neurons there are five
+[42:04] layers here. Uh neurons 1000 1, 110. It
+[42:07] goes up and down simple standard fully
+[42:09] connected uh never type of design. And
+[42:11] then the output is going to be a single
+[42:15] number. So uh again uh Scala variable uh
+[42:17] continuous variable so it's going to be
+[42:18] use regression for that and then
+[42:21] basically one output.
+[42:23] So initially the the stupid part was
+[42:25] that I had training data of kind of like
+[42:28] adding the numbers myself but later on
+[42:31] um my training cycle consists of uh
+[42:33] basically you generate the training data
+[42:35] on the fly. You have two random numbers.
+[42:37] You add them together and those three
+[42:39] become the train data. Feed it through
+[42:43] the uh model uh using feed it through
+[42:45] the model based on the parameters.
+[42:47] Basically just play around with with the
+[42:49] parameters here and then once you got
+[42:51] the the variables you got you train the
+[42:53] network you just kind of stop the whole
+[42:57] thing. So for this part um so I'm just
+[42:59] going to train
+[43:02] uh let's say for 10 cycles
+[43:04] and this is going to be my output. So,
+[43:09] uh, 1 + 5 = 6. Uh, 9 + 8 = 17. 9 + 6 =
+[43:12] 15. Uh, I love to have my outputs as
+[43:14] CSVs. That's why you have the the type
+[43:17] there. And then, um, we're just going
+[43:19] to, uh, the function to test is
+[43:28] So again, predicted 7 + 8= 6.7, which is
+[43:31] not correct because this was only
+[43:34] trained for 10 epochs. So 10 times. So
+[43:35] basically I just ran through the whole
+[43:39] thing and you just train
+[43:40] a thousand times or something a thousand
+[43:43] epochs and again when you do the test
+[43:46] you get a little bit closer. Uh now it's
+[43:50] 11. So you try it another
+[43:52] 2,000 times or something like that.
+[43:55] Running this on a browser uh takes a lot
+[43:59] of patience. Um but and browser is
+[44:01] basically all CPU based. There's no GPU
+[44:04] usage from Chrome. So, um, sometimes
+[44:05] this can take a really, really long
+[44:07] time. You just hope it doesn't crashes.
+[44:09] Doesn't crash. So, now you're a little
+[44:11] bit closer. You're going to 11.6.
+[44:13] You train a little bit more. You
+[44:16] continue doing this.
+[44:18] I think you reach a point that finally,
+[44:21] oh god, it went the wrong way.
+[44:23] &gt;&gt; Overfeeding.
+[44:26] &gt;&gt; Yeah, overfeitting. So, um, again, this
+[44:28] is very this is this is very basic. I
+[44:29] just wanted to see whether the system
+[44:32] actually works and I ended up with a lot
+[44:33] of headaches like this. Why did you
+[44:35] train so much and your error comes out
+[44:38] to this level and as you can see it's so
+[44:40] simple. There's no augmentation. There
+[44:44] is no there is there is no what we call
+[44:47] um um that there's no way for me to
+[44:49] monitor the like like profan said the
+[44:52] overfeitting and all sort of issues. So
+[44:55] um but it kind of worked. It kind of
+[44:56] showed that okay you know that this
+[44:59] kapati comjf can actually do something
+[45:00] just add two numbers together it seems
+[45:04] to work. So um I used this and my next
+[45:08] step was actually I I started training
+[45:11] uh images. So I just want to check I
+[45:14] just want to show you this
+[45:16] um just just look at the images first
+[45:18] instead of CN play. So this is the
+[45:21] ultrasound of the abdomen. So you have
+[45:23] organs like the liver, gallbladder,
+[45:26] spin, kidneys and all this. So um the
+[45:29] nice thing about being a doctor and a
+[45:31] programmer who's going to use the data
+[45:33] is I can acquire all these images
+[45:36] myself. I know what these images mean. I
+[45:39] know how to acquire it and immediately I
+[45:40] know how to take this image and I know
+[45:42] how to process it and put it into a
+[45:44] neural network. So if you if you are not
+[45:47] medically trained so again you have to
+[45:48] get somebody to be able to scan all
+[45:50] these images certain way and they have
+[45:52] to be able to provide that to you so you
+[45:54] can use your training. So for me
+[45:55] everything was accelerated because I
+[45:59] could just do this myself. Um so I use I
+[46:02] use this uh these images to actually
+[46:05] train uh
+[46:08] train a neuronet network to analyze in
+[46:12] real time.
+[46:16] So this was the real time output for
+[46:19] this one uses kapati comjs.
+[46:22] So the big image is the image coming in
+[46:24] from the ultrasound machine is a video
+[46:27] output and video capture and the AI feed
+[46:31] I downsized it to 6464
+[46:34] and I'm running inference on the live on
+[46:37] the AI feed and generating the output
+[46:39] over here at the at the same time. So
+[46:42] the weightages is uh what what what the
+[46:45] organ the AI thinks it is uh at
+[46:48] different times.
+[46:52] So um the the thing about this is again
+[46:54] um
+[46:56] you need to be able to gen to get the
+[46:58] output from the ultrasound machine live
+[47:01] into your into the into the browser. So
+[47:04] again I had a video encoder uh small
+[47:06] little USB video encoder. I know how to
+[47:07] connect it to the back of the sound
+[47:09] machine so that when I scan I could get
+[47:11] the image through the encoder and fed
+[47:14] straight into this is Google Chrome. So
+[47:16] Google Chrome is running the capatis
+[47:19] connet and uh basically it runs the
+[47:22] model and um I can just scan this and
+[47:24] get the all the organ detection in real
+[47:26] time. Uh you can see that it's a bit
+[47:29] stuttery. So I think I was using maybe
+[47:31] 10 frames per second at this time
+[47:33] because each inference cycle takes maybe
+[47:36] a few maybe 1000 milliseconds or so. So
+[47:37] your frame rate has to be around maybe
+[47:39] around 10 frames per second. That's the
+[47:42] most you can go.
+[47:44] So [clears throat] um yeah so coms
+[47:47] actually uh pretty useful
+[47:50] and then the next step was uh I went and
+[48:02] Okay. So the thing about um CNN play is
+[48:08] that um I I I I don't use libraries.
+[48:11] I don't use libraries. So um because I
+[48:13] don't use libraries I I I write
+[48:16] everything down in vanillajs.
+[48:19] So everything is written uh by hand uh
+[48:22] very without use of any libraries inside
+[48:25] here. So um
+[48:28] the sorry the JS file is here. So
+[48:30] everything is written by hand. There is
+[48:32] no libraries involved. So to go through
+[48:36] this will be kind of um even I scared to
+[48:38] go through it to be honest. It's very
+[48:42] spaghetti code. Uh but it it works. It
+[48:44] took a lot of headache but it actually
+[48:48] worked out in the end. So uh in CNN CNN
+[48:49] play the reason I wanted to build this
+[48:51] was that I wanted an easy way to kind of
+[48:54] like show people you know like in in in
+[48:57] in a live situation how how we use
+[48:59] convoluted neuron nets for radiology. Um
+[49:02] at the time in the in the in the 2019
+[49:04] 2020s I doing this a lot of the
+[49:07] solutions were based on Python. So that
+[49:08] means that if I wanted to show somebody
+[49:11] I will have to open up I I will open up
+[49:13] a Python environment. So usually we use
+[49:16] collabs for that. So again they need to
+[49:18] be familiar with collapse and radiology
+[49:21] radiologist my colleagues uh have
+[49:24] trouble have trouble writing in notepad.
+[49:26] So um so they have trouble writing
+[49:29] notepad. So collab is definitely not
+[49:31] going to be possible. That's why I built
+[49:33] something really very basic. I can just
+[49:35] run on a web browser. So that's the
+[49:37] whole point of CNN MPA is just a proof
+[49:39] of concept just to help in the teaching
+[49:42] of CNN's to radiologists
+[49:45] and I give them um easy easy problems.
+[49:48] Um this is the the most simple the this
+[49:49] is basically the hello world of
+[49:52] radiology classification uh
+[49:53] differentiate between a chest X-ray and
+[49:57] abdominal X-ray. Let's go CSR AXR here.
+[50:01] So again the images that I got for this
+[50:04] is uh Google is creative common images.
+[50:06] So nowadays um there are plenty of
+[50:08] libraries available plenty of data
+[50:10] online. So look at the licenses and see
+[50:12] what you can use to get all those images
+[50:16] down and uh the nice thing about chest
+[50:18] x-ray abdominal x-ray to differentiate
+[50:20] whether it is a chest or abdomen. So you
+[50:21] don't need a lot of details. So that's
+[50:23] why all the file sizes the matrices are
+[50:26] very small. Um just just a few training
+[50:28] images there just so that we can
+[50:31] actually run the thing.
+[50:34] Then um again once you have on so once
+[50:35] you have this you can kind of like build
+[50:38] the network. The UI is kind of crappy uh
+[50:40] but you can just move the layers up and
+[50:43] down so on and so forth. Um there's a
+[50:46] little bit of uh there's a little bit of
+[50:48] information there. What does mean
+[50:50] convolution? Again this is all this is
+[50:52] all designed to help me explain to
+[50:55] radiologist what am I doing. So if I
+[50:57] adjust these type of things you know um
+[51:01] what am I actually doing. So um this all
+[51:03] all these parameters are adjustable in
+[51:06] kapatis on in the code basically. So for
+[51:08] example like all this type of this type
+[51:10] of things here they're all adjustable in
+[51:12] the in the code here. Sorry wait this is
+[51:15] training sorry. Ah here
+[51:17] the activations and so on. So this uh
+[51:19] basically we're just adjusting all these
+[51:22] parameters uh through a UI here. So once
+[51:24] you have um
+[51:26] oops
+[51:31] once you have uh something there
+[51:33] then when you start training again you
+[51:35] can choose the different types of
+[51:37] optimizers and then you can
+[51:39] augmentations and whatever and then you
+[51:41] can just uh start training. So as you
+[51:43] can see that this is the graph that
+[51:45] usually if you're familiar with KAS and
+[51:47] TensorFlow then they will have this
+[51:50] output when you are training in Python.
+[51:53] So uh I just replicated the basic ones
+[51:55] in uh JavaScript. So you'll be able to
+[51:57] see uh where you where you're going with
+[51:59] your training accuracy, training loss,
+[52:02] validation accuracy and loss. So again
+[52:04] um you just go through and train a few
+[52:06] times. The problem with JavaScript is
+[52:08] that JavaScript doesn't like
+[52:11] asynchronous that much. JavaScript is
+[52:13] almost entirely a synchronous type of
+[52:16] engine. Async async once you have
+[52:18] something running in synchronous kapati
+[52:21] run in synchronous. So once it's it
+[52:23] starts to run you can't really interrupt
+[52:27] it. So um to interrupt it that means
+[52:30] that uh you need to find some work
+[52:31] around to kind of like interrupt it but
+[52:34] it's not going to work all the time. So
+[52:36] that's the problem with uh capati uh
+[52:38] comnet is going to run synchronously. So
+[52:40] your asynchronous let's say the
+[52:42] interrupt training button here it takes
+[52:45] a bit of time to to to take to to stop.
+[52:47] So for example if I run this for 100
+[52:49] epochs for example.
+[52:51] So if I want to interrupt here it's
+[52:53] going to take a little while especially
+[52:55] if the progress is taking too long. So
+[53:04] And then once you kind of like got the
+[53:05] validation out, you can just do the
+[53:09] testing and the AI seems to be able to
+[53:12] do quite well. So um yeah, so the the
+[53:14] whole reason for CNN is to just to help
+[53:18] teach um to explain concepts to my uh
+[53:21] radiology colleagues. Any any any
+[53:23] questions that you want to you want me
+[53:25] to clarify about this?
+[53:27] &gt;&gt; Yeah, that's very interesting. Uh you
+[53:29] mentioned that you used it for uh
+[53:33] training um newcomers. the radiologist.
+[53:36] So, do you still use this tool? Um,
+[53:37] that's that's one.
+[53:39] &gt;&gt; For example, um, you know, you you want
+[53:44] them to perhaps expose them to AI.
+[53:45] &gt;&gt; Uhhuh.
+[53:46] &gt;&gt; You want them to be as good as AI, for
+[53:48] example, right? [gasps and laughter]
+[53:49] Because like you just mentioned, you
+[53:51] know, able to distinguish between two
+[53:51] different things.
+[53:54] &gt;&gt; Uh, that that that serve it purpose. And
+[53:56] and second um do you do you still use
+[54:01] this tool to train um this uh
+[54:03] &gt;&gt; okayologist? Yeah.
+[54:06] &gt;&gt; Yeah. So um the thing is that a lot of
+[54:08] doctors go into medicine because they
+[54:11] don't like mathematics and physics.
+[54:13] So uh inherently you already have a
+[54:16] group of people who do not like
+[54:18] mathematics and who do not like physics.
+[54:23] So because of that um uh when you when I
+[54:25] tried to teach people I actually ran a
+[54:27] course a couple of years ago uh during
+[54:29] the Malaysian college of radiology
+[54:31] conference uh how to build your first
+[54:34] AI. So uh people came I showed them this
+[54:36] thing and I think they got lost after
+[54:38] after 10 minutes
+[54:40] &gt;&gt; because the thing is that most of
+[54:44] radologist they they they don't have the
+[54:46] technical acumen to be able to
+[54:48] understand this and to actually do this
+[54:50] type of things. So what they want
+[54:55] actually is they want to to to know kind
+[54:58] of like very high level okay it what can
+[55:01] AI do that can go wrong those type of
+[55:03] things. So uh we talk about
+[55:05] hallucinations. Okay. So okay AI can
+[55:09] hallucinate. So um yeah so
+[55:12] so when we want to talk about why
+[55:14] hallucination happens we have to delve
+[55:15] deeper a little bit. We have to go
+[55:18] sometimes into the the training data the
+[55:20] how how the data was kind of like used
+[55:22] for training what type of training
+[55:24] processes was done what's the model that
+[55:26] was used. So when we go into all of that
+[55:28] the radiologist they say I want to know
+[55:30] how hallucinations came about but they
+[55:31] they don't have the ability to
+[55:33] understand all those other factors. So
+[55:35] I've learned that a lot of them just
+[55:37] they kind of give up.
+[55:37] [clears throat]
+[55:40] &gt;&gt; So in other words using AI as a password
+[55:41] mostly.
+[55:43] &gt;&gt; Yes. As a password. Yeah. As a product
+[55:44] as a product. As a product.
+[55:45] &gt;&gt; Yeah. Understand.
+[55:47] &gt;&gt; Yeah. So chat GPT for example is really
+[55:50] useful. But um how many people actually
+[55:51] know what's the meaning of the word
+[55:53] transformer? [clears throat]
+[55:56] &gt;&gt; Yeah. So that that's the thing. So
+[55:57] a lot of people don't really want to
+[55:59] know what's the meaning of the word
+[56:00] transformer.
+[56:01] &gt;&gt; Well, they they cannot even tell the
+[56:03] difference between transformer and CNN.
+[56:06] &gt;&gt; Yeah. They cannot they cannot tell.
+[56:08] &gt;&gt; Yeah. So most of the time nowadays
+[56:09] they're using transformers. That's why
+[56:11] I'm not progressing this so far because
+[56:12] I think we're moving more towards
+[56:14] transformers nowadays instead of CNN's.
+[56:16] &gt;&gt; Yeah. So but this is actually CNN are
+[56:18] just the basics.
+[56:20] &gt;&gt; Indeed. Agree with you. Yeah. and and
+[56:21] just now you also share with us uh the
+[56:25] code you wrote uh painstakingly uh back
+[56:26] then 2019.
+[56:30] &gt;&gt; So I wonder what is the you know have
+[56:33] you tried using software 3.0 like kapati
+[56:36] say software 3.0 in other word AI
+[56:38] writing the code now
+[56:40] &gt;&gt; so he talked about software 2.0 back in
+[56:42] 2017
+[56:45] &gt;&gt; then software 2.0 zero is all this
+[56:47] datadriven
+[56:47] program
+[56:50] &gt;&gt; in the form of neural networks. So now
+[56:53] if I were to use
+[56:55] you know cloud or chat GPD to help me
+[56:59] write some of this JavaScript code
+[57:01] what do you think uh you know sort of
+[57:04] looking back what do you think is the
+[57:06] role of all this software 3.0 going
+[57:09] forward because you have done this for
+[57:13] software 2.0 yourself amazingly and now
+[57:14] you know heaven drops this uh software
+[57:19] 3.0 now everyone is doing vibe coding
+[57:22] &gt;&gt; so what do you think going forward will
+[57:24] &gt;&gt; happen yeah
+[57:26] &gt;&gt; I think if I had to use uh 3.0 zero for
+[57:27] this.
+[57:31] &gt;&gt; Um I would still uh I would ask the I
+[57:34] would ask the them to the V coding part
+[57:37] to code functions individually
+[57:39] meaning that I will define the I will
+[57:42] define the inputs as well as the returns
+[57:44] for each of the functions. I think that
+[57:47] could have like shortened shortened my
+[57:49] time of actually doing the the the
+[57:51] programming because a lot of my headache
+[57:56] was basically um the some of the typos.
+[57:59] The other one is um the the the other
+[58:01] headache was the the training part here
+[58:03] that trying to get everything to run
+[58:05] asynchronously.
+[58:06] &gt;&gt; So I think that was the the biggest
+[58:09] headache for CNN play. The rest of it is
+[58:12] basically um basically not that
+[58:15] difficult. It's straightforward. So if I
+[58:17] were if I had to use it, I would use it
+[58:19] to write individual functions. For
+[58:22] example, um
+[58:25] uh let's say for for for this page for
+[58:27] example to generate the neural networks.
+[58:29] So um I will probably tell I would
+[58:31] already ask okay so I want to generate
+[58:37] uh uh uh for example uh XML of XML of
+[58:39] the network the I to generate XML to
+[58:41] describe the neuronet network that I
+[58:44] want to build. So I want to be able to
+[58:48] um um to to to edit each layer and
+[58:50] define each layer that I want and I want
+[58:53] you to generate XML to to for that
+[58:55] layers. So that that will that will kind
+[58:58] of like explain this entire page. Then
+[59:00] um the next page will be okay uh using
+[59:03] the XML of the entire layers load it
+[59:06] into the load it initiate the init
+[59:09] initiate as a network in uh connetJS and
+[59:12] after that uh do the training and then
+[59:14] maybe uh XML of the the training
+[59:17] parameters and so on and so forth. So um
+[59:19] whether I could trust com to write the
+[59:20] whole thing I don't know. I've never
+[59:22] tried I never tried P 3.0 I want to
+[59:24] write the entire thing but I think that
+[59:26] would be that would take away a lot of
+[59:29] the what we call um the minute controls
+[59:31] that I have. So little bit of my new
+[59:33] controls uh that little little
+[59:35] checkpoints inside the the functions. So
+[59:37] I think if I if I didn't write the
+[59:38] function I wouldn't know where to put
+[59:40] the checkpoints.
+[59:42] &gt;&gt; So uh I think that's the the downside.
+[59:44] So if possible I would just use it to
+[59:45] write individual functions not the
+[59:49] entire uh programs.
+[59:50] &gt;&gt; Understand? Got it. I think what you
+[59:53] just mentioned is also something the
+[59:55] real software professional they will do
+[59:56] that in that way. Yeah.
+[59:57] &gt;&gt; Yeah.
+[59:58] &gt;&gt; Yeah. I understand. Yeah. I think you
+[60:00] you think alike like like those software
+[60:01] [laughter]
+[60:02] &gt;&gt; basically you need test.
+[60:04] &gt;&gt; Yeah. Indeed. Indeed. Yeah. Exactly. You
+[60:07] know very careful uh of development.
+[60:09] Yeah. Maybe I I open the floor to the
+[60:12] students. Any questions?
+[60:13] &gt;&gt; Anyone?
+[60:17] &gt;&gt; Yes. I may have one single question. uh
+[60:19] since I'm more computer science
+[60:21] background so usually I'm more familiar
+[60:25] with Python and the J notebook uh and
+[60:28] may ask how should I come uh think about
+[60:30] this tool the same play compare with J
+[60:33] notebook set the J the J notebook you
+[60:36] can also set blocks and run it blocks
+[60:38] you can see the intermediate
+[60:42] intermediate results and mass how may
+[60:43] what do you think to compare these two
+[60:47] tools for for students
+[60:51] Okay. Um, so I I started on the opposite
+[60:54] direction from you. I started on uh
+[60:57] ConnetJS first and then uh when I went
+[61:00] to do my mini fellowship, they kind of
+[61:02] like told me use Python.
+[61:04] &gt;&gt; So [laughter] I had to learn Python from
+[61:05] scratch.
+[61:11] So um Python has uh I I think I think
+[61:14] that I think that the general the
+[61:17] general ideas between writing something
+[61:20] in uh car tensorflow versus writing
+[61:23] something in connetJS the general idea
+[61:27] is the same um it was because I was very
+[61:30] familiar with JavaScript. So that's why
+[61:33] I could use ConfetJS quickly because it
+[61:37] was like very native to to to uh to what
+[61:39] I'm used to. I I know I know how to
+[61:41] handle the variables in JavaScript and
+[61:43] how the the typing for example the types
+[61:46] are not they are not strict typing for
+[61:49] example. So um so I know how to handle
+[61:51] those problems in JavaScript. So when I
+[61:54] went over to Python and I started using
+[61:58] Python to KA TensorFlow in Python, I
+[62:00] think my biggest problem was actually
+[62:03] understanding uh numpy because the the
+[62:04] [laughter]
+[62:07] the numpy numpy to me was very very
+[62:09] strange because I've never encountered
+[62:11] anything like that in JavaScript before.
+[62:14] So everything in car in kas is based on
+[62:17] numpy. So I had to learn numpy. I still
+[62:19] don't understand numpy. I still do not
+[62:21] know why your your three-dimensional
+[62:23] matrix needs to add a comma one at the
+[62:25] end to make it fourdimensional. I have
+[62:28] no idea why that is. So in the end it
+[62:30] was a lot of heartache and then but I
+[62:32] managed to build something on Python
+[62:34] from there. So I think working from the
+[62:36] opposite direction with your Python
+[62:38] background um you're going to have a
+[62:40] little bit of trouble with JavaScript
+[62:43] because JavaScript is a very different
+[62:45] animal from Python. You don't have numpy
+[62:48] in JavaScript. So you'll be you have to
+[62:50] kind of like you kind of have to handle
+[62:53] all your all your data all your
+[62:55] variables and matrices by yourself.
+[62:57] &gt;&gt; So you kind of have to build all those
+[62:59] the those matrices by yourself without
+[63:03] numpy. Um that being said um if you
+[63:07] demit yourself to 2D uh kind of like 2D
+[63:09] images like what we have in CNN play
+[63:12] then uh it's not too difficult to handle
+[63:15] this type of uh datas in JavaScript.
+[63:18] it's a bit of a headache especially for
+[63:21] example if you want to load a
+[63:23] uh okay so for example this is let's say
+[63:26] this is a PNG image so once you load a
+[63:29] PNG image into JPEG uh sorry into
+[63:32] JavaScript then you have to load it into
+[63:36] uh into a what we call a canvas and then
+[63:38] once you have that canvas then you can
+[63:41] extract the pixel data from the canvas
+[63:44] as opposed to numpy you can just load
+[63:45] the PNG automatically you got your
+[63:48] matrix of your of the image but yeah in
+[63:50] JavaScript you have to load it into a as
+[63:51] far as I know unless it's something new
+[63:53] you have to load it into a canvas and
+[63:55] you have to get the image data from the
+[63:57] canvas uh and then build your own matrix
+[64:00] from the image data so um there's a lot
+[64:02] of like
+[64:03] I think you have to spend a lot of time
+[64:05] like doing a lot of numpy things in
+[64:09] JavaScript unless unless you can find uh
+[64:11] unless you v code it
+[64:13] &gt;&gt; yeah unless you v unless you v code I
+[64:15] suppose you can v code this you uh the
+[64:17] input is the PNG and the output is the
+[64:19] image matrix. If you write V code that I
+[64:21] think that was that will cut like what
+[64:24] two weeks off my development time.
+[64:25] &gt;&gt; Thank you so much.
+[64:27] &gt;&gt; That's very interesting. Yeah.
+[64:29] &gt;&gt; Yeah. Thank you Kim Dr. Jit for pointing
+[64:31] that out. I think it's very interesting.
+[64:33] &gt;&gt; Um we are living in very interesting
+[64:34] times.
+[64:36] &gt;&gt; Yeah. So I think uh we are coming to the
+[64:39] end of uh this class and I really look
+[64:42] forward to welcoming you to Singapore.
+[64:45] you know, chat more about AI and medical
+[64:46] imaging over coffee. No, let me know
+[64:48] anytime when you're in
+[64:50] &gt;&gt; I I'm planning to come uh next year for
+[64:52] the college of radiology. That's going
+[64:53] to be somewhere in August.
+[64:55] &gt;&gt; Yeah. Let me know anytime, anytime.

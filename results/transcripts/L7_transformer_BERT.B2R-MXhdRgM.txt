@@ -1,0 +1,1032 @@
+[00:04] Welcome back. Lecture 7 of MD 6329.
+[00:06] This is one of the most architecturally
+[00:09] important lectures in the course. We are
+[00:11] going to introduce three things and they
+[00:15] form a chain. First, word embeddings.
+[00:17] The idea that you can represent discrete
+[00:21] tokens like words or clinical concepts
+[00:23] as continuous vectors in a learned
+[00:25] semantic space.
+[00:27] Second, the transformer, the
+[00:29] architecture that has eaten machine
+[00:31] learning over the last seven or eight
+[00:33] years from language to vision to
+[00:37] medicine to biology. And third, Bert,
+[00:39] the model that most clearly demonstrated
+[00:42] the pre-trained then fine-tuned paradigm
+[00:44] and the model whose clinical descendants
+[00:46] you will use for any natural language
+[00:48] processing on hospital notes. By the end
+[00:50] of today, you should be able to explain
+[00:52] word to vec to a colleague. Write out
+[00:54] the query key value attention
+[00:57] computation on a whiteboard and read a
+[00:59] clinical bird paper without being lost
+[01:02] on the architecture.
+[01:06] Agenda one word embeddings with word
+[01:09] tove vec as the canonical example. Two
+[01:11] extensions to sentence and document
+[01:14] embeddings including Elmo and ulnit as
+[01:17] bridges from word level to contextaware
+[01:18] models.
+[01:21] Three, the transformer architecture,
+[01:24] query key value attention, multi head
+[01:26] attention, and the encoder design that
+[01:30] BERT uses. Four, BERT itself, the two
+[01:33] pre-training objectives, the fine-tuning
+[01:36] paradigm, and the clinical adaptations,
+[01:39] BioBird and clinical bird.
+[01:41] The key is to recognize that words come
+[01:43] from a discrete vocabulary can learn
+[01:45] word embeddings using a similar
+[01:48] framework. Word two vec demonstrated
+[01:50] that self-supervised learning from raw
+[01:52] text could produce useful
+[01:55] representations. The transformer made
+[01:57] that paradigm scalable to long sequences
+[02:00] with long range dependencies.
+[02:02] Bert combined the two and added the
+[02:03] fine-tuning recipe that made the
+[02:06] pre-trained representations usable for
+[02:09] arbitrary downstream tasks.
+[02:11] Each step builds on the previous one. By
+[02:13] the end of the lecture, you should see
+[02:15] the chain clearly.
+[02:18] The motivating problem. We have a
+[02:21] vocabulary of words, English words or
+[02:25] clinical terms or ICD codes and we want
+[02:27] to represent each word as a vector that
+[02:30] a neural network can process. The
+[02:32] straightforward representation is one
+[02:35] hot encoding. A vector of length equal
+[02:38] to the vocabulary size with a single one
+[02:40] at the position of the word and zeros
+[02:42] everywhere else.
+[02:45] This representation is wasteful. Most of
+[02:47] the dimensions are zero and it is
+[02:49] uninformative.
+[02:51] The one hot vectors for any two distinct
+[02:53] words are orthogonal no matter how
+[02:56] related the words are semantically. We
+[02:59] need something better.
+[03:01] The better idea is an embedding matrix.
+[03:04] Let the vocabulary size be n and the
+[03:07] embedding dimension be d where d is much
+[03:09] smaller than n. Typically d in the range
+[03:13] of 50 to several hundred. maintain an N
+[03:17] by D matrix E. The embedding of word I
+[03:20] is the I T by row of E, a dense
+[03:23] D-dimensional vector. To embed a one hot
+[03:26] vector X, multiply E * X.
+[03:29] Mathematically, a matrix multiplication
+[03:32] computationally a table lookup. The
+[03:33] crucial choice, how do we pick the
+[03:36] entries of E cost handgineering features
+[03:38] is hopeless. We will let the network
+[03:41] learn e by gradient descent against a
+[03:43] useful training objective. Word tuve
+[03:47] gives us such an objective.
+[03:51] Wordvec Mikolof and colleagues 2013 two
+[03:54] related algorithms skip gram and
+[03:56] continuous bag of words that learn word
+[03:58] embeddings from raw text using a simple
+[04:01] self-supervised objective.
+[04:03] Mikolof was at Google when the original
+[04:05] papers came out and the techniques
+[04:07] almost immediately became foundational
+[04:10] across natural language processing.
+[04:12] Skipgram gram is the more conceptually
+[04:15] transparent of the two and we will talk
+[04:18] about it before introducing CB.
+[04:22] The skip gram task given a center word
+[04:24] in a sentence predict the surrounding
+[04:27] context words within a window of say
+[04:30] five positions on either side. Pick a
+[04:33] sentence from a large text corpus. Pick
+[04:36] a center word. Pick a context window.
+[04:39] The network's job is to predict given
+[04:41] the center word which words are likely
+[04:44] to appear in its neighborhood.
+[04:46] This is a self-supervised task. No human
+[04:49] labels required. The text itself
+[04:51] provides the supervision through its own
+[04:53] structure.
+[04:55] Architecturally, the skipgramgram
+[04:58] network has two parameter matrices. an
+[05:01] input matrix W of size N by D. This is
+[05:04] the embedding matrix we want to learn
+[05:07] and an output matrix W prime of size D
+[05:10] by N used to predict context words from
+[05:13] the embedding of the center word. Given
+[05:16] a center word W, look up its embedding
+[05:20] E_W by multiplying W by the one hot
+[05:23] encoding of W. Then compute a score for
+[05:26] every word in the vocabulary as the
+[05:29] dotproduct of E subW with each column of
+[05:33] W prime. Softmax over the scores to get
+[05:35] a probability distribution over context
+[05:37] words. Train by maximizing the
+[05:39] probability assigned to the actual
+[05:43] observed context words.
+[05:46] The training objective formally sum over
+[05:49] the corpus of pairs center word context
+[05:52] word. For each pair, the loss is the
+[05:55] negative log probability of the context
+[05:58] word given the center word as computed
+[06:00] by the softmax.
+[06:02] The objective rewards embedding the
+[06:04] center word in a way that makes its
+[06:06] observed context words probable under
+[06:08] the softmax.
+[06:10] Run this over many pairs from a large
+[06:13] corpus and the embedding matrix W ends
+[06:15] up encoding statistical regularities of
+[06:18] word co- occurrence.
+[06:20] What gets learned?
+[06:23] Words that appear in similar context get
+[06:25] similar embeddings because for the
+[06:27] softmax to assign high probability to
+[06:29] their context words, the embedding has
+[06:31] to push the probability mass toward
+[06:35] those words. And the only way to do this
+[06:37] for many context words at once is to
+[06:39] give related center words similar
+[06:41] embeddings.
+[06:44] Practical considerations can train using
+[06:46] a classification loss. For example,
+[06:49] softmax loss based only on the text
+[06:52] structure without any external labels.
+[06:55] The softmax over the full vocabulary is
+[06:57] expensive and can be hundreds of
+[07:00] thousands. Two standard fixes.
+[07:02] Hierarchical softmax. Organize the
+[07:04] vocabulary as a binary tree and compute
+[07:06] the probability of a word by traversing
+[07:10] the tree with complexity lo instead of
+[07:13] n. Negative sampling. Instead of
+[07:16] computing the full softmax, sample a
+[07:18] small set of negative words and train
+[07:20] the model to distinguish the positive
+[07:23] context word from the negatives.
+[07:25] captures notion that words occurring in
+[07:28] similar context should have similar
+[07:31] feature vectors word embeddings.
+[07:34] For example, word two vec famously
+[07:35] discovered that king and queen ended up
+[07:38] near each other and that the vector from
+[07:40] man to woman was approximately parallel
+[07:43] to the vector from king to queen. The
+[07:45] geometry encodes semantic structure that
+[07:47] nobody explicitly told the network
+[07:51] about. Hyperparameters. The window size
+[07:54] determines what counts as context. A
+[07:56] small window, two or three on each side,
+[07:58] produces embeddings sensitive to
+[08:01] syntactic relationships because the
+[08:03] immediate neighbors of a word are
+[08:05] constrained by grammar.
+[08:08] A larger window, 5 to 10 on each side,
+[08:10] produces embeddings sensitive to topical
+[08:13] and semantic relationships because more
+[08:15] distant words capture topical
+[08:18] co-occurrence. The choice depends on
+[08:19] what you want the embeddings to
+[08:23] represent. Corpus size matters too. Word
+[08:25] two vec needs a lot of text to learn
+[08:28] good embeddings, typically hundreds of
+[08:30] millions of words. Modern English
+[08:32] embeddings are trained on corpora in the
+[08:35] billions of words.
+[08:37] Trying to learn good feature
+[08:39] representations using loss functions
+[08:42] based on inherent structure in data as
+[08:44] opposed to external labels is a
+[08:46] currently active area of unsupervised
+[08:50] learning. Computational scale word
+[08:53] elegance is that it is fast much faster
+[08:55] than the deep network methods that came
+[08:57] before it. The vanilla skipgram gram
+[08:59] with negative sampling runs through a
+[09:02] billionword corpus in hours on commodity
+[09:06] hardware. Today in the era of GPU
+[09:08] compute and transformer models, this
+[09:10] advantage is less dramatic, but for many
+[09:13] applications, a fast word tove baseline
+[09:17] remains an excellent starting point.
+[09:19] The companion algorithm
+[09:23] CB is the reverse of skip gram. Instead
+[09:25] of predicting context words from a
+[09:28] center word, CBO predicts the center
+[09:31] word from its context.
+[09:33] Take the words in the context window.
+[09:36] Say the four words on either side of
+[09:39] position t. Average their embeddings and
+[09:41] use that average embedding to predict
+[09:43] the word at position t through a
+[09:44] softmax.
+[09:47] Symmetric architecture different framing
+[09:49] of the prediction task. Skipgram gram
+[09:52] versus cb.
+[09:54] Empirically both produce comparable
+[09:57] embeddings with small differences.
+[09:59] Skipgram tends to do better on
+[10:02] infrequent words and on small data sets.
+[10:05] CBO tends to train faster because each
+[10:07] training example produces a single
+[10:11] softmax computation rather than several.
+[10:13] Most practitioners pick one and stick
+[10:15] with it. There is no strong reason to
+[10:17] use both.
+[10:19] Returning to skip gram for the remaining
+[10:22] discussion of word two vec. The skipgram
+[10:24] gram bias toward rare words is the
+[10:27] conceptual win and is why skip gram has
+[10:29] become slightly more popular in modern
+[10:31] usage. The conceptual picture worth
+[10:33] retaining.
+[10:35] A word embedding is a learn dense
+[10:38] vector. The learning objective is to
+[10:40] predict surrounding words. The result is
+[10:43] that words appearing in similar context
+[10:45] end up with similar embeddings.
+[10:47] The geometry of the embedding space
+[10:50] encodes semantic and syntactic structure
+[10:52] that emerges from the prediction
+[10:54] objective without any explicit
+[10:56] supervision.
+[10:59] Word two vec. This 2013 work was widely
+[11:01] cited and the technique became the
+[11:03] standard starting point for any NLP task
+[11:06] involving word representations.
+[11:08] Key practical improvements that
+[11:10] distinguish wordve from earlier word
+[11:14] embedding methods. Speed. Word two vec
+[11:16] is roughly an order of magnitude faster
+[11:18] to train than the neural language models
+[11:21] that preceded it. Negative sampling
+[11:23] replaces the full softmax with a much
+[11:25] cheaper binary classification against
+[11:28] sample negatives. Subsampling of
+[11:31] frequent words. Words like the and off
+[11:33] are downsampled during training because
+[11:35] they appear in nearly every context and
+[11:39] contribute little semantic information.
+[11:41] Together, these tricks make billionword
+[11:43] training feasible on standard hardware.
+[11:45] Mikolof also released the code and
+[11:48] pre-trained models which accelerated
+[11:50] adoption substantially.
+[11:53] Pre-trained word two ve embeddings
+[11:56] trained on Google News, on Wikipedia, on
+[11:59] common crawl were made freely available
+[12:01] and used as input features in thousands
+[12:04] of downstream applications.
+[12:06] Word two vec pioneered negative sampling
+[12:09] and subsampling of frequent words and
+[12:11] was the first widely used demonstration
+[12:13] that self-supervised pre-training on
+[12:16] large unlabeled corpora produces
+[12:18] representations that transfer to many
+[12:20] supervised tasks.
+[12:22] This is the conceptual seat of every
+[12:27] modern foundation model GPT bird llama
+[12:30] met palm all of them refine and scale up
+[12:32] the same idea.
+[12:35] The most famous discovery word
+[12:37] arithmetic. Subtract the embedding of
+[12:40] man from the embedding of king. Add the
+[12:43] embedding of woman. The resulting vector
+[12:45] is closest to the embedding of queen.
+[12:47] The semantic operation of gender
+[12:50] substitution corresponds approximately
+[12:52] to a vector addition in the embedding
+[12:55] space. Paris minus France plus Germany
+[12:58] is approximately Berlin. Capital city
+[12:59] substitution.
+[13:01] Walking minus walk plus swim is
+[13:05] approximately swimming garun formation.
+[13:07] This emergent linear structure was not
+[13:10] designed in it fell out of the training
+[13:13] objective. Mikolof's group documented
+[13:15] hundreds of such analogies country
+[13:18] capital pairs verb tense pairs
+[13:21] comparative superlative pairs. The
+[13:23] discovery was striking enough that it
+[13:25] made word two vec a viral result outside
+[13:28] the NLP community.
+[13:31] Walking through the geometry, the vector
+[13:33] from country to capital captures the
+[13:35] same operation applied to a different
+[13:38] starting point. If the embeddings are
+[13:40] well learned, these two vectors should
+[13:43] be approximately parallel. Both encoding
+[13:45] the same semantic relation. Word
+[13:49] arithmetic exploits this parallelism.
+[13:52] A visual example. Observe the vector
+[13:54] from China to Turkey
+[13:57] and the vector from Beijing to Ankara.
+[13:59] These two vectors are roughly parallel
+[14:02] and of the same magnitude. Bigger minus
+[14:05] big plus small is approximately smaller.
+[14:08] Comparative formation. The space of
+[14:10] analogies that work is large. Though not
+[14:13] all attempted analogies succeed cleanly.
+[14:16] Where the analogies fail, they often
+[14:18] fail in informative ways. Capturing
+[14:20] biases in the training corpus. For
+[14:22] instance, where doctor minus man plus
+[14:25] woman lands closer to nurse than to
+[14:26] doctor.
+[14:28] Treat word arithmetic as a useful
+[14:31] illustration of embedding geometry not
+[14:34] as a benchmark of model quality.
+[14:37] An important alternative glove global
+[14:39] vectors for word representation.
+[14:42] Pennington Soer and Manning Stanford
+[14:44] 2014
+[14:46] where word two vec learns embeddings
+[14:49] from local context windows iteratively.
+[14:51] Glove trains embeddings to fit the
+[14:53] global co-occurrence statistics of the
+[14:56] corpus. Compute the matrix of word word
+[14:58] co-occurrence counts across the full
+[15:01] corpus. Then learn embeddings such that
+[15:03] the dotproduct of two word embeddings
+[15:05] approximates the log of their
+[15:08] co-occurrence count. Empirical results
+[15:11] are similar to word tove vec. Sometimes
+[15:13] slightly better, sometimes worse
+[15:16] depending on task and corpus. Both
+[15:19] approaches are still widely used.
+[15:21] How do you actually get word to vec
+[15:24] embeddings? two paths. Train them
+[15:27] yourself on your own corpus. Useful when
+[15:29] your domain is sufficiently specialized
+[15:31] that off-the-shelf English embeddings
+[15:32] will not capture the relevant
+[15:34] vocabulary.
+[15:37] The Jensen Python library, fast text,
+[15:39] and original C implementation all
+[15:42] support this. Training a billionword
+[15:44] corpus to convergence takes hours on a
+[15:47] workstation. Or download pre-trained
+[15:49] embeddings. The Google News Word 2ve
+[15:52] embeddings, the Wikipedia glove
+[15:54] embeddings, the common crawl fast text
+[15:57] embeddings, all freely available, all
+[15:59] good starting points for general English
+[16:02] tasks.
+[16:04] For clinical work, general English
+[16:06] embeddings transfer imperfectly to
+[16:09] medical text. Vocabulary is different.
+[16:12] Semantic relationships are different.
+[16:14] Drug names and gene names rarely appear
+[16:16] in news.
+[16:17] Several groups have released domain
+[16:21] specific pre-trained embeddings. Bowood,
+[16:25] Chen, Pang and Lu 2019 trained on PubMed
+[16:29] and PMC, Med 2vec, Choi and colleagues
+[16:32] 2016 which we cover in the next slide.
+[16:35] For clinical concept embeddings,
+[16:38] various clinical word tove models train
+[16:41] on mimic notes. For a clinical NLP
+[16:43] project, start with domain specific
+[16:45] embeddings rather than general English
+[16:48] ones.
+[16:51] Matt Tuve, an influential work published
+[16:54] in ACMKDD 2016.
+[16:56] Word tovec applied to sequences of
+[17:00] medical codes, ICD diagnosis, CPT
+[17:04] procedures, RXOM medications from
+[17:06] electronic health records.
+[17:09] Each clinical encounter is treated as a
+[17:11] sentence of codes. The skipgram gram
+[17:13] objective is to predict surrounding
+[17:15] codes within an encounter and across
+[17:18] nearby encounters. The result is a
+[17:20] learned embedding space where related
+[17:23] codes different ICD codes for the same
+[17:25] disease drugs commonly prescribed
+[17:29] together end up nearby. The same idea as
+[17:31] word tove vec on text apply to the
+[17:34] discrete event vocabulary of structured
+[17:36] ehr data.
+[17:39] Matt 2vec details. Choi and colleagues
+[17:41] trained on roughly half a million
+[17:43] patient records. They added a
+[17:45] hierarchical structure to the embedding
+[17:47] embedding at both the code level and at
+[17:50] a coarser grouping level which gives the
+[17:52] model some compositional generalization
+[17:55] across rare codes. The learned
+[17:56] embeddings transferred well to
+[17:59] downstream prediction tasks like future
+[18:03] diagnosis prediction. MED 2 vec was an
+[18:05] influential early demonstration that the
+[18:08] word two vec recipe transfers cleanly
+[18:10] from natural language to clinical
+[18:13] sequences. Subsequent work deep care
+[18:17] retain BHR
+[18:19] extended the same idea with more
+[18:22] sophisticated architectures
+[18:25] from words to sentences and documents.
+[18:28] Word two ve gives us a vector per word
+[18:30] for many tasks clinical note
+[18:32] classification discharge summary
+[18:35] similarity radiology report retrieval we
+[18:37] want a vector per sentence or per
+[18:40] document. How do we get there? The
+[18:42] simplest approach is averaging the word
+[18:45] embeddings of all words in the sentence.
+[18:47] Surprisingly effective as a baseline.
+[18:49] More sophisticated approaches use
+[18:51] sequence models that produce a sentence
+[18:53] level summary from the word level
+[18:55] sequence.
+[18:58] Mean pooling average the embeddings of
+[19:00] all words in the sentence. Throws away
+[19:03] word order. Surprisingly strong baseline
+[19:06] for many classification tasks. TF
+[19:09] weighted pooling. weight each word's
+[19:11] embedding by its inverse document
+[19:15] frequency downweing common words. Docve
+[19:18] Lur and Mikolof 2014 extends word tove
+[19:21] vec with a document identifier vector
+[19:22] that gets learned alongside word
+[19:24] embeddings.
+[19:28] Sentence Bert Rhymus and Guravage 2019
+[19:30] fine-tunes BERT specifically for
+[19:32] sentence similarity tasks using a
+[19:35] Siamese training scheme for modern
+[19:38] clinical NLP sentence bird and its
+[19:40] descendants dominate
+[19:43] practical guidance for a quick baseline
+[19:46] mean pool word embeddings for better
+[19:48] quality with a small data set fine-tune
+[19:51] a pre-trained bird model on your task
+[19:54] for sentence similarity or retrieve
+[19:56] retrieval at scale. Use a sentence
+[19:59] encoder model like sentence bert or one
+[20:01] of its clinical variants. For very large
+[20:04] clinical document collections, modern
+[20:07] open-source sentence encoder models can
+[20:09] produce embeddings for tens of millions
+[20:13] of documents in days on commodity GPUs.
+[20:15] The infrastructure for clinical document
+[20:18] embedding is essentially softenering at
+[20:19] this point.
+[20:22] a limitation of word twovec that
+[20:25] motivated the next wave of methods. Word
+[20:27] twove produces a single embedding per
+[20:31] word regardless of context. The word
+[20:32] bank has the same embedding when it
+[20:35] refers to a financial institution and
+[20:38] when it refers to a river edge. The two
+[20:40] senses collapse into one vector that is
+[20:42] an average of the senses which is often
+[20:46] worse than either sense alone. Elmo
+[20:49] embeddings from language models Peters
+[20:51] and colleagues 2018 fix this by
+[20:53] producing context dependent word
+[20:56] embeddings. The embedding of bank in a
+[20:58] given sentence depends on the words
+[21:00] around it. The financial institution
+[21:02] sense and the river edge sense get
+[21:05] different embeddings.
+[21:08] Elmo architecture a birectional LSTM
+[21:10] language model trained on a large
+[21:12] unlabeled corpus. The language model is
+[21:14] trained to predict each word given the
+[21:17] words before it forward direction and
+[21:19] given the words after it backward
+[21:21] direction. The hidden states of the
+[21:25] birectional LSTM at each word position
+[21:27] are used as the contextualized embedding
+[21:31] for that word in that sentence. Two LSTM
+[21:33] layers are used and the contextual
+[21:35] embedding is a learnable weighted
+[21:37] combination of the hidden states at
+[21:38] different layers with the weights
+[21:42] trained per downstream task.
+[21:45] Elmo's impact. The 2018 paper showed
+[21:47] substantial improvements on a wide range
+[21:50] of NLP benchmarks compared to word tovec
+[21:52] or glove baselines.
+[21:54] It demonstrated that contextual
+[21:57] embeddings embeddings that depend on the
+[21:59] surrounding sentence rather than just
+[22:01] the word produced meaningfully better
+[22:03] representations.
+[22:05] Elmo was the immediate precursor to the
+[22:07] transformer-based contextual encoders
+[22:12] that followed. BERT in late 2018, GPT
+[22:15] and T5. The conceptual lineage runs
+[22:17] directly from Elmo to BERT with the
+[22:20] transformer architecture as the bridge.
+[22:26] Another precursor worth knowing UEL MFI
+[22:28] universal language model fine-tuning
+[22:32] Howard and Ruda 2018. The architecture
+[22:35] is an LSTM language modeler technology
+[22:37] than the transformer. The conceptual
+[22:40] contribution was the fine-tuning recipe.
+[22:42] Pre-train a language model on a large
+[22:44] general corpus. Fine-tune the language
+[22:47] model on the in-domain corpus you care
+[22:49] about. Then fine-tune the model further
+[22:52] on the supervised downstream task. The
+[22:55] three-stage recipe, pre-train,
+[22:58] intermediate fine-tune, task finetune,
+[22:59] significantly outperformed end-to-end
+[23:01] training from scratch on every text
+[23:04] classification benchmark Howard and RDE
+[23:06] tested.
+[23:09] ULM fits legacy the architecture was
+[23:12] superseded within months by BERT. The
+[23:14] recipe pre-trained on general corpus
+[23:17] fine-tune on domain corpus fine-tune on
+[23:19] task became the dominant pattern for
+[23:23] clinical NLP and persists today.
+[23:26] Biobird and clinical bird which we will
+[23:28] see in detail later in the lecture
+[23:31] follow exactly this recipe. The pattern
+[23:33] is so robust that it applies essentially
+[23:36] unchanged to vision foundation models,
+[23:38] speech models and biology foundation
+[23:42] models. ULM fit did not introduce it
+[23:44] from nothing. Transfer learning had been
+[23:46] used in vision for years but it made the
+[23:49] recipe concrete and widely adopted for
+[23:50] text.
+[23:54] Now Bert Develin and colleagues Google
+[23:58] October 2018. The paper title BERT
+[23:59] pre-training of deep bidirectional
+[24:02] transformers for language understanding
+[24:04] captures the contribution. The
+[24:06] architecture is a stack of transformer
+[24:09] encoder layers. The pre-training is
+[24:10] self-supervised on a large unlabeled
+[24:13] corpus. The birectional aspect means
+[24:15] that each word's representation depends
+[24:19] on context on both sides like Elmo but
+[24:22] using attention rather than LSTM. The
+[24:24] fine-tuning paradigm pre-trained once on
+[24:26] the corpus, fine-tuned separately for
+[24:29] each downstream task, became the
+[24:31] dominant pattern in NLP almost
+[24:33] overnight.
+[24:35] Bird was the immediate state-of-the-art
+[24:38] on essentially every NLP benchmark at
+[24:40] the time of its release.
+[24:43] Birectional transfer learning in detail.
+[24:46] BERT pre-training uses two objectives we
+[24:48] will cover shortly. Masked language
+[24:51] modeling and next sentence prediction.
+[24:53] Both objectives let every word in the
+[24:56] input attend to every other word in both
+[24:57] directions.
+[24:59] This is a fundamental departure from
+[25:01] earlier transformer language models like
+[25:05] GPT which use causal attention. Each
+[25:07] word only sees the words before it. The
+[25:10] birectionality is what makes BERT
+[25:12] especially good at encoding tasks where
+[25:14] you need to understand the full context
+[25:17] of a word from both sides. Sentiment
+[25:20] classification named entity recognition
+[25:22] sentence pair similarity.
+[25:26] Bird is an image net moment for NLP.
+[25:29] The transformer before we can fully
+[25:31] understand BERT, we need to understand
+[25:33] the transformer encoder. Vazwani and
+[25:38] colleagues new IPSA 2017. Attention is
+[25:40] all you need. The paper introduced the
+[25:43] transformer as an alternative to LSTMs
+[25:46] for sequence modeling. The architecture
+[25:48] replaces recurrence entirely with
+[25:50] attention. No hidden state passing
+[25:53] through time, no sequential processing.
+[25:55] Instead, each output position is
+[25:57] computed in parallel from a weighted
+[26:00] combination of inputs at all positions.
+[26:02] The change was transformative for
+[26:04] natural language processing and
+[26:06] eventually for almost every other field
+[26:08] where sequence and structured data
+[26:10] modeling matters.
+[26:13] The highle structure. The original
+[26:15] transformer is an encoder decoder model
+[26:17] designed for machine translation. The
+[26:19] encoder processes the source sentence
+[26:21] and produces a sequence of
+[26:24] contextualized representations. The
+[26:26] decoder generates the target sentence
+[26:28] one token at a time attending to both
+[26:30] the encoder output and the previously
+[26:33] generated target tokens. For bird, we
+[26:36] only need the encoder site. So we will
+[26:38] focus there. The decoder site is
+[26:41] relevant for GPT family models which we
+[26:43] cover later.
+[26:46] The encoder in detail, a stack of
+[26:49] identical encoder blocks. Each block has
+[26:52] two sub layers, a multi head selfattens
+[26:54] layer and a position-wise feed forward
+[26:57] network, residual connections around
+[26:59] each sub layer, layer normalization
+[27:02] after each residual addition. Stacking n
+[27:06] such blocks, typically 12 or 24,
+[27:07] produces a deep encoder that
+[27:09] progressively refineses the
+[27:12] representation of every input position.
+[27:14] Input tokens are first embedded into
+[27:16] vectors and added to positional
+[27:18] encodings. So the network knows the
+[27:21] order of the tokens. Recall that
+[27:23] attention has no built-in notion of
+[27:25] position.
+[27:27] The attention mechanism, the
+[27:29] mathematical heart of the transformer.
+[27:32] For each input position, the network
+[27:35] computes three vectors, a query, a key,
+[27:38] and a value. Each obtained from the
+[27:41] input vector by a linear projection. The
+[27:43] attention output at each position is a
+[27:46] weighted sum of all the value vectors,
+[27:47] where the weight for each position is
+[27:49] determined by the dotproduct of the
+[27:52] current query with the corresponding key
+[27:54] normalized by a softmax across all
+[27:56] positions.
+[27:58] Three things to remember. Queries and
+[28:00] keys interact through dotproducts to
+[28:02] determine weights. Values get weighted
+[28:05] sum by those weights. All three are
+[28:08] learned linear projections of the input.
+[28:10] Walking through the computation, the
+[28:13] input sequence is X minus N tokens by
+[28:16] Dimensions. Three projection matrices W
+[28:21] subq, W subk, W subV map X to query key
+[28:25] and value matrices Q, KV. The attention
+[28:28] output is softmax of Q * Krpose divided
+[28:32] by square roo&lt;unk&gt; of D subK * V. The
+[28:34] square root scaling stabilizes gradients
+[28:36] by keeping the dot products from growing
+[28:38] too large in magnitude. The softmax
+[28:40] normalizes the attention weights so they
+[28:43] sum to one across each query. The result
+[28:46] is an n by d prime output where each row
+[28:49] is a context mixed representation of one
+[28:51] input position.
+[28:53] A reading of the attention mechanism.
+[28:56] Each query asks which positions are
+[28:59] relevant to me. The dotproducts with all
+[29:01] the keys answer. These positions are
+[29:04] relevant with these weights. The values
+[29:05] are then aggregated according to those
+[29:07] weights to produce the new
+[29:08] representation.
+[29:10] This is fundamentally different from
+[29:13] convolution where the structure of the
+[29:14] relevant positions is fixed by the
+[29:16] filter geometry.
+[29:18] In attention, the structure of the
+[29:20] relevant positions is learned and
+[29:23] depends on the input. This dynamic
+[29:25] contentbased addressing is what gives
+[29:28] attention its representational power.
+[29:31] Multi head attention. Rather than
+[29:33] computing one attention function with DD
+[29:38] dimensional Q, K V vectors, we compute
+[29:40] multiple attention functions in parallel
+[29:43] heads, each with smaller dimensional Q,
+[29:45] KV.
+[29:47] The outputs of the heads are
+[29:49] concatenated and projected through one
+[29:52] more linear layer. Different heads can
+[29:53] attend to different aspects of the
+[29:56] input. One head might attend to
+[29:58] syntactic dependencies, another to
+[30:00] correerence, another to topical
+[30:02] similarity.
+[30:05] The choice of number of heads, typically
+[30:09] 8, 12 or 16, is a hyperparameter. Total
+[30:11] parameter count is held roughly constant
+[30:14] by reducing per head dimensionality.
+[30:18] Why multi head helps? Theoretically, a
+[30:20] single highdimensional attention head
+[30:22] can compute anything multiple lower
+[30:25] dimensional heads can. In practice,
+[30:27] multiple heads consistently outperform a
+[30:29] single head of the same total
+[30:31] dimensionality.
+[30:33] The intuition is that separating the
+[30:35] heads gives the model an architectural
+[30:37] prior that different relations should be
+[30:39] captured separately.
+[30:41] Subsequent analysis of trained
+[30:43] transformers find that different heads
+[30:45] do tend to specialize to different kinds
+[30:48] of relations. Some heads are syntactic,
+[30:50] some are positional, some are semantic,
+[30:52] though the specialization is far from
+[30:54] clean.
+[30:57] Cost of computing the attention weights.
+[30:59] Attention has quadratic complexity in
+[31:02] sequence length. Each query attends to
+[31:05] all n keys. So the dotproduct matrix is
+[31:08] n byn. For very long sequences, this
+[31:11] becomes the bottleneck. A sequence of
+[31:14] 10,000 tokens needs a 100 million entry
+[31:16] attention matrix per head. Several
+[31:18] efficient attention variants have been
+[31:20] proposed. Long former with sparse
+[31:23] attention performers with random feature
+[31:26] approximation. Reformer with locality
+[31:28] sensitive hashing. None of them are
+[31:30] universal replacements for full
+[31:33] attention. For clinical NLP tasks at
+[31:35] typical document lengths, a few hundred
+[31:37] to a few thousand tokens, full attention
+[31:40] is fine.
+[31:43] Positional encodings. Pure attention is
+[31:46] permutation equivariant. If you shuffle
+[31:49] the input positions, the outputs shuffle
+[31:51] identically. The network has no built-in
+[31:54] notion of position. to give it one. The
+[31:57] original transformer adds a positional
+[31:59] encoding to each input embedding before
+[32:02] the first attention layer. Two flavors.
+[32:05] Sinosoidal positional encodings. Fixed
+[32:07] functions of position. No learnable
+[32:09] parameters.
+[32:11] Learned positional embeddings. A
+[32:13] separate learnable embedding per
+[32:15] position kept at some maximum sequence
+[32:18] length. BERT uses learn positional
+[32:21] embeddings. GPT does the same. Both
+[32:24] work. The difference is small.
+[32:26] Attention weighted outputs of the JTH
+[32:29] attention head is thus a function of X
+[32:32] and the embedding dimension D subC. This
+[32:35] is the feed forward sub layer. After the
+[32:38] multi head attention, each position is
+[32:40] passed independently through a two-layer
+[32:43] fully connected network. A linear layer
+[32:46] to a wider intermediate dimension, a
+[32:49] nonlinearity, and a linear layer back to
+[32:51] the original dimension.
+[32:53] Together with the attention sub layer,
+[32:55] the encoder block transforms each
+[32:58] position's representation while
+[33:00] exchanging information with all other
+[33:02] positions.
+[33:04] If using multiple attention heads,
+[33:07] combine outputs with another matrix.
+[33:09] Layer normalization normalizes each
+[33:12] feature across the model dimension at
+[33:14] each position, which works cleanly with
+[33:16] the variable length sequences that
+[33:19] recurrencefree models naturally produce.
+[33:21] PNOM and postnorm variants differ in
+[33:23] whether normalization is applied before
+[33:26] or after the residual addition.
+[33:28] Modern transformers mostly use prenom
+[33:31] for better training stability.
+[33:34] Self attention versus cross attention.
+[33:37] Let X equals Y. And now the transformer
+[33:40] encoder uses self attention. Queries,
+[33:42] keys, and values all come from the same
+[33:44] input sequence. The decoder uses both
+[33:47] self attention over its own outputs and
+[33:49] cross attention where queries come from
+[33:51] the decoder and keys values come from
+[33:53] the encoder.
+[33:56] For BERT, which is encoder only, we only
+[33:58] deal with self attention. The
+[34:00] self-attention mechanism is what lets
+[34:02] each input token combine information
+[34:05] from all other input tokens in a single
+[34:07] layer, dramatically reducing the path
+[34:09] length for longrange dependencies
+[34:12] compared to LSTMs.
+[34:13] recommended reading. Check out this
+[34:16] well-known blog post for a great and
+[34:18] illustrated in-depth explanation of the
+[34:19] self-attention mechanism and
+[34:22] transformers.
+[34:24] Back to BERT specifically, the
+[34:27] architecture is a transformer encoder.
+[34:28] The pre-training is done on a large
+[34:31] unlabeled corpus book corpus and English
+[34:34] Wikipedia for the original bird. Roughly
+[34:36] 3 billion words total. Two
+[34:38] self-supervised objectives are used
+[34:41] jointly. Mask language modeling and next
+[34:43] sentence prediction. The mask language
+[34:45] modeling objective is what most of
+[34:48] bird's power comes from. Next sentence
+[34:50] prediction was included by Devlin at
+[34:53] all, but subsequent work showed it
+[34:55] contributes less than expected and is
+[34:57] often dropped in bird successes like
+[34:59] Roberta
+[35:01] mask language modeling. For each
+[35:04] training sentence, 15% of the tokens are
+[35:07] randomly selected for masking. Of those
+[35:10] selected, 80% are replaced with a
+[35:13] special mask token, 10% are replaced
+[35:16] with a random other token, and 10% are
+[35:18] left unchanged. The model is trained to
+[35:20] predict the original tokens at the
+[35:22] selected positions using the surrounding
+[35:25] context. The masking forces the model to
+[35:28] learn deep contextual representations.
+[35:31] To predict the original word, the model
+[35:33] has to integrate information from the
+[35:35] surrounding sentence, which is exactly
+[35:37] the representation we want for
+[35:39] downstream tasks.
+[35:42] Next, sentence prediction. The second
+[35:44] pre-training objective. Pairs of
+[35:46] sentences A and B are constructed from
+[35:49] the training corpus. Half the time B is
+[35:51] the actual sentence that followed A in
+[35:54] the corpus. The other half B is a random
+[35:56] sentence from elsewhere. The model is
+[35:59] trained to classify which case it is
+[36:01] true continuation or random. The intent
+[36:03] was to encourage the model to learn
+[36:06] relationships between sentences useful
+[36:08] for downstream tasks like question
+[36:09] answering and natural language
+[36:11] inference.
+[36:14] Fine-tuning. Once bird is pre-trained,
+[36:17] you adapt it to a downstream task by
+[36:20] adding a small task specific head, a
+[36:23] classifier, a tagger, a span predictor
+[36:25] on top of the pre-trained encoder, and
+[36:27] fine-tuning the whole model end to end
+[36:31] on the task labeled data. Fine-tuning is
+[36:33] fast and uses much less data than
+[36:35] training from scratch. For most NLP
+[36:38] tasks, fine-tuning bird base on a few
+[36:40] thousand to a few tens of thousands of
+[36:42] labeled examples gives near
+[36:44] state-of-the-art performance. This
+[36:47] pattern, fine-tune a pre-trained encoder
+[36:49] for each downstream task, became the
+[36:52] dominant recipe in NLP.
+[36:55] Additional details worth knowing. Bird
+[36:58] base has 12 transformer layers. Hidden
+[37:02] dimension 768, 12 attention heads about
+[37:05] 110 million parameters.
+[37:08] Bird large has 24 layers. Hidden
+[37:12] dimension 1024, 16 heads, about 340
+[37:14] million parameters. Both versions use
+[37:17] word piece tokenization, which splits
+[37:19] rare words into subword units. The
+[37:22] maximum sequence length is 5 to 12
+[37:24] tokens. A hard limit baked into the
+[37:27] positional embeddings. Inputs longer
+[37:28] than this require chunking or
+[37:32] hierarchical approaches. The CLS token
+[37:34] prepended to every input gives a
+[37:36] sequence level summary used for
+[37:38] classification tasks.
+[37:42] The birectional aspect is key in BERT.
+[37:44] Every position in BERT attends to every
+[37:46] other position in both directions
+[37:48] through self attention.
+[37:51] The model's representation of each token
+[37:53] therefore depends on context on both
+[37:56] sides. This is the architectural
+[37:58] difference from GPT family models which
+[38:01] use causal attention and produce left to
+[38:03] right representations.
+[38:05] For tasks where you have the full input
+[38:08] available, classification, tagging, span
+[38:11] extraction, birectional encoding is
+[38:14] strictly more powerful. For generative
+[38:16] tasks where you produce tokens one at a
+[38:19] time, causal attention is what you need.
+[38:21] BERT and GPT optimize for different
+[38:24] deployment shapes. Both are useful in
+[38:26] different settings.
+[38:29] The empirical impact of birectionality.
+[38:31] The original BERT paper showed
+[38:33] substantial gains on the GLU benchmark
+[38:36] over earlier methods including ULM fit
+[38:40] and open AI GPT1. The gains were largest
+[38:42] on task where understanding the full
+[38:44] sentence matters most. Natural language
+[38:47] inference sentence pair classification.
+[38:49] The mask language modeling objective
+[38:52] combined with birectional attention is
+[38:54] what made this work. The lesson
+[38:56] generalizes. Choose your pre-training
+[38:58] objective to match the structure of the
+[39:02] inputs your downstream tests will see.
+[39:05] Now the clinical adaptations. Bird
+[39:07] pre-trained on general English does not
+[39:09] transfer perfectly to medical text. Drug
+[39:12] names, gene names, disease subtypes are
+[39:14] rare in Wikipedia and abundant in
+[39:17] PubMed. Two influential domain adapted
+[39:21] variants emerged in 2019. BioBert Lee
+[39:24] and colleagues Korea University
+[39:26] pre-trained BERT further on PPM
+[39:29] abstracts and PMAT central full text
+[39:30] articles.
+[39:34] Clinical BERT also and colleagues MIT
+[39:37] pre-trained BERT further on mimic 3
+[39:40] clinical notes both follow the ulmfit
+[39:42] style recipe start from general English
+[39:45] BERT continue pre-training on in-domain
+[39:49] text then fine-tune for downstream tasks
+[39:51] both substantially outperform plain bird
+[39:53] on biomedical and clinical NLP
+[39:56] benchmarks
+[40:01] bioert in detail lee at al 2019 19.
+[40:03] Starting from Bertbase, the authors
+[40:05] continued pre-training on roughly 18
+[40:08] billion words of PubMed abstracts and
+[40:11] PubMed central full text articles,
+[40:13] standard masked language modeling and
+[40:15] next sentence prediction objectives. The
+[40:17] result was a bird variant with
+[40:19] biomedical vocabulary and biomedical
+[40:23] context baked into its representations
+[40:26] on biomedical neer relation extraction
+[40:28] and questionans answering benchmarks.
+[40:30] BioBird outperformed plain bird by
+[40:33] several points. It rapidly became the
+[40:35] default biomedical text encoder and
+[40:38] remains widely used today. Though newer
+[40:40] models like PubMet bird trained from
+[40:42] scratch on PubMet rather than continuing
+[40:45] from general BER have surpassed it on
+[40:47] some benchmarks.
+[40:52] Clinical BERT al sensor at al 2019
+[40:55] starting from bioert not from plain bert
+[40:57] the authors continued pre-training on
+[41:00] the clinical notes in mimic 3 roughly
+[41:02] half a billion words of nursing notes
+[41:05] discharge summaries radiology reports
+[41:09] ECG reports and other clinical text the
+[41:11] two-stage adaptation general English to
+[41:14] biomedical via bioert biomedical to
+[41:16] clinical via clinical bird is more
+[41:18] effective than either single stage.
+[41:20] Clinical text is sufficiently different
+[41:24] from biomedical research text
+[41:26] where clinical bird helps downstream
+[41:29] clinical NLP tasks. Read the paper on
+[41:31] fine-tuning clinical bird for prediction
+[41:35] of 30-day hospital readmission. Clinical
+[41:37] bird outperforms plain bird on every one
+[41:39] of the clinical NLP tasks by meaningful
+[41:42] margins.
+[41:44] The key of clinical bird is that when
+[41:46] performing prediction from long
+[41:48] sequences, obtain predictions for each
+[41:52] sentence separately and then combine.
+[41:54] After clinical bird, the field saw a
+[41:56] series of larger and better trained
+[41:58] variants.
+[42:02] Pupmat bird go at al 2020 trained from
+[42:04] scratch on pupmet rather than continuing
+[42:06] from general bird. Gatoratron,
+[42:10] University of Florida, 2022. Train from
+[42:13] scratch on EHR scale clinical text with
+[42:15] model sizes up to billions of
+[42:18] parameters. Metal and METPM 2 Google
+[42:21] 2023 multimodal medical foundation
+[42:23] models that go beyond bird style
+[42:26] encoders. The pattern is consistent.
+[42:29] Scale matters in domain data matters and
+[42:30] the right combination is now
+[42:32] substantially better than out-of-the-box
+[42:36] general models for clinical tasks.
+[42:40] Summary word embeddings word tove vec
+[42:45] skip gram cb glove metve as the
+[42:46] foundation of dense vector
+[42:49] representations of discrete tokens.
+[42:51] Sentence and document embeddings as the
+[42:53] bridge from word level to passage level
+[42:56] representations with Elmo and um fit as
+[42:58] architectural and methodological
+[43:01] precursors. The transformer architecture
+[43:04] query key value self attention multi
+[43:07] head attention positional encodings the
+[43:09] encoder block as the architectural
+[43:11] foundation and bird as the canonical
+[43:14] pre-trained encoder with mask language
+[43:16] modeling as its core objective. The
+[43:18] fine-tuning recipe as its deployment
+[43:21] paradigm and bio clinical bird as the
+[43:23] clinical adaptations you will use in
+[43:26] practice. Next lecture pivots to
+[43:29] multimodal and self-supervised learning.
+[43:30] How to combine text with images and
+[43:33] other modalities and how to learn useful
+[43:37] representations without explicit labels.

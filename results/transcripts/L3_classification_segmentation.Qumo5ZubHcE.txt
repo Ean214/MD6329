@@ -1,0 +1,905 @@
+[00:02] Welcome back everyone. Lecture three of
+[00:04] MD6329.
+[00:06] Today is the natural extension of
+[00:08] lecture two.
+[00:09] We spent the last session on the
+[00:10] building blocks.
+[00:13] The convolutional layer, the pooling
+[00:15] layer, loss functions, evaluation
+[00:18] metrics, and the first wave of case
+[00:20] studies. Today we go deeper in two
+[00:22] directions. One,
+[00:24] we revisit and complete the case study
+[00:25] tour,
+[00:27] then introduce ResNet properly as the
+[00:29] architectural breakthrough that unlocked
+[00:31] very deep networks,
+[00:34] and survey what came after ResNet.
+[00:36] Two, and this is the larger half of
+[00:37] today's lecture.
+[00:39] We leave classification behind and step
+[00:42] up to segmentation.
+[00:44] The U-Net architecture by Ronneberger
+[00:47] and colleagues in 2015
+[00:48] is the workhorse of medical image
+[00:50] segmentation, and we will walk through
+[00:52] it slide by slide.
+[00:54] By the end, you should be able to read a
+[00:57] segmentation paper, explain skip
+[00:59] connections from memory,
+[01:01] and pick the right evaluation metric for
+[01:04] a segmentation task.
+[01:05] Two parts.
+[01:08] Part one, ResNet in depth,
+[01:09] including the residual block
+[01:12] mathematics, the architectural family of
+[01:16] ResNet 34 through ResNet 152,
+[01:18] the bottleneck variant, and a quick
+[01:21] survey of modern descendants, DenseNet,
+[01:24] MobileNet, EfficientNet, and a preview
+[01:26] of the vision transformer.
+[01:27] Part two,
+[01:29] semantic segmentation.
+[01:32] We will define the task, motivate it
+[01:33] clinically, walk through fully
+[01:35] convolutional networks and the
+[01:38] encoder-decoder family,
+[01:40] dissect the U-Net architecture in
+[01:41] detail,
+[01:43] discuss segmentation-specific loss
+[01:45] functions,
+[01:46] and look at the BraTS brain tumor
+[01:48] segmentation benchmark as a worked
+[01:54] ResNet, work by Kaiming He and
+[01:56] colleagues at Microsoft Research Asia,
+[02:02] The problem with deep plain networks is
+[02:03] straightforward.
+[02:07] A 56-layer plain CNN performs worse than
+[02:09] a 20-layer one
+[02:12] on both training error and test error.
+[02:14] And this is not overfitting. The deeper
+[02:17] model simply fails to optimize.
+[02:19] The training loss itself is higher.
+[02:21] The culprit is vanishing or exploding
+[02:23] gradients, which prevent effective
+[02:26] learning in very deep networks.
+[02:28] The residual connection solution fixes
+[02:30] this.
+[02:32] Instead of learning the desired mapping
+[02:34] h of x directly,
+[02:36] each residual block learns the residual
+[02:40] f of x equals h of x minus x.
+[02:43] Then it adds the identity. The output is
+[02:45] f of x plus x.
+[02:47] If the residual layers aren't needed, f
+[02:50] of x can decay to zero, giving the
+[02:52] identity mapping.
+[02:54] Most importantly, gradients flow freely
+[02:56] through the skip connection. That's the
+[02:59] core idea of ResNet.
+[03:01] ResNet won every category of the
+[03:04] ImageNet 2015 challenge by substantial
+[03:05] margins,
+[03:08] classification, detection, and
+[03:09] localization.
+[03:14] ResNet 152 achieved 3.6% top five error
+[03:15] on ImageNet
+[03:19] against AlexNet's 16.43 years earlier.
+[03:21] Roughly a fourfold reduction in error in
+[03:23] three years.
+[03:25] That is the pace of progress when an
+[03:26] idea works.
+[03:29] The diagram shows the residual block,
+[03:31] the atomic unit of a ResNet.
+[03:34] Conventional CNN block.
+[03:37] Input x enters, passes through some
+[03:39] convolutional layers, comes out as some
+[03:40] output.
+[03:42] The block has learned a transformation
+[03:44] from x to y.
+[03:47] ResNet block. Input x enters, passes
+[03:50] through some convolutional layers,
+[03:51] and then,
+[03:53] and this is the entire innovation, the
+[03:56] original X is added back to the output
+[03:59] of those layers element-wise.
+[04:01] The block has learned a transformation
+[04:04] from X to X plus residual.
+[04:06] Let me state this in equations because
+[04:08] the simplicity is striking.
+[04:11] A conventional layer computes Y equals F
+[04:14] of X where F is the convolutions and
+[04:16] nonlinearities.
+[04:19] A residual block computes Y equals F of
+[04:22] X plus X. That is it.
+[04:24] The arithmetic addition at the end is
+[04:25] the architecture.
+[04:28] F now represents the residual,
+[04:31] what to add to the input, rather than
+[04:32] the full transformation.
+[04:35] The mathematical change is one line of
+[04:37] code. The conceptual change is
+[04:39] substantial. Now, the block does not
+[04:41] have to learn the full mapping.
+[04:44] It only has to learn the residual,
+[04:47] the delta from the input.
+[04:50] And if there is no useful delta to add,
+[04:52] the block can learn to output zero,
+[04:55] leaving the identity mapping intact.
+[04:57] This means that adding layers to the
+[04:59] network cannot hurt.
+[05:00] In the worst case, they become
+[05:02] identities
+[05:04] and performance is preserved.
+[05:06] Compare this to a plain network without
+[05:08] skip connections.
+[05:10] There is no guarantee that adding layers
+[05:12] leaves the function unchanged
+[05:14] because each new layers weights are
+[05:17] initialized randomly and have to be
+[05:19] carefully trained back toward identity
+[05:21] if they were not needed.
+[05:24] ResNet starts the network in a position
+[05:26] where the no-op is easy and improvements
+[05:30] are added rather than discovered.
+[05:32] Why did we need this? Because of a
+[05:35] phenomenon that He et al. called the
+[05:37] degradation problem.
+[05:39] Before ResNet, the conventional wisdom
+[05:42] was that deeper networks should be at
+[05:44] least as good as shallower ones
+[05:46] because in principle, the deeper network
+[05:48] could simulate the shallower one by
+[05:51] setting its extra layers to identity.
+[05:53] But in practice, this did not happen. He
+[05:56] et al. showed empirically that a plain
+[05:59] 56-layer CNN had higher training error
+[06:03] than a plain 20-layer CNN.
+[06:06] Not test error, training error.
+[06:08] The deeper network could not even fit
+[06:10] the training data as well as the
+[06:11] shallower one.
+[06:14] So, the problem was not overfitting.
+[06:16] The deeper network simply could not be
+[06:19] optimized to fit the data.
+[06:21] The reason, broadly, is that the
+[06:23] gradients used to update the weights had
+[06:25] to flow back through many layers.
+[06:27] And they were getting attenuated or
+[06:29] distorted by the nonlinearities along
+[06:31] the way.
+[06:34] Skip connections sidestep this.
+[06:35] A gradient flowing backward through a
+[06:37] residual block can take the shortcut
+[06:39] path.
+[06:41] The addition operator passes gradients
+[06:43] through cleanly with no scaling
+[06:47] and reach the earlier layers undiluted.
+[06:49] The mathematical analysis of this in the
+[06:51] original ResNet paper and in follow-on
+[06:53] work by Hart and Ma
+[06:56] and by Veit et al. is worth reading if
+[07:01] Hypothesis:
+[07:04] The problem is an optimization problem.
+[07:06] Deeper models are harder to optimize.
+[07:08] There's a nice interpretation due to
+[07:11] Veit, Wilber, and Belongie.
+[07:14] They showed that a ResNet, even with 150
+[07:16] layers, behaves at training time more
+[07:18] like an ensemble of shallower paths
+[07:20] through the network
+[07:23] than like a single very deep network.
+[07:26] At each residual block, the gradient can
+[07:28] either flow through the residual path or
+[07:29] through the skip path.
+[07:31] So, there are exponentially many
+[07:37] Most of the gradient magnitude during
+[07:40] training flows along the short paths,
+[07:43] those with fewer residual blocks,
+[07:45] which means that effectively the network
+[07:47] is learning combinations of many shallow
+[07:48] networks,
+[07:50] rather than learning a single deep
+[07:52] computation.
+[07:54] The deeper model should be able to
+[07:55] perform at least as well as the
+[07:57] shallower model.
+[07:59] A solution by construction is copying
+[08:01] the learned layers over from the
+[08:04] shallower model and setting all
+[08:06] additional layers to the identity
+[08:09] function.
+[08:11] Hence, the ResNet solution is to
+[08:13] structure each network layer to fit a
+[08:15] residual function with respect to the
+[08:17] identity function,
+[08:22] Let's step through the network
+[08:28] Periodically, double the number of
+[08:30] filters and down sample specially using
+[08:35] Add an additional convolutional layer at
+[08:45] The ResNet family is parameterized by
+[08:46] depth.
+[08:49] ResNet 18 and ResNet 34 use basic
+[08:50] blocks,
+[08:53] two 3 by 3 convolutions per block, with
+[08:55] a skip connection.
+[09:00] ResNet 50, 101, and 152 use bottleneck
+[09:01] blocks,
+[09:04] which we treat in the next slide.
+[09:06] The trade-off across the family is the
+[09:07] usual deep learning curve.
+[09:10] More layers means higher accuracy, but
+[09:12] more compute and memory, and slower
+[09:14] training and inference.
+[09:17] ResNet 50 is the sweet spot for most
+[09:19] medical imaging work.
+[09:21] It is widely available pre-trained on
+[09:23] ImageNet. It has been thoroughly
+[09:26] studied. It fits on a single modern GPU
+[09:28] at typical batch sizes,
+[09:30] and its accuracy on ImageNet is
+[09:31] excellent.
+[09:33] Let me give you concrete numbers because
+[09:35] they are useful to internalize.
+[09:37] ResNet 18 has about 11 million
+[09:41] parameters, achieves around 70% top one
+[09:44] accuracy on ImageNet, runs inference in
+[09:47] milliseconds on a modern GPU.
+[09:49] ResNet 50 has about 25 million
+[09:51] parameters,
+[09:55] achieves around 76% top one accuracy.
+[09:58] ResNet 152 has about 60 million
+[10:02] parameters, achieves around 77.8%
+[10:04] Note the diminishing returns.
+[10:06] You triple the parameter count from
+[10:10] ResNet 50 to ResNet 152 and gain less
+[10:12] than two percentage points.
+[10:15] This pattern, bigger is better but with
+[10:17] rapidly diminishing returns,
+[10:20] is universal in deep learning.
+[10:21] And it is one of the reasons why simply
+[10:25] scaling up architectures has limits.
+[10:27] In practice, when you read a clinical
+[10:30] imaging paper from roughly 2017 onward,
+[10:32] there is a strong chance the backbone is
+[10:34] ResNet 50.
+[10:37] The CheXNet paper used DenseNet 121,
+[10:39] but if you regress over the broader
+[10:43] literature, ResNet 50 dominates.
+[10:44] PyTorch ships it pre-trained out of the
+[10:48] box. TensorFlow ships it pre-trained.
+[10:50] Hugging Face hosts dozens of medical
+[10:55] In the following, we introduce some work
+[10:57] based on ResNet,
+[11:03] McKinney and colleagues published a
+[11:06] paper in Nature in 2020 on an AI system
+[11:09] for breast cancer screening.
+[11:11] The task was binary classification of
+[11:13] breast cancer in mammograms.
+[11:15] They used an ensemble of models
+[11:16] including ResNets.
+[11:18] The key contribution was international
+[11:21] data set and evaluation
+[11:23] across both the UK and the US,
+[11:25] demonstrating generalizability across
+[11:27] different populations and screening
+[11:33] Let me briefly mention three more recent
+[11:35] CNN architectures.
+[11:38] First, MobileNet by Sandler and
+[11:40] colleagues in 2018.
+[11:42] It uses separable convolutions to create
+[11:44] lightweight CNNs
+[11:46] that run efficiently on mobile and edge
+[11:48] devices.
+[11:50] Important for deployment in clinics with
+[11:52] limited computational resources.
+[11:55] Second, NASNet by Zoph and colleagues in
+[11:56] 2016,
+[11:59] and AmoebaNet by Real and colleagues in
+[12:01] 2019.
+[12:02] These architectures were discovered
+[12:05] through neural architecture search
+[12:06] using reinforcement learning or
+[12:09] evolutionary algorithms to automatically
+[12:11] find optimal network designs,
+[12:14] rather than hand designing them.
+[12:15] Third,
+[12:17] EfficientNet by Tan and colleagues in
+[12:19] 2020.
+[12:21] This is a family of architectures
+[12:23] designed using compound scaling,
+[12:26] simultaneously scaling width, depth, and
+[12:27] resolution of the network with a fixed
+[12:29] ratio.
+[12:31] This principled scaling approach
+[12:33] achieves state-of-the-art accuracy with
+[12:35] far fewer parameters and flops than
+[12:48] EfficientNet from Google in 2019 takes a
+[12:49] different angle.
+[12:52] Tan and Le observed that previous CNN
+[12:54] scaling was ad hoc.
+[12:56] You could make a network deeper or
+[12:58] wider, or work at higher input
+[13:01] resolution, but the optimal balance
+[13:03] among these was unclear.
+[13:06] They proposed a compound scaling rule.
+[13:07] When you have more compute available,
+[13:10] scale depth, width, and input resolution
+[13:12] in fixed proportions.
+[13:16] EfficientNet B0 through EfficientNet B7
+[13:19] form a Pareto optimal family.
+[13:21] For any given compute budget, the
+[13:23] corresponding EfficientNet has higher
+[13:26] accuracy than alternatives of the same
+[13:27] cost.
+[13:29] EfficientNet variants are now common in
+[13:32] clinical imaging benchmarks.
+[13:34] The Vision Transformer, ViT, from
+[13:38] Dosovitskiy et al. by 2020.
+[13:40] We will treat this fully in lecture nine
+[13:42] alongside the Transformer architecture
+[13:43] proper.
+[13:44] The headline:
+[13:46] The Transformer architecture that was
+[13:48] originally developed for natural
+[13:50] language processing turns out, with
+[13:52] appropriate adaptation, to work
+[13:55] extremely well on images.
+[13:57] The recipe is to image into a grid of
+[14:00] fixed size patches,
+[14:03] typically 16 by 16 pixels.
+[14:06] Flatten each patch into a vector, treat
+[14:07] the sequence of patch vectors as the
+[14:10] input tokens of a Transformer encoder,
+[14:12] and let the self-attention mechanism do
+[14:14] its work.
+[14:17] Quick practical rubric.
+[14:19] If you have a small to medium data set,
+[14:22] under 100,000 images,
+[14:23] and want a well-understood,
+[14:27] well-supported baseline, use ResNet-50
+[14:29] with ImageNet pre-training.
+[14:31] If you have a very small data set, under
+[14:33] a few thousand,
+[14:34] consider freezing more of the backbone
+[14:37] and fine-tuning only the top few layers.
+[14:39] If you have a large data set and
+[14:41] substantial compute, consider
+[14:44] EfficientNet or a Vision Transformer.
+[14:47] If your model needs to run on device,
+[14:49] phone, watch, embedded,
+[14:52] use a MobileNet variant or a distilled
+[14:54] smaller model.
+[14:56] If the task is segmentation, your
+[14:58] backbone choice matters less than the
+[15:02] segmentation head. We will get to that.
+[15:04] If the task is detection, bounding boxes
+[15:06] around objects,
+[15:08] different family entirely,
+[15:10] and we treat that in lecture four.
+[15:12] There is no one architecture to rule
+[15:17] Now we pivot.
+[15:19] The first half of this lecture and all
+[15:21] of last lecture has been about
+[15:22] classification,
+[15:25] assigning a single label to an image.
+[15:28] Many clinical tasks are not like that.
+[15:30] They demand pixel level labels.
+[15:32] Where exactly in this image is the
+[15:33] tumor?
+[15:37] Where is the lesion? Where is the organ?
+[15:39] That is the segmentation task. And it is
+[15:43] what we devote the rest of today to.
+[15:45] Different clinical questions require
+[15:47] different output types.
+[15:49] Choosing the right task formulation is
+[15:50] crucial.
+[15:52] The visual recognition task taxonomy is
+[15:56] classification, semantic segmentation,
+[15:57] object detection, and instance
+[16:04] Our case study is U-Net architecture.
+[16:06] The dominant architecture for biomedical
+[16:09] image segmentation.
+[16:11] This slide summarizes the U-Net
+[16:13] architecture discussions.
+[16:15] Segmentation is harder than
+[16:18] classification in several ways. The
+[16:20] output is high-dimensional.
+[16:23] One label per pixel. So, for a 500 by
+[16:26] 500 image, you produce 250,000
+[16:27] predictions.
+[16:28] The labels you train on are
+[16:30] correspondingly more expensive to
+[16:31] produce.
+[16:33] Somebody has to draw a contour around
+[16:35] every relevant structure in every
+[16:37] training image. Which can take hours per
+[16:40] case for a complex tumor.
+[16:41] The loss function has to handle the
+[16:44] spatial structure of the output. And the
+[16:46] typical class imbalance between
+[16:48] foreground and background.
+[16:50] And the network has to produce both
+[16:53] high-level semantic understanding.
+[16:54] What is in the image?
+[16:57] And high-resolution spatial output.
+[16:59] Where exactly is it?
+[17:01] Resolving the tension between those two
+[17:03] demands is the architectural problem to
+[17:07] Take a chest X-ray with three rib
+[17:10] fractures as a concrete example.
+[17:12] Classification simply tells you whether
+[17:15] a fracture is present. Yes or no.
+[17:17] Detection goes a step further by drawing
+[17:19] three bounding boxes, each labeled
+[17:21] fracture.
+[17:24] Semantic segmentation labels every pixel
+[17:26] in the image, assigning each to a class
+[17:29] such as rib, lung, soft tissue, or
+[17:30] fracture line.
+[17:33] However, all fracture line pixels share
+[17:34] the same class.
+[17:36] So, you cannot tell from the output
+[17:38] which pixels belong to fracture one
+[17:40] versus fracture two versus fracture
+[17:41] three.
+[17:44] Instance segmentation provides the same
+[17:46] per-pixel labels, but distinguishes each
+[17:49] fracture as a separate instance,
+[17:50] allowing you to count each fracture
+[17:53] individually and analyze its shape and
+[17:55] extent separately.
+[17:58] We start with classification. That tells
+[18:00] you what is in the image, a single label
+[18:02] for the whole picture.
+[18:04] But, classification is coarse.
+[18:06] It doesn't tell you where the object is
+[18:08] or what shape it has.
+[18:11] Next is semantic segmentation. That
+[18:13] labels every pixel with a class.
+[18:15] Now, you know the shape and location of
+[18:17] each object category,
+[18:19] but semantic segmentation treats all
+[18:21] pixels of the same class as one big
+[18:23] blob.
+[18:25] If there are three cars in the image,
+[18:27] they all get labeled as car with no
+[18:30] distinction between them.
+[18:32] Then comes detection.
+[18:34] That draws bounding boxes around
+[18:35] individual objects.
+[18:37] Now, you can count how many cars there
+[18:38] are
+[18:40] and where each one is located.
+[18:43] But, detection gives you a box, not a
+[18:44] precise shape.
+[18:47] Finally, instance segmentation.
+[18:49] That combines detection and
+[18:50] segmentation.
+[18:52] You get a pixel-accurate mask for each
+[18:54] individual object.
+[18:57] Car one, car two, car three, each with
+[18:59] their own mask.
+[19:01] That is the richest visual recognition
+[19:03] task.
+[19:06] The U-Net by Ronneberger, Fischer, and
+[19:09] Brox in 2015 at MICCAI.
+[19:11] It is named for the U-shape of its
+[19:13] architecture diagram.
+[19:15] Encoder on the left, decoder on the
+[19:18] right, and crucially, horizontal skip
+[19:20] connections at each resolution level
+[19:27] Let me walk through it.
+[19:29] The output is an image mask width *
+[19:32] height * number of classes.
+[19:34] The input image in the original U-Net
+[19:35] paper
+[19:39] was 572 by 572 pixels,
+[19:41] single channel because it was microscopy
+[19:46] Output image size is somewhat smaller
+[19:49] than the original due to convolutional
+[19:54] Gives more true context for reasoning
+[19:56] over each image area.
+[19:58] Can tile to make predictions for larger
+[20:04] Max pooling enables aggregation of
+[20:06] increasingly more context for example
+[20:11] A few convolutional layers at every
+[20:16] Highest-level features to encode large
+[20:19] spatial context.
+[20:21] Up convolutions to go from the global
+[20:24] information encoded in highest-level
+[20:25] features
+[20:28] back to individual pixel predictions.
+[20:31] In summary, the encoder applies pairs of
+[20:34] 3 by 3 convolutions followed by max
+[20:37] pooling, halving the spatial resolution
+[20:38] at each level and doubling the channel
+[20:40] count.
+[20:43] After four pooling steps, you are at 32
+[20:48] by 32 by 1024 channels, the bottleneck.
+[20:51] The decoder then performs the reverse.
+[20:53] At each level, it concatenates the
+[20:55] corresponding encoder feature map via
+[20:57] the skip connection,
+[21:00] applies pairs of convolutions and
+[21:02] upsamples.
+[21:04] After four upsampling steps, you are
+[21:07] back at the original resolution, but now
+[21:10] with a small number of output channels.
+[21:13] One per class for the segmentation task.
+[21:16] A final one by one convolution maps to
+[21:23] Brief technical aside on how upsampling
+[21:25] actually works in a CNN.
+[21:27] Simple upsampling, nearest neighbor
+[21:31] interpolation or bilinear interpolation
+[21:33] has no learnable parameters and gives
+[21:34] you what it gives you.
+[21:37] Transposed convolution also called
+[21:39] fractionally strided convolution
+[21:42] sometimes loosely called deconvolution
+[21:45] is a learnable upsampling operation.
+[21:47] You take each input pixel, multiply it
+[21:49] by a small filter
+[21:51] and place the result into a larger
+[21:53] output canvas.
+[21:55] By learning the filter weights, the
+[21:57] network learns how to upsample optimally
+[22:03] The skip connections are the magic.
+[22:05] At each resolution level the encoder
+[22:08] produces a feature map.
+[22:10] That feature map is concatenated channel
+[22:12] wise to the decoder's feature map at the
+[22:14] same resolution.
+[22:16] This gives the decoder direct access to
+[22:19] the high resolution fine-grained
+[22:21] features that were computed early in the
+[22:22] encoder
+[22:24] before the pooling discarded the spatial
+[22:26] detail.
+[22:28] The result is sharp segmentation
+[22:29] boundaries.
+[22:31] Without the skip connections, the
+[22:33] decoder has to hallucinate the spatial
+[22:35] details from the low resolution
+[22:37] bottleneck
+[22:39] and it produces blurry edges.
+[22:41] With the skip connections the decoder
+[22:44] uses the encoder's high resolution
+[22:46] features as a guide.
+[22:47] The encoder told it where the edges
+[22:48] were.
+[22:50] The decoder just needs to decide which
+[22:52] side of each edge belongs to which
+[22:53] class.
+[22:55] It is an elegant resolution of the
+[22:57] tension between needing high-level
+[22:59] semantic understanding
+[23:06] Take a normal 3 by 3 convolution with
+[23:09] stride two on a 4 by 4 input. The filter
+[23:12] moves two pixels at a time, giving a 2
+[23:13] by 2 output.
+[23:15] That's a many-to-one mapping.
+[23:17] Now, take a transpose convolution with
+[23:20] the same filter, going from a 2 by 2
+[23:23] input back to a 4 by 4 output.
+[23:25] First, insert zeros between the input
+[23:26] pixels.
+[23:29] A 2 by 2 becomes a 4 by 4 grid with
+[23:32] zeros in the inserted positions.
+[23:34] Then apply a regular convolution.
+[23:36] That's a one-to-many mapping.
+[23:38] The filter weights are learned, so the
+[23:41] network learns how to upsample.
+[23:44] That's the basic idea.
+[23:45] In both normal and transpose
+[23:47] convolutions,
+[23:49] the core operation is the dot product
+[23:51] between the filter weights and the input
+[23:53] values at each position.
+[23:55] Normal convolution compresses spatial
+[23:58] dimensions. Transpose convolution
+[24:00] expands them.
+[24:02] But the underlying computation, the dot
+[24:05] product, is the same.
+[24:08] Filter moves two pixels in the input for
+[24:10] every one pixel in the output.
+[24:13] Stride gives ratio between movement in
+[24:23] In a transpose convolution, each input
+[24:25] value acts as a scalar weight for the
+[24:27] entire filter.
+[24:30] It multiplies every filter weight, and
+[24:32] the resulting patch is placed into the
+[24:35] output at a stride-determined location.
+[24:38] Thus, the input tells the filter how
+[24:40] strongly to contribute, in contrast to a
+[24:42] normal convolution where fixed filter
+[24:46] weights slide over the input.
+[24:48] In a transpose convolution, the filter
+[24:50] moves two pixels in the output for every
+[24:53] one pixel in the input.
+[24:55] Stride gives the ratio between movement
+[25:07] Transpose convolution is also called
+[25:10] fractionally strided convolution because
+[25:12] the filter effectively moves in a
+[25:14] fractional steps relative to the input
+[25:15] grid
+[25:18] when stride is greater than one.
+[25:20] It is also called backward strided
+[25:23] convolution because it corresponds to
+[25:24] the backward pass of a regular
+[25:26] convolution.
+[25:28] All three names refer to the same
+[25:34] Concatenate with same resolution feature
+[25:36] map during downsampling process to
+[25:38] combine high-level information with
+[25:45] Train with classification loss, for
+[25:48] example, binary cross-entropy
+[25:50] on every pixel, sum over all pixels to
+[25:52] get total loss.
+[25:54] The original U-Net paper applied the
+[25:56] architecture to cell segmentation in
+[25:59] microscopy images.
+[26:02] They had only 30 training images. 30?
+[26:05] They used aggressive data augmentation,
+[26:08] elastic deformations, especially,
+[26:10] to expand this effectively.
+[26:12] And the network learned to produce clean
+[26:14] cell boundaries even at the points where
+[26:16] cells touch each other.
+[26:18] U-Net has since become the default
+[26:20] architecture for biomedical
+[26:22] segmentation. There are thousands of
+[26:24] papers building on it.
+[26:26] The exact variant matters less than you
+[26:27] might think.
+[26:29] Most reasonable architectures with
+[26:31] encoder-decoder structure and skip
+[26:34] connections work comparably well.
+[26:36] And the bigger gains come from data
+[26:40] augmentation and loss design.
+[26:43] How do we evaluate a segmentation?
+[26:45] Pixel accuracy, the fraction of pixels
+[26:47] you got right,
+[26:48] is misleading when the foreground is
+[26:50] small.
+[26:52] If you are segmenting a tumor that
+[26:55] occupies 1% of the pixels, a a model
+[26:57] that predicts all background achieves
+[27:00] 99% pixel accuracy and segments nothing
+[27:02] useful.
+[27:03] The standard metrics are based on the
+[27:05] overlap between predicted and ground
+[27:07] truth regions.
+[27:16] Intersection over union, IOU,
+[27:19] also known as the Jaccard index.
+[27:21] The area of the intersection of
+[27:23] predicted and ground truth regions
+[27:26] divided by the area of their union.
+[27:28] Ranges from zero to one.
+[27:31] One is perfect agreement. Zero is no
+[27:37] We can compute this over all masks in
+[27:39] the evaluation set either or at
+[27:41] individual mask and image levels to get
+[27:43] finer grain understanding of
+[27:53] Pixel accuracy or PA
+[27:55] is the ratio of the number of correctly
+[27:57] classified pixels to the total number of
+[28:03] Turns out that the numerator is TP plus
+[28:06] TN.
+[28:08] Quick question. What is a potential
+[28:11] problem with this?
+[28:12] Think about what happens when there is
+[28:14] class imbalance.
+[28:18] If 95% of pixels are background and 5%
+[28:19] are tumor,
+[28:21] a model that predicts all pixels as
+[28:25] background gets 95% pixel accuracy,
+[28:28] but misses every single tumor.
+[28:31] That brings us to the Dice coefficient,
+[28:33] sometimes called the Dice-Sørensen
+[28:35] coefficient,
+[28:36] or just Dice.
+[28:38] The formula is twice the area of the
+[28:40] intersection divided by the sum of the
+[28:42] two areas.
+[28:44] In segmentation terms, two times the
+[28:46] number of pixels where both the
+[28:48] prediction and ground truth are positive
+[28:51] divided by the number of positive pixels
+[28:52] in the prediction plus the number of
+[28:55] positive pixels in the ground truth.
+[28:58] Dice also ranges from zero to one.
+[29:01] One means perfect overlap.
+[29:04] Zero means no overlap at all.
+[29:06] Unlike pixel accuracy, Dice ignores true
+[29:09] negatives. The background pixels that
+[29:10] are correctly classified.
+[29:13] So, it focuses entirely on how well you
+[29:16] are detecting the object of interest.
+[29:18] Not on the easy background pixels. That
+[29:20] makes it much more informative for
+[29:24] imbalance segmentation tasks.
+[29:27] Mathematically, Dice equals 2 * IOU over
+[29:29] 1 + IOU.
+[29:32] So, the two metrics are monotonically
+[29:33] related.
+[29:35] If you optimize one, you optimize the
+[29:36] other.
+[29:39] But, the numerical values differ.
+[29:41] Dice is usually larger than IOU for the
+[29:44] same prediction.
+[29:46] Which to report?
+[29:49] Most common is to use IOU or Jaccard or
+[29:50] Dice coefficient.
+[29:53] If multi-class segmentation task, we
+[29:55] typically report all these metrics per
+[29:56] class
+[29:59] and then a mean over all classes.
+[30:01] Finally, we look at U-Net and variants
+[30:08] Let's go back to where U-Net started.
+[30:10] The original 2015 paper by Ronneberger
+[30:12] and colleagues.
+[30:14] They developed U-Net for neuronal
+[30:16] membrane segmentation in electron
+[30:18] microscopy images.
+[30:21] Binary segmentation, every pixel is
+[30:23] either membrane or not membrane.
+[30:25] The data set was only 30 training
+[30:26] images.
+[30:30] Each 512 by 512 pixels.
+[30:32] Tiny by today's standards.
+[30:34] What made it work?
+[30:36] The U-Net is fully convolutional. No
+[30:38] fully connected layers. So, it can take
+[30:40] variable size inputs.
+[30:42] They use an overlap tile strategy for
+[30:45] large images, split into overlapping
+[30:47] tiles, run each through the network,
+[30:50] stitch predictions back together. The
+[30:52] loss function was binary cross entropy
+[30:53] per pixel,
+[30:56] but with a smart twist, a weight map.
+[30:59] Pixels near cell borders, where mistakes
+[31:02] actually matter, get higher weight.
+[31:04] Misclassifying a boundary pixel messes
+[31:06] up cell separation.
+[31:08] Errors inside the cell body are much
+[31:10] less important.
+[31:11] That weight map forced the model to
+[31:13] focus on getting borders right.
+[31:15] And that's a key reason U-Net worked so
+[31:21] In the following, we introduce two
+[31:27] In the work by Novikov et al.
+[31:29] 2018, we are tackling multi-class
+[31:32] segmentation. Specifically, we want to
+[31:34] segment three different structures from
+[31:36] chest X-rays,
+[31:39] the lungs, the clavicles, and the heart.
+[31:41] So, three separate classes.
+[31:44] The data set we are using is the JSRT
+[31:45] data set.
+[31:49] It contains 247 chest X-rays,
+[31:51] and the original images are quite large,
+[31:55] 2048 by 2048 pixels.
+[31:58] But in practice, we downsample them,
+[32:03] usually to either 128 by 128 or 256 by
+[32:05] 256,
+[32:06] just to keep things computationally
+[32:08] manageable.
+[32:11] Now, what architecture are we using?
+[32:13] We're going with a U-Net.
+[32:15] It's a classic choice for medical image
+[32:16] segmentation,
+[32:18] but we're modifying it slightly because
+[32:20] we have a multi-class output, meaning at
+[32:23] every pixel, the model needs to decide
+[32:25] which of the three structures it belongs
+[32:26] to,
+[32:32] That brings us to the loss function.
+[32:34] What loss functions would be appropriate
+[32:35] here?
+[32:38] We compared two options. First, the
+[32:41] standard per pixel softmax cross entropy
+[32:44] that treats each pixel independently,
+[32:47] and second, the dice loss, which is more
+[32:48] focused on overlap between the
+[32:51] prediction and the ground truth.
+[32:53] The short answer is both are useful,
+[32:56] but if you have serious class imbalance,
+[32:57] and we do,
+[33:00] dice loss is usually the better choice.
+[33:02] And why is class imbalance an issue
+[33:03] here?
+[33:05] Think about it. The lungs take up a huge
+[33:07] area in a chest x-ray.
+[33:09] The heart is medium size,
+[33:11] but the clavicles,
+[33:14] those are pretty small. So, a model
+[33:15] trained with a standard loss might just
+[33:18] ignore the clavicle because getting them
+[33:19] wrong barely affects the overall
+[33:22] accuracy.
+[33:25] Novikov and colleagues in 2018 published
+[33:27] a paper on fully convolutional
+[33:29] architectures for multi-class
+[33:31] segmentation in chest radiographs.
+[33:33] They tackled multi-class segmentation
+[33:37] and tried both a per pixel softmax loss
+[33:38] and a loss based on the dice
+[33:41] coefficient.
+[33:43] Class imbalance was a major challenge.
+[33:45] Structures like the heart and lungs
+[33:47] occupy many pixels,
+[33:49] while smaller structures like the
+[33:52] clavicles occupy very few.
+[33:54] To fix that, they weighted the loss
+[33:56] terms corresponding to each ground truth
+[33:57] class
+[34:00] by the inverse of class frequency,
+[34:02] the number of class pixels divided by
+[34:04] total pixels in the data.
+[34:06] Smaller structures like the clavicles
+[34:08] get a higher weight,
+[34:10] forcing the model to pay attention to
+[34:12] them.
+[34:15] Finally, for evaluation, they reported
+[34:18] two standard metrics per organ class,
+[34:20] the dice score and the Jaccard index,
+[34:24] also known as intersection over union.
+[34:26] This allows us to see separately how
+[34:28] well the model segments lungs, how well
+[34:31] it segments the heart, and so on.
+[34:33] Note, this dice loss is often useful to
+[34:36] try.
+[34:37] The work of Dong and colleagues
+[34:39] considered segmentation of tumors in
+[34:42] brain MRI slices using the BraTS 2015
+[34:44] data set.
+[34:47] That data set contains 220 high-grade
+[34:50] brain tumor cases and 54 low-grade brain
+[34:53] tumor MRIs.
+[34:55] They used a U-Net architecture with a
+[34:58] dice loss function.
+[35:00] U-Net variants are now deployed in
+[35:02] clinical practice in several places.
+[35:04] So, we have covered two major categories
+[35:07] of visual recognition tasks.
+[35:09] First, classification, telling what is
+[35:12] in the image. Second, semantic
+[35:15] segmentation, labeling every pixel with
+[35:17] a class, but treating all pixels of the
+[35:23] Next time, we will look at detection and
+[35:25] instance segmentation.
+[35:28] Detection draws bounding boxes around
+[35:30] individual objects.
+[35:32] Instance segmentation goes further. It
+[35:34] distinguishes between different
+[35:37] instances of the same object class.
+[35:40] So, you not only label every pixel as
+[35:41] car,
+[35:44] but you separate car one from car two
+[35:45] from car three.
+[35:47] That is a harder problem, and we will
+[35:52] That concludes lecture three.
+[35:55] We have gone deep on ResNet and surveyed
+[35:57] the modern architecture family,
+[35:59] then pivoted to segmentation, and walked
+[36:01] through the U-Net in detail along with
+[36:05] its loss functions, evaluation metrics,
+[36:12] Next lecture, we move to advanced vision
+[36:13] models.
+[36:16] Detection, instance segmentation, 3D
+[36:18] volumes, and video.
+[36:20] We will cover object detection,
+[36:23] anchor-based methods like Faster R-CNN,
+[36:26] and single-shot methods like YOLO.
+[36:28] Then instance
+[36:32] Mask R-CNN, which extends faster R-CNN
+[36:35] by adding a segmentation branch.
+[36:39] Then 3D medical volumes, volumetric CNNs
+[36:42] that process entire CT or MRI volumes in
+[36:45] three dimensions, not just slices.
+[36:48] Finally, video and temporal models in
+[36:49] health care.
+[36:51] Things like surgical video analysis or
+[36:53] echocardiogram loops.

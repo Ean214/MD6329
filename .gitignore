@@ -1,0 +1,15 @@
+# raw cohort — obtain from figshare (see data/README.md)
+hemobp/
+# large regenerable derived datasets
+data/*.pkl
+data/*.npz
+# python / latex build noise
+__pycache__/
+*.pyc
+*.aux
+*.log
+*.xdv
+*.bbl
+*.blg
+*.out
+report/page_*.png

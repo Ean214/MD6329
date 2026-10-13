@@ -1,0 +1,2335 @@
+[00:02] Welcome back. Today is the day we start
+[00:05] doing actual deep learning. By the end
+[00:07] of the 90 minutes, you should be able to
+[00:09] read the method section of any modern
+[00:11] medical imaging classification paper and
+[00:13] understand what they did, why they did
+[00:15] it, and what they should have done
+[00:18] differently. I want to mark up front the
+[00:20] original deck that I am adapting comes
+[00:24] from Professor Serena Yung's BODS220
+[00:26] at Stanford. and many of the
+[00:28] convolutional layer slides themselves
+[00:30] trace further back to Andre Kapati's
+[00:32] CS231
+[00:34] end notes
+[00:38] the agenda one deep learning models and
+[00:39] what makes them different from
+[00:42] traditional machine learning two the
+[00:45] convolutional layer in detail
+[00:49] three common loss functions four data
+[00:53] considerations train validation test
+[00:55] cross validation pre-processing
+[00:58] Augmentation and evaluation metrics.
+[01:02] Five case studies of CNN's in medicine.
+[01:08] Bar Chi Gulchan Esta Lakani Rajpurka
+[01:11] Mckini. That is a lot of ground. We will
+[01:14] be deliberate.
+[01:16] Today's lecture covers medical image
+[01:18] classification.
+[01:20] We will go through convolutional neural
+[01:22] networks for image classification, data
+[01:25] considerations for these models and how
+[01:28] to evaluate them. Then we will look at
+[01:31] case studies of CNN's for medical image
+[01:33] classification. We will also talk more
+[01:35] about transfer learning and how much
+[01:36] data you actually need for deep
+[01:40] learning. And finally, we will touch on
+[01:42] recent CNN architectures worth knowing
+[01:47] After learning the basics of deep
+[01:50] learning, we apply them to detection and
+[01:53] segmentation in advanced vision models
+[01:56] 3D and video for medical images in the
+[02:02] Quick recap from lecture one. Medical
+[02:06] image data spans many modalities X-ray,
+[02:09] CT, MRI and many more like ultrasound,
+[02:13] demoscopy, OCT. Each modality has its
+[02:16] own physics, its own dimensionality, its
+[02:18] own artifacts, and its own clinical
+[02:22] workflow. The CNN machinery we developed
+[02:23] today applies to all of them with
+[02:26] adjustments. Two-dimensional networks
+[02:29] for X-rays. Three-dimensional networks
+[02:32] for CT and off MR is whole slide imaging
+[02:34] needs tiling because the slides are too
+[02:38] big to fit on a GPU.
+[02:40] Medical image classification answers
+[02:43] questions like these. Is an X-ray
+[02:46] positive for pneumonia or not? Is a CT
+[02:47] scan of a lung nodule benign or
+[02:50] malignant? Is this moderate or worse
+[02:53] diabetic retinopathy? What types of skin
+[02:56] lesions are these? Each of these is a
+[02:58] classification task, assigning a label
+[03:01] to an entire image.
+[03:03] Deep learning models are the dominant
+[03:06] approach to image classification today
+[03:09] in medicine and outside it. They have
+[03:11] replaced the older pipeline of
+[03:13] handgineered features followed by a
+[03:15] shallow classifier.
+[03:17] The next several slides set up the
+[03:20] contrast. Traditional ML on one side,
+[03:23] deep learning on the other and motivate
+[03:26] Y deep learning one.
+[03:29] Sideby-side comparison. Traditional ML
+[03:32] pipeline. An expert designs features by
+[03:35] hand. SIFT descriptors, hog features,
+[03:37] texture statistics, wavelet
+[03:40] coefficients, manually segmented regions
+[03:43] of interest. Those features get fed into
+[03:45] a shallow classifier like a support
+[03:49] vector machine or a random forest. The
+[03:51] bottleneck is feature engineering. It
+[03:54] takes years of domain expertise. It does
+[03:57] not transfer across problems and the
+[03:59] features designed for one task are
+[04:01] usually wrong for the next. Deep
+[04:04] learning pipeline. A deep neural network
+[04:06] takes raw pixels as input and learns
+[04:09] features end to end as part of training.
+[04:11] No feature engineering. The same
+[04:14] architecture works for skin lesions,
+[04:17] retinal photographs, and chest X-rays.
+[04:19] You just train on the appropriate data.
+[04:21] The bottleneck shifts from feature
+[04:23] engineering to data collection, but the
+[04:27] leverage is enormous.
+[04:30] Conceptually, a deep network is a stack
+[04:33] of layers. Each layer takes the previous
+[04:36] layers output and produces a transform
+[04:38] representation.
+[04:40] The early layers learn low-level
+[04:43] features, edges, oriented gradients,
+[04:46] blobs. The middle layers learn mid-level
+[04:50] features, textures, parts. The late
+[04:52] layers learn highle features,
+[04:55] object-like patterns specific to the
+[04:58] task. The classifier at the very top
+[05:01] reads from the highle representation.
+[05:04] All of this is learned jointly from the
+[05:08] raw data and the labels. Machine
+[05:09] learning is datadriven learning of a
+[05:13] mapping from input to output.
+[05:15] Here is a pipeline of traditional
+[05:17] machine learning approach. The standard
+[05:21] ML framework drawn as a flowchart. Data
+[05:24] goes in. A model produces predictions. A
+[05:26] loss function compares predictions to
+[05:29] true labels. An optimizer uses the loss
+[05:32] to update the model parameters. Repeat
+[05:34] until the loss converges. Every
+[05:36] supervised learning method, traditional
+[05:40] or deep, fits this framework. The
+[05:42] differences are in what the model looks
+[05:44] like, what the loss is, and what the
+[05:47] optimizer does.
+[05:49] Next, let's look at the deep learning
+[05:54] Next, let's compare that with the
+[05:58] traditional machine learning pipeline.
+[06:00] Deep learning is one specific
+[06:03] instantiation of the ML framework where
+[06:06] the model is a deep neural network that
+[06:08] is a composition of many simple
+[06:11] transformations stacked into layers.
+[06:13] This first build of the diagram shows
+[06:19] The deep learning model directly learns
+[06:21] what are useful and better features from
+[06:25] the training data.
+[06:27] So, how does the deep learning model
+[06:33] The deep learning model uses a
+[06:35] hierarchical structure of neural
+[06:37] networks to allow compositional
+[06:39] extraction of increasingly complex
+[06:42] features. Here is the same diagram, but
+[06:45] now with the layer structure exposed.
+[06:47] Each layer is a parameterized
+[06:50] transformation, weights and biases
+[06:52] followed by a nonlinearity.
+[06:54] The training process learns those
+[06:57] weights and biases. Low-level features
+[06:59] like edges and blobs combine into
+[07:01] mid-level features like textures and
+[07:04] shapes which combine into highle
+[07:06] features like nodules or fractures. The
+[07:09] input is an X-ray and the output is the
+[07:12] prediction for example presence or
+[07:14] absence of disease.
+[07:17] Pre-bro classes of neural networks we
+[07:19] use in this course. Fully connected,
+[07:22] also called dense or feed forward
+[07:25] networks where every neuron in one layer
+[07:28] connects to every neuron in the next.
+[07:32] Convolutional neural networks or CNNs
+[07:34] where the connectivity is local and the
+[07:36] same weights are reused across spatial
+[07:38] positions. This is the family for
+[07:41] images. Recurrent networks which we
+[07:43] cover later are designed for sequences
+[07:46] with the property that information flows
+[07:48] through the network across time. There
+[07:51] is now a fourth class transformers which
+[07:54] we treat later. For today we focus on
+[07:57] CNN's.
+[08:00] The convolutional layer in CNN's has
+[08:03] four distinct concepts. Spatial
+[08:05] preservation, local connectivity,
+[08:08] parameter sharing and pooling layers. We
+[08:11] will go through them
+[08:13] to understand these different classes of
+[08:16] neural networks. Let's do a quick review
+[08:19] of the fully connected layer because the
+[08:22] convolutional layer in CNN's is best
+[08:24] understood by contrast.
+[08:26] A fully connected layer takes a vector
+[08:29] of inputs and produces a vector of
+[08:32] outputs.
+[08:34] Every output is a weighted sum of every
+[08:38] input plus a bias passed through a
+[08:40] nonlinear activation function. If you
+[08:43] have a thousand input units and 1,000
+[08:45] output units, you have a million weights
+[08:48] in that layer alone. Every input
+[08:51] connects to every output.
+[08:53] A fully connected layer takes an input
+[08:58] vector x of dimension d sub in say 372
+[09:01] as shown here.
+[09:04] Next we multiply it by a weight matrix W
+[09:07] of shape D sub out by D sub in. And here
+[09:10] D sub out is 10. We can add a bias
+[09:13] vector B of dimension D sub out. And
+[09:16] finally apply a nonlinearity to this. We
+[09:20] get an output Y of dimension D sub out.
+[09:23] That is it. Every input dimension
+[09:25] contributes to every output dimension.
+[09:28] Hence fully connected. The parameter
+[09:31] count is d sub in* d sub out plus d sub
+[09:34] out for the bias.
+[09:37] Here is a numerical example for d sub in
+[09:40] and d sub out being 372 and 10
+[09:43] respectively.
+[09:45] Now consider a two-layer fully connected
+[09:49] network. Input dimension three hidden
+[09:52] dimension 4 output dimension 2. Total
+[09:56] parameters 3x 4 + 4 for the first layer.
+[09:59] Then 4x2 plus two for the second. 26
+[10:03] numbers in total. Tiny network useful
+[10:07] for keeping the arithmetic in your head.
+[10:09] Each layer has the same structure we
+[10:13] just saw. Weights, biases, and the
+[10:14] nonlinearity.
+[10:17] But this is a different example with
+[10:20] different dimensions. The input size may
+[10:22] change, the number of filters may
+[10:25] change, and the output size may change.
+[10:27] But the core operation at each layer
+[10:29] remains the same.
+[10:31] Let's write down the weight parameters
+[10:33] of the two layers. This is the first
+[10:36] layer.
+[10:38] Let's write down the weight parameters
+[10:40] of the two layers. This is the first
+[10:42] layer.
+[10:43] This is the second layer. And we have
+[10:45] the output of this neural network of
+[10:48] yhat which is subject to some form of
+[10:53] Here the sigma activation function at
+[10:55] the output can take different choice of
+[10:59] functions as shown here. Sigmoid relu
+[11:01] and so on. This is where the
+[11:04] nonlinearity is made explicit. ReLU is
+[11:07] the standard choice today. Rectified
+[11:11] linear unit max of zero and the input.
+[11:14] Sigmoid and tanh are older alternatives
+[11:17] still used in specific places.
+[11:19] The nonlinearity is what allows stacked
+[11:21] layers to represent richer functions
+[11:25] than a single linear map. Without it,
+[11:27] any stack of fully connected layers
+[11:28] collapses to a single linear
+[11:31] transformation.
+[11:33] The output is a function of the weight
+[11:35] parameters as shown here. The full
+[11:38] training loop is now visible. Sample a
+[11:40] mini batch of inputs and targets.
+[11:43] forward pass, compute loss, backward
+[11:47] pass, optimizer step, repeat for many
+[11:49] iterations.
+[11:51] Eventually, the loss converges and the
+[11:54] parameters encode a useful mapping.
+[11:57] We use a capital W to refer to all
+[11:59] parameters together as just weights.
+[12:03] Bias is implicitly assumed. The train
+[12:06] network can now be used for inference.
+[12:09] Feed in a new input, get the prediction.
+[12:12] The training parameters are frozen. This
+[12:14] is the deployment phase, the part the
+[12:17] clinician sees.
+[12:19] Where do fully connected layers fit in
+[12:21] practice? They are most natural when the
+[12:24] input is already a feature vector, a
+[12:27] tabular row of clinical values, an
+[12:29] embedding from another model, a
+[12:31] flattened set of measurements.
+[12:33] Consider the task of regression,
+[12:36] predicting a single real valued output
+[12:39] from input data. For example, predicting
+[12:41] hospital length of stay from clinical
+[12:43] variables in the electronic health
+[12:44] record.
+[12:47] Another example is predicting expression
+[12:48] level of a target gene from the
+[12:56] with a softmax on the output layer. A
+[12:57] fully connected network becomes a
+[13:00] classifier. The output is a probability
+[13:03] distribution over class labels.
+[13:06] Cross entropy loss is the standard match
+[13:08] for softmax. This combination is so
+[13:10] common that almost every classifier head
+[13:13] you will write is a fully connected
+[13:16] layer plus softmax plus cross entropy.
+[13:19] The task of classification predicts a
+[13:22] categorical output from input data. For
+[13:24] example, predicting in hospital
+[13:26] mortality from clinical variables in the
+[13:29] electronic health record.
+[13:31] There are three standard neural network
+[13:34] architectures. Fully connected networks,
+[13:37] linear layers are good for feature
+[13:39] vector inputs like lab values or
+[13:41] demographics.
+[13:43] Convolutional networks are good for
+[13:45] image inputs. Recurrent networks are
+[13:47] good for sequence inputs like time
+[13:50] series or text. A fully connected
+[13:53] network is fine for feature vectors, but
+[13:55] it is wasteful and impractical for
+[13:56] images.
+[14:02] A modest 200x 200 pixel RGB image has
+[14:05] 120,000 input numbers. A fully connected
+[14:08] first layer with 1,000 units would need
+[14:11] 120 million weights for a single layer
+[14:14] of a single image. That is unmanageable
+[14:16] and it ignores the structure of images
+[14:18] which is that nearby pixels are related
+[14:20] to each other in ways that distant
+[14:23] pixels usually are not. That is why we
+[14:26] need convolutional networks.
+[14:29] We saw this earlier. A fully connected
+[14:32] layer flattens the input even if the
+[14:35] input is a 2D image into a long vector
+[14:38] then applies a dense matrix multiply.
+[14:41] For a moderate resolution chess X-ray
+[14:43] that is hundreds of thousands of input
+[14:46] dimensions and the first layers weight
+[14:48] matrix balloons to billions of
+[14:49] parameters.
+[14:53] Wasteful, slow and prone to overfitting.
+[14:55] We need a smarter architecture which is
+[14:58] the convolutional neural network. We
+[15:00] have done fully connected. Now we turn
+[15:03] to convolutional which is the workhorse
+[15:05] for image data and the main focus of the
+[15:08] rest of this lecture.
+[15:10] Now consider a convolutional layer with
+[15:14] a 32x 32x3 image input. The
+[15:16] convolutional layer preserves spatial
+[15:19] structure.
+[15:21] Instead of a dense matrix that connects
+[15:24] every input to every output, it uses
+[15:28] small filters, typically 3x3 or 5x5,
+[15:31] that slide spatially across the input.
+[15:33] The same filter is applied at every
+[15:35] location. The parameter count is just
+[15:38] the number of filter weights, not the
+[15:41] number of input pixels. Two key ideas
+[15:44] are embedded here. Local connectivity
+[15:46] meaning each output only looks at a
+[15:49] small region of the input and weight
+[15:51] sharing meaning the same filter weights
+[15:55] are reused across all spatial positions.
+[15:59] A 5x 5x3 filter has weights. You
+[16:01] convolve the filter with the image
+[16:03] meaning you slide it over the image
+[16:06] spatially computing dotproducts at each
+[16:10] position. The filter is small spatially,
+[16:13] say 3x3, but it spans the full depth of
+[16:16] the input. If the input has three
+[16:19] channels, red, green, blue, the filter
+[16:23] has 3x3x3 weights. The dot product is
+[16:25] computed across all three channels at
+[16:29] once. The resulting activation map has
+[16:31] one channel per filter, not per input
+[16:34] channel. So, if you have 64 filters, you
+[16:43] Take a 32x 32x3 image and a 5x5x3
+[16:46] filter. The filter always extends the
+[16:48] full depth of the input volume. That
+[16:50] means the third dimension of the filter
+[16:52] must match the third dimension of the
+[16:56] input. In this case, three.
+[16:59] So the filter has 5 * 5 * 3 weights, not
+[17:02] just 5 * 5.
+[17:06] Take a 32x 32x3 image and a 5x5x3
+[17:10] filter. At one position, the filter
+[17:14] covers a small 5x5x3 chunk of the image.
+[17:16] The operation is a dotproduct between
+[17:19] the filter and that chunk that is a
+[17:23] 75dimensional dot product. Since 5 * 5 *
+[17:25] 3 equals 75,
+[17:28] you add a bias term and then apply a
+[17:30] nonlinearity.
+[17:32] That is exactly the same as the neuron
+[17:37] we saw earlier. Wrpose X + B. But now X
+[17:40] is a 75dimensional vector from that
+[17:43] local image patch. And W is the
+[17:47] 75dimensional filter weight.
+[17:50] You then convolve slide the filter over
+[17:54] all spatial locations. At each location,
+[17:57] you compute the dot product. The result
+[18:00] is an activation map. If the input is
+[18:04] 32x 32 and you use a 5x5 filter with no
+[18:07] padding, the output spatial size is 28x
+[18:12] 28. That activation map is 1x 28x 28 for
+[18:15] a single filter.
+[18:17] Now consider a second filter, say a
+[18:21] green one. It is also 5x 5x3 with its
+[18:23] own set of weights. You convolve this
+[18:26] second filter over all spatial locations
+[18:30] of the same 32x 32x3 image. The result
+[18:34] is a second activation map also 28x 28.
+[18:36] So with two filters you get two
+[18:40] activation maps.
+[18:43] For example, if we had six 5x5 filters,
+[18:46] we get six separate activation maps. We
+[18:48] stack these up to get a new image of
+[18:52] size 28x 28x 6. that becomes the input
+[18:56] to the next convolutional layer.
+[18:59] A connet or CNN is a sequence of
+[19:01] convolution layers interspersed with
+[19:05] activation functions. For example, start
+[19:06] with a 3x32x32
+[19:10] input. Apply a convolution layer with 6
+[19:13] 5x 5x3 filters followed by a real U
+[19:18] activation. The output is 6x 28x 28.
+[19:19] That becomes the input to the next
+[19:21] layer.
+[19:25] Then another convolution layer say with
+[19:29] 10 5x 5x6 filters. Notice the depth
+[19:31] matches the previous layers output depth
+[19:35] of six followed by ru. The output is 10x
+[19:40] 24x 24 and so on and so forth.
+[19:43] A convolutional layer accepts an input
+[19:46] volume of size height by width by depth.
+[19:49] It uses a set of learnable filters, each
+[19:52] small spatially but extending the full
+[19:55] depth of the input. Each filter slides
+[19:58] across the input spatially. Computing
+[20:01] dotproducts at every location. This
+[20:04] produces a 2D activation map per filter.
+[20:06] Stacking these maps across all filters
+[20:08] gives the output volume. The key
+[20:11] hyperparameters are filter size, stride,
+[20:14] and padding. The number of parameters is
+[20:16] determined by the filter size, input
+[20:19] depth and number of filters, not by the
+[20:23] input spatial dimensions.
+[20:25] Common settings for convolutional
+[20:28] layers. K the number of filters is
+[20:33] typically a power of 2, 32, 64,
+[20:38] 128, 512, and so on. For filter size F=
+[20:42] 3, stride S= 1. Padding P= 1 keeps the
+[20:47] spatial size unchanged. For F= 5, S= 1,
+[20:50] P= 2 also preserves spatial size. For F=
+[20:53] 5, S= 2. You choose padding to fit your
+[20:58] desired output size. And for F= 1, S= 1,
+[21:02] P= 0. That is a pointwise convolution
+[21:03] which mixes channels across spatial
+[21:05] positions without changing spatial
+[21:12] In caris conf 2D is the 2D convolution
+[21:14] layer for spatial convolution over
+[21:17] images. Key arguments include filters,
+[21:20] the number of output filters, kernel
+[21:22] underscore size, the height and width of
+[21:25] the convolution window, strides which
+[21:30] defaults to one one and padding either
+[21:32] valid for no padding or same for padding
+[21:34] to keep output size equal to input size
+[21:37] when stride is one.
+[21:41] In kirus padding has two options. Valid
+[21:43] means no padding. The spatial dimensions
+[21:46] shrink after convolution.
+[21:48] Same means pad such that the output
+[21:50] spatial dimensions are the same as the
+[21:54] input when stride is one.
+[21:57] One filter produces one activation map.
+[22:00] For example, if you have 32 filters, you
+[22:04] get 32 activation maps. Each filter is
+[22:09] 5x5 and the output depth is 32.
+[22:12] By the way, one by one convolution
+[22:14] layers make perfect sense. A 1x one
+[22:17] convolution is a convolution layer where
+[22:20] the filter size is one by one. It may
+[22:22] seem strange at first. Why convolve with
+[22:25] a 1x one patch? But it makes perfect
+[22:27] sense when you think about the depth
+[22:29] dimension. The one by one convolution
+[22:32] does not look at spatial context. It
+[22:35] only looks at a single pixel location.
+[22:37] However, it looks across all channels at
+[22:40] that pixel. A filter with size one by
+[22:44] one by D where D is the input depth
+[22:47] performs a D-dimensional dot product at
+[22:49] each spatial position. It's essentially
+[22:51] a fully connected layer applied
+[22:55] independently at each pixel. What is it
+[22:57] useful for? First, dimensionality
+[23:01] reduction. If you have 512 channels and
+[23:04] you want to reduce to 64 channels, a one
+[23:07] by one convolution with 64 filters does
+[23:09] exactly that, preserving spatial
+[23:11] dimensions.
+[23:14] Second, computational efficiency.
+[23:16] Reducing the number of channels before
+[23:19] applying a larger 3x3 or 5x5 convolution
+[23:22] saves a lot of computation.
+[23:25] Third, increasing nonlinearity. A one by
+[23:28] one convolution followed by a reelu adds
+[23:30] another nonlinear transformation without
+[23:36] The pooling layer makes the
+[23:38] representations smaller and more
+[23:41] manageable. It operates over each
+[23:44] activation map independently.
+[23:49] For example, here a 224x 224x 64 input
+[23:55] after pooling becomes 112x 112x 64. The
+[23:57] spatial dimensions are downsampled by a
+[24:02] factor of 2. 224 goes to 112. The depth
+[24:05] remains the same 64 channels.
+[24:08] Common pooling is max pooling which
+[24:10] takes the maximum value in each local
+[24:12] window.
+[24:14] Max pooling operates on a single depth
+[24:18] slice. It uses a 2x two filter with
+[24:21] stride two. At each position, it takes
+[24:24] the maximum value in that 2x2 window.
+[24:26] The result down samples the spatial
+[24:31] dimensions by a factor of two.
+[24:33] A pooling layer accepts an input volume
+[24:38] of size W1 by H1 by D1. It requires two
+[24:41] hyperparameters. The spatial extent f
+[24:43] and the stride s. It produces an output
+[24:49] of size w2 by h 2x d2 where w2 equals w1
+[24:55] - f / s + 1 h2 the same and d2= d1. The
+[24:58] depth does not change. Importantly,
+[25:00] pooling introduces zero parameters
+[25:02] because it computes a fixed function
+[25:05] like taking the max rather than learn
+[25:08] weights. Also, it is not common to use
+[25:11] zero padding for pooling layers. In
+[25:13] Kiras, this is implemented as max
+[25:16] pooling 2D.
+[25:20] Common pooling settings F= 2, stride 2,
+[25:23] which has the spatial dimensions. Also,
+[25:27] F= 3, stride 2, which gives a slightly
+[25:30] more aggressive downsampling.
+[25:33] A confident architecture stacks layers.
+[25:36] It is a sequence of convolutional layers
+[25:38] interled with realu activations and
+[25:40] pooling layers followed by fully
+[25:43] connected layers for classification.
+[25:47] Common settings filter sizes are 3x3
+[25:51] most common then 5x5 and 1x 1. Filters
+[25:55] per layer are powers of two 32 64
+[26:01] 128 256 512. For padding, same keeps
+[26:04] spatial dimensions. Valid reduces them.
+[26:07] For pooling, 2x two max pool with stride
+[26:10] 2 is the standard.
+[26:14] Layet 5 from lun and colleagues in 1998
+[26:18] was the first widely successful CNN. It
+[26:19] was trained for handwritten digit
+[26:22] recognition on MNIST.
+[26:25] The architecture, two convolutional
+[26:28] layers with 5x5 filters at stride one,
+[26:30] two average pooling layers with 2x two
+[26:33] filters at stride two and three fully
+[26:36] connected layers. Tiny by modern
+[26:39] standards, about 60,000 parameters
+[26:43] trained on a CPU. It worked. It was
+[26:45] deployed in real check reading systems
+[26:48] in US banks for years. The architectural
+[26:59] FC-FC FC-FC
+[27:02] has been used ever since.
+[27:04] The imageet large scale visual
+[27:09] recognition challenge or I LS VRC tracks
+[27:13] the winners. In 2012, AlexNet was the
+[27:16] first CNN base winner with eight layers.
+[27:19] In 2014, Sega and colleagues won with
+[27:23] Google Net 22 layers, not 152 using
+[27:27] inception modules. The 152 layer model
+[27:30] came later in 2015 with RestNet. So just
+[27:34] to clarify, Google Net was 22 layers,
+[27:38] RestNet was 152 layers.
+[27:40] The simplified Alexnet architecture is
+[27:46] as follows. Input is 227x 227x3.
+[27:50] Conv 1 uses 9611 by 111 filters at
+[27:55] stride 4. Output 55x 55x96.
+[27:58] Max poolool 1 uses 3x3 filters at stride
+[28:05] 2. Output 27x 27x 96. COV 2 uses 256 5x5
+[28:08] filters at stride 1 with pad 2. Output
+[28:12] 27x 27x 256.
+[28:16] Max pool 2 uses 3x3 filters at stride 2.
+[28:19] Output 13x3x 256.
+[28:22] COM 3 uses 384.
+[28:25] 3x3 filters at stride 1 with pad 1.
+[28:29] Output 13x3x 384.
+[28:35] Conv uses 384 3x3 filters. Output 13x3x
+[28:37] 384.
+[28:43] Conv uses 256 3x3 filters. Output 13x13x
+[28:45] 256.
+[28:49] Maxpool 3 uses 3x3 filters at stride 2.
+[28:52] Output 6x6x 256.
+[28:56] Then fully connected layers FC6 with
+[29:02] 4,96 neurons, FC7 with 4,96 neurons and
+[29:06] FC8 with 1,000 neurons for class scores.
+[29:10] This is AlexNet by Kgevski Sutskaver and
+[29:13] Hinton in 2012. The model that started
+[29:16] the deep learning revolution in computer
+[29:19] vision. It has eight layers total, five
+[29:22] convolutional and three fully connected
+[29:24] about 60 million parameters. It was
+[29:27] trained on two GPUs because the entire
+[29:30] model did not fit on a single GPU at the
+[29:33] time. AlexNet won the imageet 2012
+[29:36] challenge by a huge margin. roughly 10
+[29:38] percentage points lower error than the
+[29:41] next best entry which was a handgineered
+[29:44] method. That margin changed the field
+[29:50] More key details of AlexNet. First use
+[29:53] of realu activations use local response
+[29:56] normalization layers not common anymore.
+[29:58] Heavy data augmentation including
+[30:01] translations, reflections, and color
+[30:03] jitter. Dropout at 0.5 for
+[30:08] regularization. Batch size 128. SGD with
+[30:11] momentum 0.9.
+[30:14] Initial learning rate 1 * 10us2
+[30:16] reduced manually by a factor of 10 when
+[30:20] validation accuracy plateaued. L two
+[30:24] weight decay at 5 * 10us 4. Finally, an
+[30:27] ensemble of seven CNNs dropped the error
+[30:32] rate from 18.2% to 15.4%.
+[30:34] a substantial gain from ensembling.
+[30:37] Many of these tricks are now standard in
+[30:41] every CNN you will train.
+[30:43] We have spent time on the model fully
+[30:45] connected convolutional.
+[30:47] Now we ask how do we tell the model when
+[30:50] it is wrong? That is the role of the
+[30:52] loss function. Different tasks demand
+[30:55] different losses. The next several
+[30:59] slides walk through the standard ones.
+[31:01] For regression tasks, the label is a
+[31:03] continuous value like a patient's blood
+[31:06] pressure or length of hospital stay. The
+[31:09] standard loss is mean squared error or
+[31:12] MSE, the average squared difference
+[31:14] between the predicted value and the true
+[31:15] value.
+[31:18] Sometimes we use mean absolute error or
+[31:21] MAE which is more robust to outliers.
+[31:23] Both measure how far the prediction is
+[31:27] from the ground truth.
+[31:29] For regression, we minimize the squared
+[31:31] difference between the prediction output
+[31:38] For binary classification, the label is
+[31:42] binary, either zero or one. The
+[31:44] prediction is a real number between 0
+[31:46] and one representing the probability
+[31:49] that the label is one. This probability
+[31:51] is usually the output of a sigmoid
+[31:54] operation after the final layer. The
+[31:57] loss is binary cross entropy. It
+[31:59] penalizes confident wrong predictions
+[32:02] much more than mildly wrong ones.
+[32:04] This is the right loss when you want the
+[32:05] network to learn calibrated
+[32:08] probabilities, not just correct class
+[32:14] Binary cross entropy is equivalent to
+[32:16] the negative log of the probability of
+[32:18] the correct ground truth class being
+[32:21] predicted. Think about the expression
+[32:25] when y sub i equals 1 versus when y sub
+[32:30] i equals z. When yi sub i is 1, only the
+[32:33] first term matters and you minimize the
+[32:34] negative log of the predicted
+[32:38] probability for class one. When shiny i
+[32:42] sub i is zero, the second term matters
+[32:44] and you minimize the negative log of the
+[32:47] predicted probability for class zero.
+[32:50] So in both cases you are penalizing the
+[32:52] model for assigning low probability to
+[32:55] the true class.
+[32:57] For multiclass classification the label
+[33:00] is one of k classes. Softmax cross
+[33:03] entropy is the extension of binary cross
+[33:06] entropy to multiple classes. The final
+[33:09] layer outputs a score s subj for each
+[33:12] class. The softmax function converts
+[33:14] these scores into normalized
+[33:15] probabilities.
+[33:19] E E to the S subj divided by the sum
+[33:22] over all classes. The loss is the
+[33:24] negative log of the probability assigned
+[33:27] to the correct class. So the model
+[33:29] minimizes the negative log of the
+[33:36] Softmax cross entropy is the negative
+[33:39] log of the probability of the true class
+[33:42] u subi. Just like with the binary cross
+[33:45] entropy loss, it extends the same idea
+[33:48] to multiple classes
+[33:51] for multiclass classification. The label
+[33:54] is one of K classes. The multiclass SVM
+[33:57] loss, also known as hinge loss, is
+[33:59] another option. Same use case as
+[34:01] softmax, but a different way of
+[34:04] encouraging the model to produce outputs
+[34:07] that we like. Instead of probabilities,
+[34:09] the SVM loss tries to ensure that the
+[34:11] score for the correct class is at least
+[34:12] one higher than the score for any
+[34:14] incorrect class.
+[34:17] In practice, softmax is more popular
+[34:19] because it provides a nice probabilistic
+[34:25] The multiclass SVM loss incurs the
+[34:29] lowest loss of zero. what we want if the
+[34:32] score for the true class Y subi is
+[34:33] greater than the score for each
+[34:37] incorrect class J by a margin of one. In
+[34:39] other words, the model is only penalized
+[34:41] if the correct class score is not high
+[34:45] enough above the incorrect ones.
+[34:47] You will find these loss functions in
+[34:50] TensorFlow and in KAS. Let me be more
+[34:53] specific about the caras naming. For
+[34:55] regression tasks, the loss is called
+[34:59] mean squared error or MSE. That is the
+[35:02] standard regression loss. There is also
+[35:05] mean absolute error or M AE which is
+[35:08] more robust to outliers. For binary
+[35:11] classification, the loss is binary cross
+[35:14] entropy. That is what we call BCE.
+[35:17] You use this when your label is zero or
+[35:19] one and your model outputs a single
+[35:21] probability through a sigmoid. For
+[35:24] multiclass classification, the loss is
+[35:26] categorical cross entropy. That is the
+[35:29] softmax loss. You use this when your
+[35:32] label is one of K and your model outputs
+[35:35] a probability vector through a softmax.
+[35:37] There is also sparse categorical cross
+[35:39] entropy which is the same loss but your
+[35:42] labels are integers instead of one hot
+[35:44] encoded vectors.
+[35:48] 4S VM style classification the loss is
+[35:52] hinge that is the multiclass SVM loss
+[35:55] hinge is less common than cross entropy
+[35:57] because it does not give probabilistic
+[35:59] outputs but it can sometimes produce
+[36:03] better margins so to summarize MSE for
+[36:06] regression binary cross entropy for two
+[36:08] classes categorical cross entropy for
+[36:11] many classes and hinge for marginbased
+[36:13] classification
+[36:15] you will Use cross entropy in most of
+[36:17] your medical imaging task because
+[36:19] probabilistic outputs are useful for
+[36:25] Now, data considerations for image
+[36:27] classification. Three key topics,
+[36:29] splits, pre-processing, and
+[36:31] augmentation.
+[36:34] Next, training, validation, and test
+[36:38] sets. A typical split is 50 to 60%
+[36:42] training, 20 to 30% validation, and 20%
+[36:45] test. The training set is used to update
+[36:48] model weights via gradient descent. More
+[36:51] data means better generalization and you
+[36:53] must include the full diversity expected
+[36:56] at deployment. The validation set is
+[36:58] used to tune hyperparameters learning
+[37:02] rate architecture regularization.
+[37:05] You evaluate after each epoch. Do not
+[37:07] touch the test set during development.
+[37:09] The test set is used for the final
+[37:11] unbiased performance estimate. Use it
+[37:14] once. Touching it during development
+[37:17] leads to optimistic misleading results.
+[37:20] Once hyperparameters are fixed, you can
+[37:21] merge the training and validation sets
+[37:24] into a larger train valet for final
+[37:27] model training before test evaluation.
+[37:30] For small medical data sets, use kfold
+[37:33] cross validation. Train k times rotating
+[37:36] which fault is the validation set.
+[37:38] Average the results for a more robust
+[37:41] performance estimate. Finally, data
+[37:44] diversity, hospital sites, scanners,
+[37:46] patient demographics must be reflected
+[37:49] in both training and test sets to ensure
+[37:52] valid evaluation.
+[37:55] Standard split 50% training, 30%
+[37:59] validation, 20% test. The validation set
+[38:01] is the held out evaluation set for
+[38:03] selecting best hyperparameters during
+[38:05] training.
+[38:07] Do not use the test set until final
+[38:09] evaluation.
+[38:12] Other splits like 60 2020 20 are also
+[38:15] popular. The key is balancing sufficient
+[38:17] data for training against having an
+[38:18] informative performance estimate on
+[38:25] Once hyperparameters are selected using
+[38:28] the validation set, it is common to
+[38:30] merge the training and validation sets
+[38:41] For example, 70% train val and 30% test.
+[38:43] This is acceptable because we can use
+[38:45] all non-est data however we want during
+[38:47] model development.
+[38:50] Only the test set remains untouched for
+[38:56] When the data set is too small to spare
+[38:59] 15% for validation and another 15 for
+[39:02] test, kfold cross validation is the
+[39:05] standard tool. Split the data into K
+[39:08] equal parts. Train on K minus one of
+[39:11] them. Evaluate on the held out one.
+[39:14] Repeat K times each time holding out a
+[39:16] different fold. Average the K
+[39:19] performance estimates. Say suppose you
+[39:21] have a small data set of 500 images. You
+[39:25] set aside 20% or 100 images as your
+[39:28] final test set. The remaining 400 images
+[39:31] are for training and validation. Now
+[39:33] choose K equals 4.
+[39:36] Split those 400 images into four folds,
+[39:39] each with 100 images. Run four
+[39:43] experiments. In fold one, use folds two,
+[39:46] three, and four as training. That is 300
+[39:50] images. And fold one as validation, 100
+[39:54] images. In fold two, use folds one,
+[39:56] three, and four as training. And fold
+[39:58] two as validation.
+[40:02] In fold three, use folds one, two, and
+[40:04] four as training and fold three as
+[40:07] validation. In fold four, use folds one,
+[40:10] two, and three as training and fold four
+[40:13] as validation. You get four validation
+[40:16] accuracy numbers. Average them to
+[40:18] estimate model performance.
+[40:19] After you have selected your
+[40:21] hyperparameters,
+[40:24] train a final model on all 400 training
+[40:26] plus validation images. then evaluate
+[40:31] once on the held out 100 image test set.
+[40:33] You can also apply the same concept to
+[40:36] test time evaluation. Instead of
+[40:38] reporting performance on a single test
+[40:41] set, you can use k-fold cross validation
+[40:44] on the entire data set including what
+[40:46] would have been the test set and report
+[40:48] the average performance across all
+[40:51] folds. This gives a more robust estimate
+[40:53] of how your model will generalize to new
+[40:56] data, especially when the data set is
+[40:58] small. However, the standard practice is
+[41:01] to keep a separate test set for final
+[41:04] evaluation and use cross validation only
+[41:07] on the training data.
+[41:09] Now, data prep-processing and
+[41:11] augmentation. There are three common
+[41:14] pre-processing steps. First, minmax
+[41:17] scaling. Rescaling pixel values from
+[41:21] their original range. typically 0 to 255
+[41:24] down to 0 to one. Second, zero mean
+[41:27] normalization subtracting the mean pixel
+[41:29] value so the data is centered around
+[41:32] zero. Sometimes you also divide by the
+[41:35] standard deviation to get unit variance.
+[41:38] Third, image specific norms like
+[41:41] dividing each image by its own L2 norm.
+[41:43] Then data augmentation. This is critical
+[41:46] for medical imaging. You create new
+[41:48] training examples by applying random
+[41:51] transformations to existing images,
+[41:54] rotations, translations, flips, zooms,
+[41:57] brightness, and contrast adjustment.
+[41:59] Augmentation increases the effective
+[42:01] size of your training set and helps the
+[42:03] model generalize to variations it will
+[42:06] see at deployment.
+[42:10] Minmax scaling is defined as X subscals
+[42:15] X suboric minus X submin divided by X
+[42:19] submax minus X submin where X submin and
+[42:22] X submax are the minimum and maximum
+[42:25] values in the original data. This maps
+[42:27] the original range to between zero and
+[42:30] one. Neural networks generally expect
+[42:33] small numbers as input, not too extreme
+[42:35] relative to the scale of initialized
+[42:38] weights. Scaling helps with convergence
+[42:45] It is common to also normalize the mean
+[42:47] and variance of features so that all
+[42:50] features are treated equally. The most
+[42:52] common approach is zero mean and unit
+[42:55] variance. Subtract the mean so the data
+[42:57] is centered at zero. then divide by the
+[43:00] standard deviation.
+[43:02] This transforms the original data to
+[43:04] zero centered data. Then to normalize
+[43:09] data with mean zero and variance one.
+[43:11] For images, simpler normalization is
+[43:14] common. There are three variants. First,
+[43:18] subtract the mean image, a full 32x 32x3
+[43:22] array as used in the original Alex net.
+[43:25] Second, subtract per channel mean just
+[43:27] three numbers. one for each color
+[43:29] channel as used in VGG.
+[43:32] Third, subtract per channel mean and
+[43:34] divide by per channel standard deviation
+[43:38] as used in ResNet. This last variant
+[43:40] gives you zero mean unit variance data
+[43:42] per channel.
+[43:45] Now, evaluating image classification
+[43:48] models metrics beyond accuracy. Once you
+[43:50] have a trained model, how do you measure
+[43:54] how well it works? The confusion matrix
+[43:57] has four entries. true positives, true
+[43:59] negatives, false positives and false
+[44:02] negatives. From these we compute several
+[44:04] metrics.
+[44:06] Every standard binary metric is derived
+[44:09] from these four counts. Accuracy is true
+[44:12] positives plus true negatives divided by
+[44:16] total. Sensitivity also called recall or
+[44:18] true positive rate is true positives
+[44:21] divided by true positives plus false
+[44:22] negatives.
+[44:25] Specificity or true negative rate is
+[44:28] true negatives divided by true negatives
+[44:31] plus false positives. Precision or
+[44:33] positive predictive value is true
+[44:35] positives divided by true positives plus
+[44:37] false positives.
+[44:40] Then there is the AUC
+[44:41] which measures the area under the
+[44:45] receiver operating characteristic curve
+[44:47] and the F1 score which is the harmonic
+[44:50] mean of precision and recall.
+[44:53] Accuracy
+[44:55] is true positives plus true negatives
+[44:59] divided by total number of samples.
+[45:01] When might evaluating purely accuracy be
+[45:08] The answer is imbalanced data set. In
+[45:12] cases of class imbalance, if 95% of your
+[45:15] samples are negative and only 5% are
+[45:17] positive, a model that always predicts
+[45:21] negative achieves 95% accuracy. But it
+[45:23] is completely useless for detecting the
+[45:25] positive class. That is why we need
+[45:29] metrics like sensitivity, specificity,
+[45:31] precision, and F1 score which focus on
+[45:34] the minority class.
+[45:38] Here are the other metrics. Sensitivity
+[45:41] also called recall or true positive rate
+[45:43] is true positives divided by total
+[45:46] actual positives. Specificity or true
+[45:49] negative rate is true negatives divided
+[45:52] by total actual negatives.
+[45:54] Precision or positive predictive value
+[45:57] is true positives divided by total
+[45:59] predicted positives and negative
+[46:01] predictive value is true negatives
+[46:05] divided by total predicted negatives.
+[46:07] We can trade off different values of
+[46:09] these metrics as we vary our
+[46:11] classifier's score threshold to predict
+[46:14] a positive. Lowering the threshold
+[46:17] increases sensitivity but decreases
+[46:18] specificity.
+[46:20] Raising the threshold increases
+[46:24] specificity but decreases sensitivity.
+[46:26] The ROC curve plots this trade-off
+[46:30] across all possible thresholds.
+[46:32] Here's another quiz. As prediction
+[46:34] threshold increases, how does that
+[46:36] generally affect sensitivity?
+[46:39] Specificity.
+[46:42] The answer is sensitivity goes down,
+[46:46] specificity up. The trade-off slide.
+[46:48] Sensitivity and specificity are not
+[46:51] independent. As you slide the decision
+[46:53] threshold up or down, you trade one for
+[46:56] the other. A very low threshold, call
+[46:59] almost everything positive, gives high
+[47:02] sensitivity and low specificity. A very
+[47:05] high threshold, call almost nothing
+[47:08] positive, gives the opposite. The right
+[47:10] threshold depends on the cost structure
+[47:12] of the application.
+[47:14] Accuracy is the simplest metric and the
+[47:16] most misleading for imbalanced data
+[47:19] sets. Report sensitivity and specificity
+[47:22] separately or use balance accuracy. Do
+[47:24] not report bare accuracy unless your
+[47:28] classes are balanced.
+[47:31] The ROC curve, receiver operating
+[47:34] characteristic, plots true positive rate
+[47:36] on the yaxis against false positive rate
+[47:39] on the x-axis as you sweep the threshold
+[47:43] from low to high. You trace out a curve.
+[47:45] The closer the curve hugs the top left
+[47:48] corner, the better the model. A perfect
+[47:50] classifier goes straight up the left
+[47:52] edge and across the top.
+[47:54] A random classifier follows the
+[47:56] diagonal.
+[47:59] The ROC curve plots sensitivity against
+[48:02] one minus specificity that is true
+[48:04] positive rate against false positive
+[48:07] rate as the prediction threshold is
+[48:10] varied. It gives the trade-off between
+[48:13] sensitivity and specificity.
+[48:16] We also report the summary statistic AU
+[48:19] the area under the curve. Higher AU
+[48:22] means better model performance.
+[48:26] In an ROC curve, the yaxis is the true
+[48:30] positive rate sensitivity and the xaxis
+[48:33] is the false positive rate which is one
+[48:35] minus specificity.
+[48:37] As you vary the classification
+[48:40] threshold, you trace a curve from the
+[48:42] bottom left corner to the top right
+[48:44] corner. The top left corner represents
+[48:47] perfect classification. True positive
+[48:49] rate of one and false positive rate of
+[48:52] zero.
+[48:54] Sometimes you will also see a precision
+[48:57] recall curve. This is often more
+[48:59] informative than an ROC curve when the
+[49:02] data set is heavily imbalanced.
+[49:04] In imbalanced data sets, the true
+[49:07] negative rate specificity is less
+[49:09] meaningful because there are so many
+[49:11] negatives that even a poor classifier
+[49:14] can achieve high specificity.
+[49:16] Precision recall focuses on the positive
+[49:18] class and is more sensitive to
+[49:20] differences in performance on the
+[49:23] minority class.
+[49:25] To select the optimal trade-off point on
+[49:28] the ROC curve, one common method is to
+[49:31] maximize Uden's index.
+[49:34] Udin's index J is sensitivity plus
+[49:38] specificity minus one. It gives equal
+[49:40] weight to optimizing true positives and
+[49:42] true negatives.
+[49:45] The threshold that maximizes J is often
+[49:47] a good default choice when you have no
+[49:50] other preference.
+[49:52] Huden's index is also equal to the
+[49:54] distance above the chance line for a
+[49:57] balanced data set. That distance is
+[50:01] sensitivity minus 1 minus specificity.
+[50:03] And that simplifies to sensitivity plus
+[50:06] specificity minus one. So maximizing
+[50:09] Udance index is equivalent to finding
+[50:11] the point on the ROC curve farthest from
+[50:16] Sometimes you will also see the F
+[50:20] measure or F1 score. F1 equals 2 *
+[50:22] precision time recall divided by
+[50:25] precision plus recall. It is the
+[50:27] harmonic mean of precision and recall.
+[50:30] The harmonic mean penalizes extreme
+[50:33] values more than the arithmetic mean. So
+[50:35] you only get a high F1 score if both
+[50:38] precision and recall are high.
+[50:40] But the selected trade-off point also
+[50:43] depends on the application. In a cancer
+[50:45] screening context, you might prioritize
+[50:48] high sensitivity to avoid missing any
+[50:51] true cases, even at the cost of lower
+[50:54] specificity and more false alarms.
+[50:57] In a diagnostic confirmation context,
+[51:00] you might prioritize high specificity to
+[51:02] avoid unnecessary biopsies or
+[51:03] treatments.
+[51:06] The optimal threshold is not fixed. A it
+[51:08] depends on the clinical consequences of
+[51:13] false positives versus false negatives.
+[51:16] Now let's move to case studies. CNN's in
+[51:19] medical image classification from chest
+[51:22] X-rays to skin cancer.
+[51:25] One of the early steps in deep learning
+[51:27] for medical imaging was using imageet
+[51:30] CNN features as a fixed feature
+[51:33] extractor. Bar and colleagues in 2015
+[51:35] worked on chest X-ray classification
+[51:38] with several binary tasks right plural
+[51:41] eusion or not enlarge heart or not
+[51:44] healthy or abnormal. The data set was
+[51:47] very small only 93 frontal chest X-ray
+[51:50] images. They use features from a CNN
+[51:53] pre-trained on imageet then train a
+[51:56] classifier on top demonstrating that
+[51:58] transfer learning could work even with
+[52:02] tiny medical data sets.
+[52:04] They did not train a deep learning model
+[52:08] on the medical data directly. Instead
+[52:10] they extracted features from an Alex net
+[52:13] that was pre-trained on imageet
+[52:15] specifically from the fifth, sixth and
+[52:17] seventh layers.
+[52:19] Then they used those extracted features
+[52:22] with an SVM classifier. They performed
+[52:25] zero mean unit variance normalization on
+[52:27] all features. They also evaluated
+[52:30] combinations of these deep features with
+[52:34] other handcrafted image features.
+[52:36] Build one of a perennial question. How
+[52:38] much data does a deep learning model
+[52:41] need?
+[52:43] The conventional answer for imageet
+[52:45] scale task is millions of label
+[52:48] examples. For medical tasks where labels
+[52:51] are expensive, that is rarely feasible.
+[52:55] The honest answer is it depends on the
+[52:57] task complexity, on whether you transfer
+[53:01] from a related task, on how augmentation
+[53:05] is used, on the consequences of errors.
+[53:07] For a simple binary classification on a
+[53:09] single modality with transfer learning
+[53:12] from imageet, you can often get
+[53:14] clinically useful performance with 1,000
+[53:17] labeled positive cases plus match
+[53:19] negatives.
+[53:21] The premise of deep learning is that it
+[53:24] uses many parameters, millions, to fit
+[53:27] complex functions. But if the data set
+[53:29] is too small, the easiest solution the
+[53:32] model ends up learning is overfitting.
+[53:34] memorizing the labels of the training
+[53:36] examples rather than learning
+[53:38] generalizable patterns. That is why
+[53:40] large data sets and regularization are
+[53:42] critical for training deep models from
+[53:49] The imageet data set consists of 1
+[53:52] million images, 1,000 classes with
+[53:55] roughly 1,000 images each. That skill is
+[53:58] what enabled the training of deep models
+[54:00] like AlexNet from scratch because the
+[54:02] models had enough data to learn
+[54:05] generalizable features rather than just
+[54:08] memorizing the training set.
+[54:10] Transfer learning is the key strategy
+[54:13] when labeled medical data is limited.
+[54:15] Deep learning needs data. And here is a
+[54:19] key rule. One CT volume with 200 slices
+[54:22] is not 200 data examples.
+[54:24] Count unique patients or independent
+[54:28] scans, not individual frames. Slices
+[54:29] from the same patient are highly
+[54:32] correlated and treating them as
+[54:34] independent leads to overly optimistic
+[54:38] performance estimates and data leakage.
+[54:42] Transfer learning has two steps. First,
+[54:44] train a model on a big data set like
+[54:46] image net. The model learns general
+[54:49] features, edges, textures, shapes. These
+[54:51] features are useful across many visual
+[54:55] tasks, not just the original task.
+[54:58] Second, take that pre-trained model and
+[55:00] adapt it to your small data set with
+[55:03] Cclasses. You keep the early layers that
+[55:06] learned general features and you retrain
+[55:08] or fine-tune the later layers for your
+[55:10] specific task.
+[55:11] This works even when your labeled
+[55:14] medical data set is tiny. You typically
+[55:17] freeze the early layers, the ones that
+[55:19] learned general features like edges and
+[55:20] textures.
+[55:22] You do not update their weights during
+[55:25] training on your small data set. Then
+[55:26] you reinitialize the final
+[55:29] classification layer or the last few
+[55:31] layers and train only those on your new
+[55:34] task. This prevents overfitting while
+[55:36] still adapting the model to your
+[55:40] specific medical imaging problem.
+[55:42] If you have a bigger medical data set,
+[55:45] you can train more layers. The usual
+[55:47] practice is to freeze the early layers
+[55:49] that learn at generic features, but
+[55:51] train the later layers that are more
+[55:53] taskspecific.
+[55:56] When fine-tuning, use a lower learning
+[55:59] rate. Typically onetenth of the original
+[56:02] learning rate is a good starting point.
+[56:04] This allows the model to adapt without
+[56:06] destroying the useful features learned
+[56:09] from the large source data set.
+[56:11] Let's complete this contingency table
+[56:13] under transfer learning from a large
+[56:17] data set to your data set.
+[56:19] When you have very similar data set and
+[56:23] very little data, use linear classifier
+[56:26] on top layer features.
+[56:28] However, when you have very different
+[56:31] data set and very little data, you're in
+[56:33] trouble. So try linear classifier on
+[56:39] However, when you have very similar data
+[56:42] set and quite a lot of data, you can
+[56:44] fine-tune a few layers. A common
+[56:47] heristic, more target data means you can
+[56:52] safely unfreeze more layers.
+[56:53] When you have very different data set
+[56:57] and quite a lot of data, you fine-tune a
+[56:59] large number of layers. Larger target
+[57:02] data set, similar domain, fine-tune
+[57:05] everything. The optimal split is found
+[57:07] by trying a few configurations on the
+[57:10] validation set.
+[57:13] Often good idea to try this first. Try
+[57:17] fine-tuning all layers of the network.
+[57:19] Here is the transfer learning strategy
+[57:22] summary. If you have a small target data
+[57:23] set that is similar to the source
+[57:26] domain, freeze the backbone and train
+[57:28] only the head. If you have a small
+[57:31] target data set but a different domain,
+[57:33] freeze the early layers and fine-tune
+[57:36] the later layers. If you have a large
+[57:37] target data set that is similar to the
+[57:41] source domain, fine-tune everything with
+[57:43] a small learning rate. If you have a
+[57:45] large target data set that is very
+[57:47] different from the source domain,
+[57:49] sometimes training from scratch is
+[57:51] competitive, though transfer learning
+[57:54] still helps as a good initialization.
+[57:57] The default for medical imaging today is
+[57:59] to fine-tune everything with a careful
+[58:02] learning rate schedule.
+[58:06] This has become standard practice.
+[58:08] How much data do you need for deep
+[58:11] learning? Here are rough guidelines.
+[58:13] Taking them with a grain of salt because
+[58:17] it really depends on the problem.
+[58:20] Low dozens of examples per class is
+[58:21] generally too small to learn a
+[58:23] meaningful model using standard
+[58:26] supervised deep learning. You will
+[58:29] overfit badly.
+[58:32] High dozens to low hundreds per class.
+[58:34] You may see models with some predictive
+[58:37] ability, but they are unlikely to really
+[58:39] wow you or be superhuman.
+[58:42] High hundreds to thousands per class is
+[58:45] the happy regime for deep learning.
+[58:47] This is where you typically get strong
+[58:49] reliable performance especially with
+[58:52] transfer learning.
+[58:54] In general, deep learning is data
+[58:58] hungry. The more data the better.
+[59:00] Almost always leverage transfer learning
+[59:02] unless you have an extremely different
+[59:05] data set like medical images that look
+[59:08] nothing like natural images or a huge
+[59:11] data set at imageet scale. For most
+[59:14] medical imaging tasks, transfer learning
+[59:16] from imageet is the starting point, even
+[59:19] if the domain is different. The features
+[59:21] from imageet are surprisingly useful
+[59:25] across visual domains.
+[59:28] What counts as a data example. This is a
+[59:32] critical point. 3DCT volume with 200
+[59:34] slices is not 200 independent data
+[59:37] examples. Those slices are highly
+[59:38] correlated because they come from the
+[59:41] same patient and the same scan.
+[59:44] Similarly, five surgery videos with
+[59:45] thousands of frames each are not
+[59:48] thousands of independent examples.
+[59:49] Frames from the same video are
+[59:52] correlated in time. The correct unit is
+[59:55] the patient, the scan or the video, not
+[59:57] the slice or the frame. Treating
+[60:00] correlated samples as independent leads
+[60:02] to data leakage and wildly optimistic
+[60:08] Guidelines for the amount of training
+[60:10] data refer to the number of unique
+[60:12] instances that are representative of the
+[60:15] diversity expected during testing and
+[60:17] deployment. That means the number of
+[60:20] independent CT scans, not the number of
+[60:24] slices per scan. Or the number of
+[60:26] independent surgery videos, not the
+[60:29] number of frames per video.
+[60:31] Additional correlated data like
+[60:33] different slices of the same tumor or
+[60:36] different suturing instances within the
+[60:38] same video provide relatively less
+[60:41] incremental value. They add some
+[60:43] variation but not nearly as much as an
+[60:47] entirely new patient or new scan.
+[60:50] We have set up the machinery model loss
+[60:53] data evaluation.
+[60:55] Next, we examine the key studies across
+[60:58] chest X-ray, lung nodules, diabetic
+[61:00] retinopathy, skin lesions, pneumonia,
+[61:03] and breast cancer. The common thread is
+[61:05] that all of them use transfer learning
+[61:08] from imageet. Let me walk you through
+[61:10] them. In fact, the most influential of
+[61:12] these is check xnet for pneumonia
+[61:19] Returning to bar and colleagues in 2015,
+[61:21] they did not train a deep learning model
+[61:25] on the medical data directly. Instead,
+[61:27] they extracted features from an Alex net
+[61:30] that was pre-trained on imageet,
+[61:32] specifically from the fifth, sixth, and
+[61:35] seventh layers. They used these
+[61:37] extracted features with an SVM
+[61:39] classifier.
+[61:41] They performed zero mean unit variance
+[61:43] normalization on all features.
+[61:45] They also evaluated combinations of
+[61:47] these deep features with other
+[61:50] handcrafted image features to see if the
+[61:52] deep features added complimentary
+[61:55] information.
+[61:57] This diagram shows the feature
+[61:59] extraction pipeline from bar and
+[62:02] colleagues. The input chess X-ray goes
+[62:04] through AlexNet layers. From L5 they
+[62:07] extracted 9,216
+[62:10] dimensional features. From L6 and L7,
+[62:13] they extracted 4,96 dimensional features
+[62:16] each. They called these decaf features,
+[62:19] a reference to the popular decaf paper
+[62:22] from the same era. These extracted
+[62:24] features were then fed into an SVM
+[62:26] classifier, not into a neural network
+[62:31] trained end to end on the medical data.
+[62:33] These three tables show the performance
+[62:35] of different feature types on three
+[62:39] chest X-ray tasks. right plural eusion,
+[62:41] healthy versus pathology, and enlarged
+[62:44] heart. Looking first at table one for
+[62:47] right plural eusion, low-level features
+[62:50] like LBP performed poorly, sensitivity
+[62:52] 0.71,
+[62:55] AU 0.75.
+[62:57] Highle features like gist and picod did
+[63:03] better with a 0.93 and 0.91. But the
+[63:05] deep decaf features from Alex Net
+[63:08] especially decaf L5 achieved sensitivity
+[63:11] of 0.93
+[63:13] and AU of 0.92
+[63:15] matching or exceeding the highle
+[63:17] features.
+[63:20] Fusion of Piccodes and decaf L5 gave the
+[63:23] best AU at 0.93.
+[63:26] Table 2 for healthy versus pathology is
+[63:29] a harder task. Here decaf L6 performed
+[63:32] best among deep features with
+[63:37] sensitivity 0.89 and AU0.79.
+[63:41] The fusion did similarly at 0.79 AU.
+[63:45] Notably, no feature type cracked 0.80 AU
+[63:47] suggesting this binary classification.
+[63:50] Healthy versus any pathology is more
+[63:53] challenging. Table three for enlarged
+[63:56] heart deep features again did well.
+[64:00] Decaf L5 achieved sensitivity 0.88 and
+[64:03] AU0.87.
+[64:06] Fusion of Picod and DAFF L5 gave the
+[64:10] best overall AU at 0.89.
+[64:12] The key takeaway, even without
+[64:15] fine-tuning the neural network, deep
+[64:17] features extracted from imageet
+[64:19] outperform traditional handcrafted
+[64:20] features on these small medical data
+[64:22] sets.
+[64:24] This was an early demonstration that
+[64:26] transfer learning works for medical
+[64:33] How might we interpret the AU versus CNN
+[64:36] feature trends? Answer. Looking at the
+[64:39] tables, the deeper decaf features L5,
+[64:43] L6, L7 generally achieved higher AUC's
+[64:46] than low-level features like LBP. But
+[64:49] the trend is not simply deeper is always
+[64:53] better. For right plural eusion, L5
+[64:55] performed best. For healthy versus
+[64:59] pathology, L6 performed best. For
+[65:01] enlarged heart, L5 and fusion performed
+[65:04] best. This suggests that different
+[65:06] layers capture different levels of
+[65:09] abstraction and the optimal layer for
+[65:12] feature extraction depends on the task.
+[65:14] Also note that fusion of deep features
+[65:17] with handcrafted features sometimes
+[65:19] improved performance indicating that
+[65:21] deep and traditional features provide
+[65:28] Chompy and colleagues in 2015 worked on
+[65:31] classification of lung nodules in 3D CT
+[65:35] scans. The task was to classify nodules
+[65:39] as perhaps nodules or PFNs which are
+[65:42] likely benign versus not PFNs.
+[65:44] The data set came from a single
+[65:47] institution and contained 568 nodules
+[65:50] from 1,729
+[65:55] scans. Among these 65 were typical PFNs,
+[65:58] 19 were atypical PFNs and 484 were
+[66:00] non-PFNs.
+[66:03] a highly imbalanced data set. For data
+[66:06] prep-processing, they resculpt CT
+[66:08] houndsfield units into the range 0 to
+[66:10] 255.
+[66:12] Then they replicated the slice three
+[66:15] times across the red, green, and blue
+[66:17] channels to match the input dimensions
+[66:20] of image net train C and N's which
+[66:23] expect three channel RGB images. This
+[66:25] allowed them to use networks pre-trained
+[66:28] on imageet without modifying the input
+[66:30] layer.
+[66:32] Instead of training a model from
+[66:34] scratch, they extracted features from a
+[66:35] deep learning model pre-trained on
+[66:38] imageet. They used the overfeed feature
+[66:41] extractor similar to AlexNet but trained
+[66:43] with additional losses for localization
+[66:45] and detection which made the features
+[66:48] potentially more discriminative. To
+[66:51] capture 3D information, they extracted
+[66:53] features from three different 2D views
+[66:56] of each nodule. The axial view, the
+[66:59] coronal view, and the sagittal view.
+[67:01] Each view was processed independently
+[67:04] through the overfeed network. Then they
+[67:07] use a two-stage classifier. First, they
+[67:09] made independent predictions for each of
+[67:12] the three views. Second, they combined
+[67:15] the outputs from all three views into a
+[67:16] second classifier to make the final
+[67:19] prediction. This allowed the model to
+[67:21] aggregate 3D information using 2D
+[67:25] networks pre-trained on natural images.
+[67:28] Golian and colleagues in 2016 published
+[67:31] a landmark paper on diabetic retinopathy
+[67:33] screening. The task was binary
+[67:36] classification of referable diabetic
+[67:37] retinopathy from retinal fundus
+[67:39] photographs.
+[67:41] The input was a retinal fundus
+[67:44] photograph. The output was a binary
+[67:47] label. Referable diabetic retinopathy or
+[67:50] not. Referable diabetic retinopathy was
+[67:52] defined as moderate or worse diabetic
+[67:55] retinopathy. referable diabetic macular
+[68:00] edema or both. So the model was not just
+[68:02] detecting any retinopathy but
+[68:04] specifically the level that requires
+[68:06] referral to an opthalmologist for
+[68:10] further evaluation or treatment
+[68:13] data set. Gian and colleagues used
+[68:15] 128,175
+[68:18] retinal fundus images.
+[68:20] Each image was graded by three to seven
+[68:23] opthalmologists.
+[68:25] There were 54 total graders each paid to
+[68:29] grade between 20 and 62,58
+[68:31] images. So a highly skewed distribution
+[68:34] of grading effort across readers.
+[68:37] Data pre-processing for each image. They
+[68:39] detected the circular mask of the
+[68:42] fundus, the actual retinal area and
+[68:46] rescaled it to be 299 pixels wide. This
+[68:49] standardized the input size and removed
+[68:52] dark non-informative borders.
+[68:57] model. They used an inception V 3 CNN N
+[69:00] pre-trained on imageet. Instead of a
+[69:02] single binary output, the network was
+[69:04] trained with multiple binary cross
+[69:06] entropy losses corresponding to
+[69:08] different intermediate prediction
+[69:11] problems. For example, severity levels
+[69:14] of retinopathy and presence of macular
+[69:15] edema.
+[69:17] These intermediate predictions were then
+[69:19] combined algorithmically to determine
+[69:22] the final binary label of referable
+[69:24] diabetic retinopathy.
+[69:26] This multitask approach allowed the
+[69:28] model to learn richer intermediate
+[69:33] The graders provided finer grained
+[69:36] labels, for example, the specific
+[69:39] severity level of diabetic retinopathy
+[69:42] on a multi-point scale or the specific
+[69:45] type of macular edema.
+[69:47] These finer grain labels were then
+[69:49] consolidated into the simpler binary
+[69:51] prediction problem of referable versus
+[69:53] notreferable. The model was trained to
+[69:55] predict these intermediate finer grain
+[69:58] labels using multiple binary cross
+[70:00] entropy losses.
+[70:02] This approach made the training task
+[70:04] easier because the finer grained labels
+[70:07] gave the model more signal than a single
+[70:09] binary label would have. The final
+[70:12] referable DR decision was then derived
+[70:13] by applying a rule to the model's
+[70:19] Now let's look at the key CNN
+[70:21] architectures that drove the revolution
+[70:24] of depth. The history of imageet from
+[70:28] 2012 to 2017 is the history of
+[70:30] architectures getting steadily deeper
+[70:32] and steadily better. Let me walk you
+[70:35] through the main milestones.
+[70:38] Alex Net from 2012 started it all. Eight
+[70:41] layers, 60 million parameters trained on
+[70:43] two GPUs.
+[70:46] VGET from 2014 showed that depth
+[70:49] matters. 16 to 19 layers of 3x3
+[70:52] convolutions stacked repeatedly. Very
+[70:54] simple design but computationally
+[70:57] expensive. Google Net from 2014, also
+[70:59] called Inception, introduced the
+[71:02] Inception module, multiple filter sizes
+[71:04] at the same layer to make the network
+[71:06] wider and deeper while keeping
+[71:09] computation manageable. It had 22
+[71:13] layers. RestNet from 2015 introduced
+[71:16] skip connections, residual connections
+[71:19] that allow training of networks with 152
+[71:21] layers or more, solving the vanishing
+[71:23] gradient problem.
+[71:25] RestNet remains the go-to backbone for
+[71:29] many medical imaging tasks today.
+[71:31] The imageet large-scale visual
+[71:34] recognition challenge winners show the
+[71:38] progression to deeper networks. In 2014,
+[71:41] Simonian and Zissman proposed VGG with
+[71:44] 19 layers very deep for its time using
+[71:47] only 3x3 convolutions stacked
+[71:50] repeatedly. The same year, Zeedy and
+[71:52] colleagues proposed Google Net, which
+[71:55] had 22 layers.
+[71:56] Google Net introduced the inception
+[71:59] module which used multiple filter sizes
+[72:02] in parallel and one by one convolutions
+[72:06] for dimensionality reduction. So 2014
+[72:09] had two influential winners, VGG for its
+[72:12] simplicity and depth and Google Net for
+[72:16] its efficient inception architecture.
+[72:20] VGNet by Simon Yun and Zissimon in 2014
+[72:23] had a simple but powerful formula, small
+[72:25] filters and deeper networks.
+[72:28] Alexet had eight layers. VGG pushed that
+[72:35] to 16 to 19 layers. VGG16 and VGG19.
+[72:37] The architecture used only 3x3
+[72:39] convolutional layers with stride one and
+[72:41] pad one which preserves spatial
+[72:43] dimensions
+[72:47] and 2x two max pooling with stride 2
+[72:50] which halves spatial dimensions. So each
+[72:51] block of two or three conf layers was
+[72:53] followed by a pooling layer that reduced
+[72:56] resolution. The insight stacking
+[72:59] multiple 3x3 conf layers gives the same
+[73:02] receptive field as a larger filter but
+[73:03] with fewer parameters and more
+[73:10] Google net by siged and colleagues in
+[73:13] 2014 introduced the inception module.
+[73:15] The core idea was to design a good local
+[73:18] network topology, a network within a
+[73:21] network, and then stack these modules on
+[73:24] top of each other. Instead of choosing a
+[73:27] single filter size at each layer, the
+[73:29] inception module applies multiple filter
+[73:34] sizes in parallel, 1x 1, 3x3, and 5x5
+[73:39] convolutions, plus a max pooling path.
+[73:41] All these parallel outputs are then
+[73:42] concatenated along the channel
+[73:45] dimension. The one by one convolutions
+[73:48] serve as dimensionality reduction to
+[73:51] keep computational cost manageable.
+[73:53] This made the network both wider and
+[73:56] deeper 22 layers while using fewer
+[73:59] parameters than VGG.
+[74:02] Google Net achieved deeper networks with
+[74:05] computational efficiency. It had 22
+[74:09] layers, far deeper than Alexnet's 8. The
+[74:11] efficient inception module used one by
+[74:13] one convolutions to reduce
+[74:16] dimensionality before expensive 3x3 and
+[74:18] 5x5 convolutions.
+[74:21] Instead of using large fully connected
+[74:24] layers at the end, which Alexet had with
+[74:28] two 4,96 layer FC's, Google Net used a
+[74:30] global average pooling layer, which
+[74:32] drastically reduced the number of
+[74:35] parameters. The result, Google Net had
+[74:38] 12 times fewer parameters than Alex Net
+[74:41] while achieving higher accuracy. This
+[74:47] Google Net is also called the Inception
+[74:50] Network, named after its core building
+[74:53] block, the Inception module. The name is
+[74:56] a play on the movie Inception as the
+[74:59] papers lead author Christian Seagi
+[75:01] reportedly said we need to go deeper
+[75:05] while designing the architecture.
+[75:07] Returning to Gulchan and colleagues
+[75:10] diabetic retinopathy work they use
+[75:13] inception v3 the third version of the
+[75:15] inception architecture pre-trained on
+[75:17] imageet.
+[75:19] The network was trained with multiple
+[75:21] binary cross entropy losses, each
+[75:23] corresponding to a different
+[75:25] intermediate prediction problem. The
+[75:27] final determination of referable
+[75:30] diabetic retinopathy was then derived
+[75:32] from these intermediate outputs. The
+[75:34] greater panel provided five class
+[75:38] severity labels. No retinopathy, mild,
+[75:41] moderate, severe non-prololiferative,
+[75:44] and proliferative diabetic retinopathy.
+[75:46] The published main result collapsed
+[75:48] these five levels into a binary
+[75:51] referable or not decision moderate and
+[75:53] worse being referable. But the
+[75:55] underlying labels supported much finer
+[75:57] grain analysis.
+[75:59] This level of label quality is a
+[76:02] defining feature of the paper. Having
+[76:04] high quality multi-grader labels allowed
+[76:06] the model to learn richer
+[76:08] representations than a simple binary
+[76:11] label would have provided.
+[76:14] The results were evaluated using ROC
+[76:16] curves area under the curve and
+[76:19] sensitivity and specificity analysis at
+[76:22] multiple operating points.
+[76:24] The key finding was that the inception
+[76:27] V3 model achieved high performance for
+[76:30] referable diabetic retinopathy detection
+[76:34] with AU exceeding 0.99 on two separate
+[76:37] validation data sets. At a high
+[76:39] specificity operating point, the model
+[76:43] achieved sensitivity above 90%.
+[76:45] This performance match or exceeded that
+[76:47] of opthalmologists reading the same
+[76:49] images.
+[76:53] The model achieved an AU of 0.991
+[76:55] extremely high. They looked at different
+[76:58] operating points. For the high
+[77:00] specificity point, they approximated
+[77:03] opthalmologist specificity to make fair
+[77:05] comparisons.
+[77:07] This operating point is appropriate when
+[77:08] the action following a positive
+[77:11] prediction is high risk. For example,
+[77:13] referring a patient for an invasive
+[77:16] confirmatory test. For the high
+[77:19] sensitivity point, they prioritize
+[77:22] catching as many true cases as possible.
+[77:24] This operating point is appropriate for
+[77:26] screening applications where missing a
+[77:30] case is more harmful than a false alarm.
+[77:32] The first table shows how relative
+[77:36] specificity at 97% sensitivity increases
+[77:39] with more training data.
+[77:41] As the number of images in the training
+[77:44] set increases from 3,000 to 99,000, the
+[77:48] relative specificity at 97% sensitivity
+[77:52] rises from 38% to 99%.
+[77:54] This demonstrates that more data
+[77:56] directly improves the model's ability to
+[78:00] maintain specificity while catching 97%
+[78:02] of true cases. The second table shows
+[78:06] how relative specificity at 97%
+[78:08] sensitivity increases with more graders
+[78:11] per image. When each image is graded by
+[78:15] only one grader, the specificity at 97%
+[78:19] sensitivity is 65% on the tuning set.
+[78:22] When each image is graded by 4.5 graders
+[78:26] on average, the specificity reaches 100%
+[78:28] on the tuning set. This is a key
+[78:31] insight. Having multiple expert graders
+[78:34] per image, thus obtaining more reliable
+[78:36] ground truth labels substantially
+[78:38] improves the model's performance
+[78:41] ceiling. Highquality labels matter as
+[78:48] Question. What could explain the
+[78:50] difference in trends for reducing number
+[78:52] of grades per image on the training set
+[78:55] versus the tuning set? Specifically, the
+[78:57] tuning set performance.
+[79:00] Answer. The training set and tuning set
+[79:03] serve different purposes. The training
+[79:05] set is used to update model weights.
+[79:07] More grades per image and thus more
+[79:10] reliable labels should improve the
+[79:11] model's learned representations
+[79:15] directly. The tuning set however is used
+[79:17] to select hyperparameters and operating
+[79:20] thresholds. The table shows that as the
+[79:22] number of grades per image increases,
+[79:26] the relative specificity at 97%
+[79:28] sensitivity on the tuning set improved
+[79:32] dramatically from 65% at 1.0 grade per
+[79:37] image to 100% at 4.5 grades per image.
+[79:39] The difference in trends likely reflects
+[79:41] that the tuning set is smaller or has a
+[79:42] different distribution of grading
+[79:45] difficulty.
+[79:47] Alternatively, the model may be
+[79:48] overfitting to label noise in the
+[79:51] training set when grades are sparse.
+[79:53] With more grades per image, the training
+[79:55] labels become more accurate and the
+[79:57] model generalizes better to the tuning
+[80:01] set. The tuning set being graded by a
+[80:03] different set of readers or with a
+[80:05] different consensus process may be more
+[80:07] sensitive to the quality of the training
+[80:12] When considering multiple possible
+[80:15] sources of data, for example, some with
+[80:17] noisier or less accurate labels than
+[80:19] others or from different hospital sites
+[80:22] with different equipment. The expected
+[80:25] diversity of data during deployment must
+[80:27] be reflected in both the training and
+[80:29] test sets. You need to see this
+[80:31] diversity during training so the model
+[80:34] learns how to handle it. And you need to
+[80:36] see it during testing to accurately
+[80:38] evaluate how the model will perform in
+[80:41] the real world. If your test set only
+[80:44] includes clean, highquality data from a
+[80:46] single site, you will overestimate
+[80:48] performance on noisy multi-sight
+[80:51] deployment data.
+[80:54] You want your test set labels to be as
+[80:56] accurate as possible. The test set is
+[80:58] your final unbiased estimate of real
+[81:01] world performance. If the test set
+[81:03] labels are noisy or incorrect, your
+[81:05] performance metrics will be
+[81:07] underestimates of the true performance
+[81:10] or worse. You might mistakenly think a
+[81:11] model is better or worse than it
+[81:14] actually is. For the test set, it is
+[81:16] worth investing in multiple expert
+[81:19] graders, adjudication of disagreements,
+[81:22] or other quality assurance steps to get
+[81:25] the ground truth as correct as possible.
+[81:27] For the training set, some amount of
+[81:29] label noise is acceptable because models
+[81:31] can learn to average over it, but the
+[81:34] test set should be as clean as you can
+[81:36] make it.
+[81:38] Noisy labels are often still useful
+[81:40] during training because they can provide
+[81:43] useful signal in aggregate.
+[81:45] Much larger amounts of noisy data are
+[81:47] sometimes better than small amounts of
+[81:51] clean data. This is a key insight. The
+[81:53] volume of data can compensate for label
+[81:57] noise. Weekly supervised learning is a
+[81:59] major area of research focused precisely
+[82:01] on learning with large amounts of noisy
+[82:05] or imprecise labels. Weak supervision
+[82:06] includes techniques like using
+[82:09] huristics, crowdsource labels or
+[82:11] automatically extracted labels from
+[82:14] structured data. The goal is to get the
+[82:16] benefits of large data sets even when
+[82:23] Let me preview four advanced approaches
+[82:26] for handling limited labeled data.
+[82:28] These are techniques we will cover in
+[82:31] more detail in later lectures. First,
+[82:33] semi-supervised learning using a small
+[82:36] amount of labeled data together with a
+[82:37] large amount of unlabeled data to
+[82:40] improve model performance. Second,
+[82:43] self-supervised learning creating
+[82:45] supervisory signals from the data itself
+[82:48] like predicting masked patches in an
+[82:50] image or predicting rotation.
+[82:53] This has become very popular. Third,
+[82:56] weekly supervised learning. Learning
+[82:58] from noisy, imprecise or incomplete
+[83:01] labels such as image level labels for
+[83:03] pixel level tasks or heristically
+[83:07] generated labels. Fourth, domain
+[83:09] adaptation. adapting a model trained on
+[83:13] one domain, say natural images, to
+[83:15] perform well on a different domain, say
+[83:18] medical images with minimal or no
+[83:21] labeled data from the target domain.
+[83:24] Each of these is a major research area,
+[83:27] and we will return to them.
+[83:30] Estiva and colleagues in 2017 published
+[83:32] the landmark skin leion classification
+[83:35] paper in nature. They tackled two binary
+[83:38] classification tasks. Malignant versus
+[83:41] benign lesions of epidermal origin and
+[83:43] malignant versus benign lesions of
+[83:45] melanocitic origin. They use an
+[83:49] inception v3 CNN, the same Google
+[83:51] netbased architecture that Gulchan used
+[83:53] for diabetic retinopathy
+[83:56] with imageet pre-training. They
+[83:59] fine-tuned the network on a data set of
+[84:01] 129,450
+[84:03] lesions from several sources covering
+[84:07] 232 distinct skin diseases. A huge and
+[84:10] diversity data set for its time. They
+[84:13] then evaluated the model against 21 or
+[84:15] more boardcertified dermatologists in
+[84:18] various experimental settings. The key
+[84:20] result, the model achieved performance
+[84:22] on par with the dermatologist on both
+[84:25] tasks, demonstrating that deep learning
+[84:27] could match expert level clinical
+[84:33] This diagram shows the key insight from
+[84:37] Estava atal. They train the inception V3
+[84:40] network on 757 fine grain training
+[84:43] classes. specific diagnoses like
+[84:46] acrolantigenous melanoma, a melanotic
+[84:49] melanoma, lentiggo melanoma as well as
+[84:51] benign conditions like blue nervous,
+[84:54] halo nervous and Mongolian spot.
+[84:56] However, at inference time they perform
+[84:59] binary classification for example
+[85:01] malignant versus benign melanocitic
+[85:04] leion. How they sum the probabilities of
+[85:07] the fine grains subclasses. For
+[85:10] malignant, they sum probabilities of all
+[85:13] malignant subclasses. For benign, they
+[85:15] sum probabilities of all benign
+[85:17] subclasses.
+[85:19] The key takeaway, training on the finer
+[85:23] grain classification task with 757
+[85:25] classes provided stronger supervision
+[85:27] during training, which improved
+[85:29] inference performance on the simpler
+[85:31] binary task.
+[85:33] The model learned to distinguish subtle
+[85:35] differences between different types of
+[85:38] melanoma which helped it make a more
+[85:40] accurate malignant versus benign
+[85:43] decision. This is a form of multitask or
+[85:46] hierarchical classification
+[85:49] for evaluation. Estava and colleagues
+[85:51] compared the algorithm's performance
+[85:53] against 21 or more board certified
+[85:55] dermatologists across multiple
+[85:58] experimental settings.
+[86:01] The key finding was that the CNN
+[86:02] achieved performance on par with the
+[86:04] dermatologist on both binary
+[86:07] classification tasks. Malignant versus
+[86:10] benign epidermal lesions and malignant
+[86:13] versus benign melanocitic lesions. The
+[86:16] models sensitivity and specificity were
+[86:18] comparable to the human experts
+[86:20] demonstrating that a deep learning
+[86:22] system could match specialist level
+[86:25] performance in skin cancer diagnosis.
+[86:27] The paper also included an analysis of
+[86:30] the model's confusion matrix showing
+[86:32] which malignant lesions were most
+[86:35] frequently mclassified as benign and
+[86:38] vice versa. This head-to-head comparison
+[86:40] with multiple clinicians, not just
+[86:42] against a holdout test set, was a
+[86:46] defining feature of the study.
+[86:49] This table from Lacani and Sundaram 2017
+[86:52] shows the AU results for pulmonary
+[86:55] tuberculosis classification from chest
+[86:56] X-rays.
+[86:59] They compared AlexNet and Google Net
+[87:02] under four conditions untrained from
+[87:04] scratch, pre-trained on imageet,
+[87:07] untrained with augmentation, and
+[87:09] pre-trained with augmentation.
+[87:11] The key findings pre-trained models
+[87:15] vastly outperformed untrained models.
+[87:17] For Alex Net, pre-training raised AU
+[87:22] from 0.90 to 0.98.
+[87:25] For Google Net, pre-training raised AU
+[87:28] from 0.88 to 0.97.
+[87:31] This is a huge jump around 10 percentage
+[87:34] points. Augmentation also helped.
+[87:36] untrained with augmentation improved to
+[87:40] 0.95 for AlexNet and 0.94 for Google
+[87:43] Net, but still did not match pre-trained
+[87:45] performance. The best performance came
+[87:47] from an ensemble of pre-trained models
+[87:52] with augmentation. Achieving AU of 0.99.
+[87:55] The clear takeaway for medical imaging
+[87:58] task with limited data transfer learning
+[88:01] from imageet is essential. Training from
+[88:04] scratch, even with augmentation, is far
+[88:06] inferior.
+[88:09] Continued the headline result. An
+[88:12] ensemble of fine-tuned AlexNet and
+[88:15] Google Net reach AU of 0.99 on the
+[88:18] heldout test set. Modest data set,
+[88:20] off-the-shelf architectures, careful
+[88:23] training, and clinically interesting
+[88:25] numbers. The paper became a
+[88:27] methodological reference for early TB
+[88:30] detection work.
+[88:34] Resizing to 256x 256 is common. It
+[88:37] matches the input size expected by many
+[88:41] pre-trained networks like AlexNet's 227x
+[88:47] 227 or VGG's 224x 224 after cropping. It
+[88:49] is also a fine approach to making high
+[88:52] resolution data sets easier to work with
+[88:54] both in terms of memory and computation
+[88:57] time. you lose some fine detail, but for
+[89:00] many medical imaging tasks, the
+[89:01] clinically relevant features are still
+[89:08] This table shows the sensitivity of
+[89:10] different models at various specificity
+[89:13] levels, specifically at false positive
+[89:17] rates ranging from 0.0 to 1.0.
+[89:20] The models compared include AlexNet and
+[89:23] Google Net with U standing for untrained
+[89:25] from scratch and TA standing for
+[89:28] transfer learning with augmentation.
+[89:29] The key observation is that the
+[89:32] pre-trained models with augmentation,
+[89:36] AlexNet TA and Google Net TA achieved
+[89:38] higher sensitivity than the untrained
+[89:41] models at every specificity level. The
+[89:44] ensemble model performed best overall
+[89:46] achieving the highest sensitivity at
+[89:49] each false positive rate.
+[89:50] This demonstrates that transfer
+[89:54] learning, augmentation, and onsembling
+[89:56] all contribute to improved performance
+[89:57] on the pulmonary tuberculosis
+[90:01] classification task.
+[90:03] They perform further analysis at the
+[90:05] optimal threshold determined by the uden
+[90:08] index. Recall that Uden's index is
+[90:12] sensitivity plus specificity minus one
+[90:14] and it gives equal weight to optimizing
+[90:17] true positives and true negatives.
+[90:20] At that optimal threshold, the ensemble
+[90:23] model achieved a sensitivity of 0.84
+[90:27] and a specificity of 0.84 for pulmonary
+[90:29] tuberculosis detection.
+[90:32] This balanced operating point is often a
+[90:34] good default choice when you have no
+[90:37] specific preference for sensitivity over
+[90:39] specificity.
+[90:42] Raj Pakar and colleagues in 2017
+[90:44] developed checkset for binary
+[90:46] classification of pneumonia in chest
+[90:47] x-rays.
+[90:51] They used the chest x-ray 14 data set
+[90:53] which contains over 100,000 frontal
+[90:56] x-ray images labeled for 14 different
+[90:59] diseases. The model architecture was a
+[91:04] 121 layer denset, not a resnet. Denset
+[91:06] has dense connections where each layer
+[91:08] receives feature maps from all previous
+[91:12] layers, which improves gradient flow and
+[91:14] parameter efficiency. Checknet was
+[91:16] compared against four practicing
+[91:18] radiologists on an independently
+[91:21] annotated test set. The model exceeded
+[91:23] the radiologist's average performance on
+[91:26] pneumonia detection, achieving higher
+[91:29] sensitivity and specificity.
+[91:32] Finally, they applied the same denset
+[91:34] model to the other 13 diseases in chest
+[91:37] X-ray 14 and surpassed the previous
+[91:40] state-of-the-art on all 14 conditions.
+[91:43] The model also produces salency heat
+[91:45] maps highlighting the regions most
+[91:47] indicative of pneumonia providing
+[91:50] interpretability.
+[91:53] This diagram summarizes the evaluation
+[91:55] setup for McKini and colleagues breast
+[91:58] cancer screening paper. The test data
+[92:01] sets included 25,858
+[92:03] women in the UK screening program with
+[92:06] double reading as the standard of care,
+[92:09] a 3-year screening interval, and 30
+[92:11] months of cancer followup. The cancer
+[92:15] prevalence was 1.6%.
+[92:17] Ground truth was determined as positive
+[92:19] if biopsy confirmed within 3 months of
+[92:22] the index exam
+[92:25] and negative if a second exam occurred
+[92:28] after 3 months with no cancer detected.
+[92:31] The evaluation had three components.
+[92:33] First, comparison with retrospective
+[92:36] clinical performance on both UK and US
+[92:39] test sets comparing the AI system red
+[92:42] against the original clinician red.
+[92:45] Second, generalization across data sets.
+[92:47] They train on the UK training set and
+[92:50] tested on the US test set to see if the
+[92:52] model generalized across populations and
+[92:55] screening protocols. Third, an
+[92:57] independently conducted reader study
+[93:00] where six radiologists read 500 cases
+[93:03] from the US test set, allowing a
+[93:05] head-to-head comparison between the AI
+[93:08] system and human experts. The key
+[93:10] finding was that the AI system achieved
+[93:13] higher sensitivity and specificity than
+[93:15] the radiologists in the reader study,
+[93:17] demonstrating state-of-the-art
+[93:21] performance for breast cancer screening.
+[93:24] RestNet by he and colleagues in 2015 was
+[93:27] the winner of ILSVR
+[93:32] C 2015 with 152 layers. It achieved a
+[93:36] top five error of 3.57%.
+[93:38] This was the real breakthrough in depth.
+[93:40] It proved that you could train networks
+[93:42] with over a 100 layers using skip
+[93:44] connections solving the vanishing
+[93:47] gradient problem. RestNet swept all
+[93:48] classification and detection
+[93:52] competitions that year. In 2016, the
+[93:55] winner was a TriSian ensemble from CUDA
+[93:59] swan led by Shiao and colleagues. The
+[94:02] error rate dropped to 2.99%.
+[94:05] Then in 2017, who and colleagues
+[94:07] introduced Esinet, which stood for
+[94:11] squeeze and excitation networks. Sinet
+[94:13] did not just go deeper. It introduced a
+[94:15] new architectural block that adaptively
+[94:17] recalibrates channel-wise feature
+[94:21] responses. The SE block learns to weight
+[94:23] the importance of each channel,
+[94:25] reinforcing useful features and
+[94:28] suppressing irrelevant ones. CNET won
+[94:30] ILSVRC
+[94:34] 2017 with a top five error of 2.25%
+[94:37] a 25% relative improvement over the 2016
+[94:40] winner. The progression of error rates
+[94:44] tells the story. Alex Net at 16.4%
+[94:47] then VGG and Google net around 7%
+[94:52] RestNet at 3.6% and Senate at 2.25%.
+[94:54] each year pushed the state-of-the-art
+[94:58] lower and depth plus smarter
+[95:00] architectural innovations was the
+[95:02] engine.
+[95:05] More advanced topics in handling limited
+[95:07] labeled data. This is a major challenge
+[95:10] in healthcare AI. Labeled data is
+[95:13] expensive, privacy sensitive and
+[95:16] requires clinical expertise to annotate.
+[95:18] Unlike natural image data sets like
+[95:21] imagage net where you can hire crowd
+[95:23] workers for pennies per image, medical
+[95:25] images require board-certified
+[95:27] radiologists, pathologists or
+[95:29] dermatologists.
+[95:32] That is expensive and slow. So the
+[95:34] techniques we are about to discuss
+[95:36] semi-supervised learning,
+[95:38] self-supervised learning, weak
+[95:40] supervision, domain adaptation and
+[95:42] transfer learning are not just academic
+[95:45] nicities. They are essential tools for
+[95:47] making medical AI work in the real
+[95:49] world.
+[95:52] RestNet by he and colleagues in 2015
+[95:54] introduced very deep networks using
+[95:58] residual connections. Their 152 layer
+[96:01] model one image net with a top five
+[96:03] error of just 3.6%.
+[96:07] Significantly better than the 7.3% error
+[96:09] of the previous best VG or Google net
+[96:11] models.
+[96:14] But more importantly, RestNet won all
+[96:16] major classification and detection
+[96:19] benchmark challenges in 2015.
+[96:22] This was a clean sweep. It demonstrated
+[96:24] that with skip connections, you could
+[96:27] train networks of unprecedented depth
+[96:29] and achieve state-of-the-art performance
+[96:31] across multiple tasks.
+[96:34] RestNet remains the most widely used
+[96:38] backbone for medical imaging today.
+[96:41] Question. What happens when we continue
+[96:42] stacking deeper layers on a plain
+[96:45] convolutional neural network? And what
+[96:47] is strange about these training and test
+[96:50] curves? Hint, look at the order of the
+[96:53] curves.
+[96:56] Answer: In a plain network without skip
+[96:58] connections, deeper networks perform
+[97:00] worse than shallower ones on both
+[97:03] training and test error. That is strange
+[97:05] because usually a deeper network can at
+[97:07] least match the shallower network's
+[97:09] performance if it can learn identity
+[97:13] mappings. But in a plain network, a 56
+[97:15] layer network has higher training error
+[97:18] than a 20 layer network. That is not
+[97:20] overfitting. Overfitting would show
+[97:22] lower training error but higher test
+[97:25] error. Here training error itself is
+[97:27] higher. The deeper network is simply
+[97:30] harder to optimize. The gradient signal
+[97:32] degrades as it propagates through many
+[97:35] layers without skip connections.
+[97:37] RestNet fixed this by adding residual
+[97:39] connections that allow gradients to flow
+[97:43] directly through the network.
+[97:45] The hypothesis in Restnet was that the
+[97:48] problem is an optimization problem, not
+[97:50] an overfitting problem. Deeper models
+[97:53] are harder to optimize in a plain
+[97:55] network. Adding more layers increases
+[97:59] training error, not just test error.
+[98:01] That is counterintuitive because you
+[98:03] would expect a deeper network to be at
+[98:06] least as expressive as a shallower one.
+[98:08] But due to vanishing or exploding
+[98:10] gradients and other optimization
+[98:12] difficulties, the deeper network simply
+[98:15] fails to converge to a good solution.
+[98:17] RestNet's skip connections provide a
+[98:20] direct path for gradients, making very
+[98:23] deep networks trainable.
+[98:25] The deeper model should be able to
+[98:27] perform at least as well as the
+[98:29] shallower model. A solution by
+[98:31] construction is copying the learned
+[98:34] layers over from the shallower model and
+[98:36] setting all additional layers to the
+[98:39] identity function.
+[98:41] In a plane network, each layer directly
+[98:43] tries to learn the desired underlying
+[98:46] mapping H of X. The layer takes the
+[98:50] input X and tries to produce H of X. In
+[98:53] a residual block, the structure changes.
+[98:56] Instead of learning h of x directly, the
+[98:58] block learns the residual function f of
+[99:03] x equals h of x - x. Then the output of
+[99:07] the block is f of x + x. This addition
+[99:09] is the skip connection or identity
+[99:12] connection that bypasses the weight
+[99:15] layers. Why does this help? If the
+[99:18] optimal mapping h of x is close to the
+[99:20] identity, meaning the input is already
+[99:23] nearly what you want, then the residual
+[99:26] f of x will be close to zero. The
+[99:28] network can simply push the weights to
+[99:31] zero, which is much easier than learning
+[99:32] to approximate the identity from
+[99:35] scratch. And crucially, gradients can
+[99:37] flow directly through the skip
+[99:39] connection during back propagation,
+[99:43] avoiding the vanishing gradient problem.
+[99:45] The full restnet architecture stacks
+[99:47] residual blocks on top of each other.
+[99:50] Each residual block typically has two
+[99:53] 3x3 convolutional layers with batch
+[99:56] normalization and relu in between. The
+[99:59] identity connection also called the skip
+[100:01] connection takes the input to the block
+[100:04] and adds it directly to the output of
+[100:07] the two convolutional layers.
+[100:09] That addition is elementwise. So the
+[100:12] block learns the residual f ofx and the
+[100:16] output is f ofx plus x.
+[100:18] This design allows the network to be
+[100:20] very deep
+[100:24] 152 layers in the imageet model. If a
+[100:25] particular block does not need to
+[100:28] transform the features, it can simply
+[100:31] learn f ofx close to zero and the
+[100:33] identity connection passes the input
+[100:36] through unchanged. Gradients also flow
+[100:38] directly through the identity connection
+[100:41] during back propagation which solves the
+[100:43] vanishing gradient problem and enables
+[100:51] In a restn net when you go from one
+[100:53] stage to the next you periodically
+[100:55] double the number of filters and
+[100:58] downsample the spatial dimensions by a
+[101:00] factor of two.
+[101:02] This is typically done using a 3x3
+[101:04] convolution with stride two in the first
+[101:06] convolutional layer of the residual
+[101:09] block. For example, you might go from a
+[101:11] block with 64 filters to the next block
+[101:16] with 128 filters. The spatial dimensions
+[101:19] height and width are halfed because of
+[101:22] the stride 2. So you get twice the
+[101:24] number of channels at half the
+[101:26] resolution which is the standard way to
+[101:28] increase receptive field and feature
+[101:30] abstraction while controlling
+[101:33] computational cost.
+[101:35] At the very beginning of the ResNet
+[101:39] architecture before any residual blocks
+[101:41] there is an additional convolutional
+[101:44] layer. Typically this is a 7x7
+[101:47] convolution with 64 filters stride 2
+[101:50] followed by a 3x3 max pooling layer with
+[101:53] stride 2. This initial stem quickly
+[101:56] reduces the spatial resolution for
+[102:02] example from 224x 224 down to 56x 56
+[102:04] while increasing the number of channels
+[102:07] to 64. This aggressive downsampling at
+[102:09] the input reduces the computational load
+[102:16] Another key design choice in RestNet,
+[102:18] there are no large fully connected
+[102:21] layers except for the final FC 10000 to
+[102:23] output the class scores.
+[102:27] Unlike AlexNet which had two 4,96 neuron
+[102:29] fully connected layers accounting for
+[102:32] most of its parameters, ResNet uses
+[102:34] global average pooling before the final
+[102:38] FC layer. This drastically reduces the
+[102:40] number of parameters and helps prevent
+[102:43] overfitting. The global average pooling
+[102:45] takes the average of each feature map
+[102:48] across the entire spatial dimension
+[102:51] producing a single number per channel.
+[102:54] That vector is then fed directly into
+[102:56] the 10,00
+[102:59] FC layer for classification.
+[103:02] So the architecture is almost entirely
+[103:05] convolutional with only one FC layer at
+[103:07] the end.
+[103:09] RestNet comes in different total depths
+[103:13] for image net. The variants include 34
+[103:18] layers, 50 layers, 101 layers and 152
+[103:23] layers. The deeper versions 50, 101, and
+[103:27] 152 use a bottleneck design. Instead of
+[103:30] two 3x3 convolutions per block, they use
+[103:32] a one by one convolution to reduce the
+[103:35] number of channels, then a 3x3
+[103:37] convolution, then another one by one to
+[103:40] restore the channel count. This
+[103:42] bottleneck makes deeper networks
+[103:44] computationally feasible while
+[103:46] maintaining the same residual connection
+[103:48] structure.
+[103:51] Revisiting McKini and colleagues in 2020
+[103:53] published a nature paper on breast
+[103:55] cancer screening.
+[103:57] The task was binary classification of
+[104:00] breast cancer in mamogs. They use an
+[104:03] ensemble of models including several
+[104:06] resnets to make the final prediction.
+[104:08] The key contribution was international
+[104:11] data set and evaluation across both the
+[104:14] UK and the US. The model was trained on
+[104:17] a large UK data set and then tested on
+[104:20] US data, demonstrating generalization
+[104:22] across different populations, screening
+[104:26] protocols, and mimography equipment.
+[104:29] In a reader study with six radiologists
+[104:32] reading 500 US cases, the AI system
+[104:34] outperformed the radiologists on both
+[104:38] sensitivity and specificity.
+[104:40] Let me briefly mention three more recent
+[104:44] CNN architectures. First mobile net by
+[104:47] Sandler and colleagues in 2018.
+[104:50] It uses depthwise separable convolutions
+[104:52] splitting a standard convolution into a
+[104:55] depthwise convolution and a pointwise
+[104:58] one by one convolution. This drastically
+[105:00] reduces the number of parameters and
+[105:02] computations making the network light
+[105:05] enough to run on mobile phones and edge
+[105:06] devices.
+[105:09] Important for deploying medical AI in
+[105:11] low resource settings.
+[105:14] Second, NASNet by Zof and colleagues in
+[105:17] 2016 and Amoebaet by real and colleagues
+[105:19] in 2019.
+[105:21] These architectures were discovered
+[105:24] through neural architecture search or
+[105:26] NAS.
+[105:29] NAS uses reinforcement learning or
+[105:31] evolutionary algorithms to automatically
+[105:34] find the optimal network design rather
+[105:37] than relying on human intuition.
+[105:39] The search process is computationally
+[105:43] expensive. thousands of GPU days but
+[105:44] produces architectures that often
+[105:47] outperform handdesigned ones. Third,
+[105:49] efficient net by Tan and colleagues in
+[105:52] 2020. This is a family of architectures
+[105:55] designed using compound scaling. Instead
+[105:58] of scaling one dimension like making the
+[106:00] network deeper, compound scaling
+[106:03] simultaneously scales width, depth, and
+[106:06] input resolution with a fixed ratio.
+[106:08] Efficient net achieved state-of-the-art
+[106:10] accuracy on image net with far fewer
+[106:12] parameters and flops than previous
+[106:15] models, making it both accurate and
+[106:21] These architectures, mobile net, NSNet,
+[106:24] efficient net are worth exploring for
+[106:27] class projects, especially if you are
+[106:29] working with limited computational
+[106:31] resources or need to deploy on edge
+[106:34] devices.
+[106:36] Before we close, a quick preview.
+[106:38] Transformers are a new class of deep
+[106:40] learning architecture originally
+[106:43] designed for NLP and sequence data, but
+[106:45] they have recently been applied to
+[106:47] computer vision task as well. Vision
+[106:50] transformers or VIT.
+[106:52] We will cover transformers in detail
+[106:56] later in the course. Stay tuned.
+[106:58] Today we covered convolutional neural
+[107:01] networks for image classification, data
+[107:03] considerations for these models and how
+[107:07] to evaluate them. We walked through case
+[107:09] studies of CNN's for medical image
+[107:12] classification from bar and chi to
+[107:16] Gulchan, Estava, Lakani, Rajpukar and
+[107:19] Mckini. We discussed transfer learning
+[107:21] in depth including how much data you
+[107:24] actually need for deep learning and we
+[107:27] touch on recent CNN architectures like
+[107:31] mobile net and efficient net. Next time
+[107:33] we move on to medical images with
+[107:35] advanced vision models detection and
+[107:39] instance segmentation.
+[107:43] Next lecture we continue with CNN's but
+[107:46] move beyond classification. RestNet in
+[107:48] more depth. We touch on the architecture
+[107:51] today. Next time we treat the residual
+[107:53] idea more rigorously. Modern
+[107:57] architectures UNET for segmentation. The
+[107:58] whole field of medical image
+[108:01] segmentation which dominates many
+[108:04] clinical workflows. Read the UNET paper
+[108:06] before next session if you have time. We
+[108:09] will spend a full lecture on it.
+[108:12] The amount of material was deliberate.
+[108:14] Medical image classification has
+[108:16] accumulated a substantial body of
+[108:18] methodology and you should now have a
+[108:21] working map of it. Questions before we

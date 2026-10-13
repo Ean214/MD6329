@@ -1,0 +1,1147 @@
+[00:04] Good afternoon class. Hello everyone. So
+[00:08] uh I'm very delighted uh to
+[00:10] uh share with all of you that we have uh
+[00:13] with us today uh Dr. Xiao Mingqing uh
+[00:17] who is from the Microsoft Research Asia.
+[00:20] So um it's a very interesting time
+[00:22] because uh we just had a Microsoft
+[00:26] Research Asia Singapore opening uh in in
+[00:31] August right just two months back and so
+[00:33] um I I work very closely with people
+[00:36] there and then they introduced me to uh
+[00:39] Dr. Sha uh who is I think the only one
+[00:41] working on healthcare AI right in
+[00:44] Microsoft Research Asia. This is the
+[00:47] Singapore team. Uh so I think uh you
+[00:49] know we will get to hear from Dr. Shell
+[00:52] um uh today uh on you know specifically
+[00:56] what um Microsoft research is doing
+[00:59] right uh in using AI and uh applying it
+[01:03] to this uh biomedical research. So uh
+[01:06] Dr. Shia he is uh let me see if I can
+[01:08] find yeah so his biography I've sent
+[01:10] earlier on so let me briefly introduce
+[01:14] he's currently a researcher at MSR and
+[01:16] he obtained his PhD degree in
+[01:18] intelligent science and technology at
+[01:21] baking baking university um prior to
+[01:24] that he also uh obtained his uh uh
+[01:27] bachelor in computer science and uh
+[01:28] technology
+[01:31] and also a double BS degree in uh
+[01:33] psychology right at picking university.
+[01:35] So his research interests are in machine
+[01:39] learning uh brain inspired um
+[01:42] algorithms, neuro AI and deep learning
+[01:46] applications. So um let's welcome Dr.
+[01:51] &gt;&gt; Yeah. Hello. Hello everyone. Nice to
+[01:54] meet you and thank you for the professor
+[01:56] Tan's invitation and the introduction.
+[02:01] So I will uh share my screen for today's
+[02:04] uh talk.
+[02:07] Let me check
+[02:15] Uh
+[02:19] okay. [clears throat] Yeah. So for this
+[02:24] uh uh this slides um so can you see my
+[02:25] slides now?
+[02:27] &gt;&gt; Yep.
+[02:29] Okay. Okay.
+[02:32] Okay. Okay. And good afternoon everyone
+[02:34] and thank you for the invitation for for
+[02:38] this lecture. And I my name is Minia and
+[02:40] I'm now a researcher at Microsoft
+[02:43] Research Asia Singapore. And today I
+[02:46] would like to share some recent
+[02:49] exploration of the next generation AI
+[02:52] technologies for healthcare from our
+[02:55] group. And the talk will uh start from
+[02:57] the foundation models that understand
+[03:00] medical information uh to agents that
+[03:04] can act on complex health care tasks.
+[03:07] So uh let me first uh briefly introduce
+[03:11] the Microsoft research Asia. So uh MSA
+[03:14] is a research organization with teams
+[03:17] distributed across uh Asia including uh
+[03:20] Beijing, Shanghai, Tokyo, Hong Kong and
+[03:22] Singapore and also Vancouver is a part
+[03:26] of the MSI as shown on this map and the
+[03:29] MS Singapore was uh newly established
+[03:32] last years uh last year August and two
+[03:36] months ago is about the uh one year uh
+[03:39] celebration of the MSI Singapore and The
+[03:42] re the research group I belongs to uh
+[03:46] spans both Shanghai and Singapore and we
+[03:48] focus on machine learning and its
+[03:50] intersection with neuroscience and
+[03:53] healthcare. So today I'm uh representing
+[03:56] our group and sharing several of our
+[03:58] latest explorations in AI for
+[04:01] healthcare. uh these projects are
+[04:03] different in applications but they are
+[04:06] connected by one question that how
+[04:08] should we design AI techniques around
+[04:11] the specific constraints of the medical
+[04:15] domain in the current era of AI.
+[04:18] So um we all know that we are now in a
+[04:21] period in which large language models
+[04:23] are changing the world. So natural
+[04:25] language is becoming a universal
+[04:28] interface uh through which people can
+[04:32] ask AI to understand, create, reason and
+[04:35] increasingly act. This change is
+[04:37] influencing our work, the science
+[04:40] discovery, the education, the software
+[04:43] uh creativity and many other areas and
+[04:45] healthcare is clear clearly part of this
+[04:48] transformation. But the important
+[04:51] question is uh not simply whether we can
+[04:53] put a chatboard into a healthcare
+[04:56] workflow. So what can healthcare learn
+[04:58] from the success of large language
+[05:01] models uh can we leverage large models,
+[05:03] their techniques, their knowledge and
+[05:06] their emerging capabilities to advance
+[05:09] AI for healthcare. So to answer that
+[05:11] question, we first need to understand
+[05:15] what makes the medical domain different.
+[05:17] uh we will consider two problems in the
+[05:20] medical domain. The first is that the
+[05:22] data are scarce. So high quality
+[05:25] clinical data are much smaller in scale
+[05:28] than uh general domain data and they are
+[05:32] fragmented across size and usually
+[05:34] access restricted and it is very
+[05:44] them. So this makes the vision and the
+[05:47] second is that the expertise is scars in
+[05:50] p practical applications. So on one hand
+[05:52] the clinical expertise is concentrated
+[05:54] in a limited number of institutions and
+[06:08] expertise is also not to advance their
+[06:11] research. So techniques can help us deal
+[06:13] with the these two problems. First let's
+[06:16] first consider the data problem. So as
+[06:18] we all know a central factor to the
+[06:21] success of recent AI is the scaling law.
+[06:24] As we increase the amount of training
+[06:27] data, model size
+[06:30] and
+[06:33] and and
+[06:35] the
+[06:37] computation, the performance gives us a
+[06:39] powerful general domain receipt and then
+[06:42] reuse it for many downstream tasks. But
+[06:45] what about the medical domain? If
+[06:47] success depends on continuously scaling
+[06:49] the data. Do we have enough medical data
+[06:53] to support that strategy?
+[06:55] Actually the difficulty is uh visible in
+[06:58] this this comparison. The general domain
+[07:01] data sets such as the image data sets or
+[07:03] or language data sets can contain
+[07:07] billions of examples. However, for some
+[07:09] major medical data sets like a medical
+[07:11] image data sets, uh there are several
+[07:14] orders of magnitude smaller than the
+[07:17] general domain data set. And when we
+[07:19] focus on a particular disease
+[07:22] intervention or clinical outcome, the
+[07:24] available uh cohort becomes even
+[07:27] smaller. So medical AI cannot rely on
+[07:30] scaling alone. This does not mean that
+[07:32] large models are irrelevant to health
+[07:35] care. It means that we need a more data
+[07:38] efficient way to leverage them. We need
+[07:41] to ask how the domain structure, the
+[07:43] medical knowledge and the generative
+[07:46] modeling can compensate for the lack of
+[07:49] large clinical data sets. This leads to
+[07:51] several research questions. So the first
+[07:54] two questions about the understanding.
+[07:57] Uh the first question is how we can help
+[08:00] AI especially the larger models that
+[08:03] have already contain the broad knowledge
+[08:06] to better understand a specific type of
+[08:08] medical data such as some like brain
+[08:12] signals of EEG or some other modalities.
+[08:15] So for this question I will uh introduce
+[08:17] a way to learn the dominative
+[08:19] representations and align them with
+[08:22] language. Um this allows the medical
+[08:25] signal to connect with the knowledge and
+[08:27] the instruction following capability of
+[08:30] a large language model. And the second
+[08:33] question about understanding is how a
+[08:35] model can better understand a specific
+[08:38] disease beyond a general modality. And
+[08:41] for this part I will show that we can
+[08:43] inject prior medical knowledge into
+[08:45] protraining rather than asking the model
+[08:48] to discover everything from the limited
+[08:50] medical data alone. So these are two
+[08:54] questions Dr. Sorry the slides are not
+[08:56] uh aligned. So now is we are looking at
+[08:58] the front slide.
+[09:01] &gt;&gt; Oh okay which
+[09:03] &gt;&gt; uh is it okay now?
+[09:05] &gt;&gt; Uh no we are still looking at the front
+[09:07] slide. Yeah. [snorts]
+[09:09] &gt;&gt; Oh let me check.
+[09:12] &gt;&gt; Yeah maybe you can uh re reshare again.
+[09:15] Yeah now it's okay. Yeah. And then maybe
+[09:19] you type uh I think uh slideshow
+[09:22] and full screen. Yeah, good. Yeah, all
+[09:28] good now. Uh it is it's good now.
+[09:30] &gt;&gt; It's all good.
+[09:33] &gt;&gt; Okay. Okay. So so so this slides is just
+[09:38] the uh two questions I mentioned uh just
+[09:41] um about the understanding part. how to
+[09:44] let large models to uh better understand
+[09:49] uh specific u medical domain uh data and
+[09:51] how to better understand the specific
+[09:53] disease
+[09:56] and uh then actually understanding is
+[09:59] only one capability of modern AI. So
+[10:02] modern AI is composed of the generative
+[10:05] part and generative AI may give us
+[10:08] another way to think about the lack of
+[10:11] uh clinical data. Uh this is because um
+[10:13] in many medical settings the most
+[10:16] valuable data are intervention data such
+[10:19] as the outcome of the treatment for
+[10:22] patients. But these data are difficult,
+[10:25] expensive or sometimes impossible to
+[10:29] collect at all. Then can we actually uh
+[10:31] build a personalized generative model
+[10:34] that can serve as a digital twin for a
+[10:37] specific biological process of a patient
+[10:40] or person. A virtual simulation model
+[10:43] could simulate an individual situation
+[10:46] and explore possible responses before a
+[10:49] real intervention in practice. So this
+[10:51] would not replace clinical evidence but
+[10:54] it could reduce our dependence on
+[10:56] collecting every possible intervention
+[10:59] outcome for from real patients to learn
+[11:02] uh how the patients and respond to to
+[11:05] certain uh uh treatment. So this
+[11:08] direction is how generation is uh
+[11:11] potentially helpful for the medical aid
+[11:15] and uh as I just mentioned besides the
+[11:18] limited data problem there are um also
+[11:21] some uh conditions when the expertise is
+[11:24] limited. So there are two practical
+[11:27] forms of this problem. The first is the
+[11:30] clinical access. So the high quality
+[11:33] specialist judgment is usually
+[11:35] concentrated in leading institutions
+[11:37] such as they are concentrated in large
+[11:40] cities and not available to every
+[11:43] hospital in around the world. While many
+[11:46] patients and clinicians cannot access a
+[11:48] full multi disciplinary team when they
+[11:52] need one. Uh we may then we may need AI
+[11:54] to help broaden the clinical expertise
+[11:57] beyond the concentrated specialist.
+[12:01] And the second uh form is
+[12:03] about
+[12:11] enable
+[12:14] research
+[12:16] and this is because often have valuable
+[12:18] data and important research ties
+[12:20] required to build the advanced AI models
+[12:22] and complete an end to end study. So in
+[12:24] one case the medical expertise is
+[12:26] difficult to access and in in another
+[12:28] case the AI expertise is difficult to
+[12:32] access. So both problems asks how AI can
+[12:35] make the scars expertise more scalable
+[12:38] and these two gaps leads to another two
+[12:41] questions. So for the medical exercise,
+[12:46] how can AI provide broad access to it
+[12:49] and uh we will explore a multi- aent
+[12:52] deliberation approach as an example uh
+[12:54] where each a different agents can
+[12:57] represent uh different specialist roles,
+[13:00] retrieve evidence, exchange opinions and
+[13:04] produce a a transparent multi disciplin
+[13:05] disciplinary
+[13:07] recommendation
+[13:09] and for this AI expertise on the other
+[13:13] hand uh how can AI provide AI expertise
+[13:15] for uh medical research and we will
+[13:18] explore a self-driving research loop as
+[13:21] the case and
+[13:23] in this
+[13:26] loop the clinicians uh describes the
+[13:29] medical objective
+[13:31] and the agents holding experimentation
+[13:34] and evaluation. So this first system uh
+[13:36] brings specialist medical reasoning
+[13:38] closer to the point of care and the
+[13:41] second one brings advanced AI research
+[13:43] capability closer to clinicians and
+[13:47] healthcare researchers together with the
+[13:49] first three directions. These form the
+[13:54] fivepart structure of uh this talk.
+[13:56] So uh let's start with the first
+[13:59] direction under the uh data scarcity
+[14:02] problem. So how can uh large language
+[14:06] model better understand uh uh the
+[14:08] medical data in a certain domain uh that
+[14:11] has very different structure from text.
+[14:14] I will use our uh EEG foundation model
+[14:17] as the case study. So the central idea
+[14:20] is to build a native vocabulary for EEG
+[14:23] and then connect it with the uh language
+[14:25] model.
+[14:28] So uh let me first briefly introduce uh
+[14:32] EG. Uh EG is an uh important way to
+[14:35] measure the brain activity and it can be
+[14:39] recorded non-invasively from the scope
+[14:42] or invasively in a clinical setting. Its
+[14:45] major advantage is its high temporal
+[14:47] resolution which allows us to observe
+[14:50] rapid change in neuro activity and it's
+[14:53] also a direct measurement of the uh
+[14:57] neuro activity observed in our uh brain.
+[15:00] So because EG is relatively affordable
+[15:03] and accessible also with reasonable um
+[15:06] decoding accuracy, it is widely used um
+[15:09] in neuroscience study uh in clinical
+[15:11] settings and also brain computer
+[15:15] interface and we can use EG to identify
+[15:18] certain diseases uh such as detecting
+[15:22] the some abnormal uh seizures.
+[15:25] Um however the EG modeling is uh
+[15:27] difficult for for several reasons. Uh
+[15:30] the first problem is that the signal to
+[15:33] noise ratio in EG is low because the
+[15:35] recordings can contain many artifacts
+[15:39] and uh different sources of noises and
+[15:42] the signal is also a non-stationary
+[15:45] because it's statistical characteristics
+[15:47] changes over time. uh that means even
+[15:50] for a same person its eg can differ
+[15:54] between today and tomorrow and there is
+[15:57] also a strong variation across uh people
+[16:01] devices electrode configurations and
+[16:09] a
+[16:13] model trained on one data set of
+[16:26] um building one task
+[16:28] specific model at a time. We need a
+[16:30] shared representation that can this is
+[16:33] why we explore it can be connected with
+[16:35] the general domain large language models
+[16:37] to better
+[16:39] leverage the broader knowledge contained
+[16:44] in LLMs.
+[16:47] Um to build this
+[16:53] foundation model, we can uh borrow the
+[17:00] used by language foundation and in
+[17:02] language for GBT it usually contains two
+[17:04] training states and the first stage uh
+[17:05] instruction tuning which teaches the
+[17:07] model to respond to different task
+[17:10] instructions. We may use this uh same
+[17:13] two-stage structure for learning EG
+[17:15] representations and align it with
+[17:17] language to support different downstream
+[17:19] tasks.
+[17:23] So in the first stage we will portrain
+[17:28] the model on EG data converting
+[17:30] continuous EEG signals um into a
+[17:33] sequence of discrete EG tokens through
+[17:35] the tokenization process and train the
+[17:37] model with the next token prediction
+[17:40] process. So the tokenizer will learn the
+[17:43] vocabulary of EG which intuitively
+[17:47] thinking can be um think as uh some some
+[17:50] recurring waveform patterns in the EG
+[17:53] signals and using these tokens we can
+[17:56] ask them to align with language in the
+[17:59] same latent space and train the model uh
+[18:01] through the next token prediction in the
+[18:03] same way that a language model predicts
+[18:07] the next word or subword. It allows uh
+[18:09] both learning EG representations and
+[18:12] connecting the dominative EG patterns
+[18:14] with the semantic knowledge represented
+[18:17] in language. And so uh the broader
+[18:21] solution pattern of this kind of uh uh
+[18:24] research is to preserve the structure of
+[18:26] the medical modality while making it
+[18:28] accessible to a large language model
+[18:32] through this kind of alignment.
+[18:35] And uh after the first stage uh we can
+[18:37] use the second stage to do the
+[18:40] instruction tuning. So the same EG uh
+[18:42] input can now be paired with um
+[18:46] different natural language instructions.
+[18:49] For example, we can ask the model uh to
+[18:53] generate an an EG impression on on an EG
+[18:55] token or a sequence of EG tokens and
+[18:58] output can can be described in the uh
+[19:00] nature language and we can also ask the
+[19:03] segment whether the segment contains a a
+[19:06] seizure event or we can ask which the
+[19:10] sleep stage is is contained in this EG
+[19:13] signal. So the task is specified through
+[19:15] the language rather than through a
+[19:18] separate model for area applications and
+[19:20] this is how the align alignment with
+[19:22] language becomes useful and the model is
+[19:25] not merely encoding EG into a generic
+[19:28] feature vector. It is learning an
+[19:30] interface through which one EG
+[19:32] representation can support uh multiple
+[19:35] tasks and this makes the foundation
+[19:38] model more flexible when label data for
+[19:42] each individual tasks are limited.
+[19:45] And we can evaluate uh the this this
+[19:48] kind of model across uh different tasks
+[19:50] and benchmarks uh with the different
+[19:52] settings like different data sets,
+[19:54] different sampling arrays and different
+[19:56] durations, different channel numbers.
+[19:59] And the task can include a lot of uh
+[20:01] different types like the abnormal
+[20:03] detection, the event type
+[20:05] classification, the emotion recognition,
+[20:07] the sleep stage classification, the
+[20:11] workload detection and like the slowing
+[20:13] event detection.
+[20:16] Um the um model can perform these
+[20:18] general purpose tasks through the
+[20:20] language instruction. And we can show
+[20:22] that this kind of general purpose model
+[20:25] is competitive across this diverse set
+[20:29] of tasks achieving a good performance uh
+[20:32] even compared with the task specific
+[20:34] models that are specifically trained or
+[20:37] fine-tuned for each task. So the key
+[20:40] message here is that a domain native
+[20:43] vocabulary and the language alignment
+[20:46] enable one trained model to transfer
+[20:49] across hiogenous e applications. When
+[20:52] the medical data have no natural
+[20:54] interface to a large model, we can learn
+[20:57] native tokens align and align them with
+[20:59] language to let the large language
+[21:02] models better understand a specific
+[21:06] medical domain and um conduct uh the uh
+[21:10] tasks for for this this medical domain.
+[21:13] So this is about the first part how to
+[21:16] let understand a specific um medical
+[21:20] domain and then let's go to uh second
+[21:24] question um beyond a broad domain how to
+[21:26] let um large language models or or
+[21:28] vision language models better understand
+[21:33] a a specific disease and I will use a
+[21:35] case study on the kidney cancer
+[21:39] foundation model. So the central idea is
+[21:42] to inject medical knowledge prior uh
+[21:45] into the pertaining process.
+[21:48] So uh let me also first introduce some
+[21:52] uh background. So the kidney cancer is
+[21:57] um a kind of diseases which is primarily
+[22:00] detected and evaluated using the CT
+[22:04] scans and one renal CT scan can support
+[22:07] many decisions across the kidney cancer
+[22:09] pathways. uh it can be used to
+[22:12] understand the anottomy, support
+[22:15] diagnosis, access uh aggressiveness and
+[22:17] estimate prognosis
+[22:21] and guide the treatment decision. Um
+[22:23] however, a general CT foundation model
+[22:27] is not necessarily trained to recognize
+[22:29] some important features that matter for
+[22:31] the renal cancer. The foundation model
+[22:34] does not emphasize disease specific
+[22:37] knowledge and can be inaccurate um when
+[22:40] it is used for this specific disease.
+[22:43] When the imagery cannot confidently
+[22:45] distinguish some benign or indoccilent
+[22:48] lessons, the patient may undergo some
+[22:52] unnecessary uh interventions and it will
+[22:54] lead to the overt treatment for the
+[22:57] patient. Uh so this actually leads to
+[23:00] creates a representation gap. This is
+[23:03] because the model with the broad
+[23:05] protraining may understand some some
+[23:08] general anatomy but without
+[23:12] understanding the renal disease itself.
+[23:16] And so this work called the renal clip
+[23:19] uh addresses this uh by learning one
+[23:22] disease centric representation that can
+[23:25] uh transfer across the this clinical
+[23:28] workflow. And the uh core training
+[23:31] principle is to inject the real
+[23:34] knowledge first before um learning some
+[23:37] representation through the alignment
+[23:39] between the uh city volumes with
+[23:43] radiology uh language
+[23:46] and uh so uh before we can learn this
+[23:49] part we we need to collect some some
+[23:50] data for for this kind of specific
+[23:55] disease. So for for this uh uh kidney
+[23:59] cancer we have uh created uh 8,89
+[24:01] renal cancer patients from nine
+[24:04] hospitals and one public database and
+[24:14] scans um in total and this data are
+[24:17] created around one specific disease or
+[24:20] or or about the real knowledge and
+[24:22] contain the supervision needed to
+[24:26] represent clinically meaningful renal uh
+[24:29] phenotypes and the multi-institutional
+[24:31] composition also supports the evaluation
+[24:34] across these sides. Then with this data
+[24:38] we can um do the uh training of of of
+[24:42] our model. So the core idea here is is
+[24:45] to inject the dise disease knowledge
+[24:47] before learning representations from the
+[24:51] image text alignment. So the uh prin is
+[24:54] divided into multiple stages and we
+[24:56] specifically focus on the first stage
+[24:58] when learning the unimodel
+[25:01] representations for each modality such
+[25:03] as the the the image encoder or the text
+[25:06] encoder. So during this first stage we
+[25:08] will do this kind of unimodel
+[25:11] portraining via knowledge enhancement to
+[25:13] inject the knowledge into the
+[25:15] representation.
+[25:17] Specifically uh some uh clinical
+[25:21] attributes can be extracted from the uh
+[25:23] available annotations and the reports
+[25:26] from the doctors and these attributes
+[25:30] provide some uh explicit supervision
+[25:33] about the renal anatomy and the disease
+[25:36] characteristics and then a contrastive
+[25:38] learning and then organized the
+[25:41] representation around this clinically
+[25:43] meaningful distinctions.
+[25:46] uh and and it is applied to both the
+[25:49] image encoder and the text encoder to uh
+[25:51] inject this uh disease specific
+[25:54] knowledge and this enables that the
+[25:57] unimodel representations have already
+[25:59] learned the disease specific knowledge
+[26:01] and after they have learned this this
+[26:05] knowledge we can do the uh cross model
+[26:07] alignment to uh learn image text
+[26:12] alignment and uh after um this we we can
+[26:15] do many downstream task evaluations. And
+[26:17] this kind of order is very important
+[26:21] because if we begin with generic image
+[26:23] text alignment for representation
+[26:26] learning, the model may focus on easy
+[26:28] correlations that are not central to
+[26:31] kidney cancer because the data of the uh
+[26:33] kidney cancer is very limited. So the
+[26:37] model cannot uh learn from from uh not
+[26:40] that large data. So the knowledge
+[26:42] injected per training gives the model a
+[26:45] disease specific foundation before the
+[26:48] final modality alignment to ensure it uh
+[26:52] better understand this kind of disease
+[26:55] and the resulting representation uh is
+[26:59] evaluated across um different uh domains
+[27:02] including both the internal uh test set
+[27:05] and the external test set and also uh
+[27:09] other validation set. uh um it it it is
+[27:12] also evaluated across multiple clinical
+[27:15] uh tasks as shown in this this figure
+[27:18] and the results show that the Rena clip
+[27:20] can achieve the a state-of-the-art
+[27:23] performance especially like for this it
+[27:25] outperforms the baselines u by a large
+[27:30] margin and uh uh it auto outperforms
+[27:33] both the task specific models and the
+[27:35] other generic foundation models that
+[27:37] does not specifically
+[27:40] uh inject the u disease specific uh
+[27:44] information. So this suggests that the
+[27:47] learned disease specific representations
+[27:50] can successfully embed uh this kind of
+[27:52] uh disease knowledge for better judgment
+[27:55] and which is also reusable across
+[28:00] different um uh institutions and uh uh
+[28:03] uh testing settings uh rather than tied
+[28:06] to one hospital or one endpoint. So that
+[28:08] means when data alone are insufficient
+[28:10] to learn the disease specific
+[28:14] information some structure disease noise
+[28:16] uh can guide the portraining to better
+[28:20] understand the specific disease
+[28:22] and also this kind of same
+[28:25] representation can uh support the
+[28:27] radiology report generation like like
+[28:31] this and the renal clip uh achieves the
+[28:35] strongest scores across the standard uh
+[28:37] uh report matrix shown here when
+[28:39] compared with several other generative
+[28:42] baselines and the result is uh useful
+[28:44] because it shows that the disease
+[28:47] ccentric representations can support
+[28:49] both discrimination and the generative
+[28:53] tasks and the model has learned features
+[28:55] that can be translated into clinically
+[28:58] relevant language rather than only a
+[29:00] class label.
+[29:04] Okay, so these two examples are about
+[29:07] understanding how we can let the large
+[29:10] language models better understand
+[29:12] medical domain or a specific disease
+[29:15] under limited data. And the third
+[29:17] question moves beyond understanding
+[29:20] observed medical data. We ask whether we
+[29:24] can leverage generative AI to create an
+[29:27] individualized virtual model that can
+[29:31] help us to reason about outcomes that
+[29:34] has not yet been observed. Um, and I
+[29:36] will use a generative virtual brain
+[29:39] model for the neurom modulation in
+[29:41] Parkinson's disease as a case study
+[29:43] here.
+[29:47] So um um also about the brief
+[29:50] background. So Parkinson disease is a
+[29:54] worldwide brain disease and the neurom
+[29:57] modulation such as the deep brain
+[29:59] stimulation or or temporal interference
+[30:03] is a common uh clinical treatment for
+[30:05] the disease. Uh that means the doctors
+[30:08] will stimulate certain areas of the
+[30:12] patient's brain through some approach um
+[30:15] and in order to uh deal with this kind
+[30:18] of disease. However, for this kind of uh
+[30:21] neurom modulation, a central clinical
+[30:24] question is that predicting the
+[30:26] individual response to treatment is very
+[30:29] difficult. This is because the
+[30:31] individual outcomes to this kind of
+[30:35] neurom modulation uh varies a lot among
+[30:38] different peoples. But collecting a
+[30:40] large scale intervention data is is
+[30:42] difficult because the the treatment
+[30:43] cohorts are limited and the
+[30:45] interventions are costly and will
+[30:48] influence the patient.
+[30:53] So our approach is to build a generative
+[30:55] brain dynamics model or say a virtual
+[30:58] brain model that can predict the neurom
+[31:00] modulation outcome.
+[31:02] And our model will first learn the
+[31:06] dynamics prior from uh 2,77
+[31:09] patients. And uh those uh population
+[31:12] prior uh will then be transferred to a
+[31:14] specific patient through the finetuning
+[31:17] process. And this can create a virtual
+[31:19] model of a patient's brain dynamics that
+[31:22] can be used to explore possible states
+[31:25] uh before relying on a real uh
+[31:32] And uh so specifically we will build
+[31:34] this kind of uh generative model for the
+[31:39] brain fmi dynamics uh that uh the model
+[31:41] can predict the future brain signals
+[31:44] based on the past information just like
+[31:47] the next token prediction and this this
+[31:50] process has two levels. At the
+[31:53] population level, we will portrain the
+[31:55] model to produce a foundational brain
+[31:59] dynamics model called the FBDM.
+[32:02] And it learns general patterns of FMI
+[32:04] dynamics from the large pertuning data
+[32:07] set from from different people. And then
+[32:10] at the individual level, the model is
+[32:13] fine-tuned to produce an uh
+[32:15] individualized brain dynamics model uh
+[32:19] called the IBDM for one patient.
+[32:23] And we can evaluate the fidelity of our
+[32:25] virtual brain model by comparing the
+[32:29] generated signals as well as the um uh
+[32:32] functional connectivities uh between the
+[32:34] generated signals and the real brain
+[32:37] signals. And uh uh the difference
+[32:39] between the generated signals uh
+[32:43] measured by the this kind of MAE metric
+[32:46] and the visualization um shows a large
+[32:48] improvement through the protraining
+[32:50] process and the fine-tuning process
+[32:53] compared with a vanilla neuronet network
+[32:56] model directly trained on the uh subject
+[33:01] specific uh signals and uh also the
+[33:03] functional connectivity facilities um
+[33:07] improves a lot from the 0.63
+[33:11] for um a vanilla neuron model here uh to
+[33:14] the uh 0.867
+[33:16] to to the after the population per
+[33:21] training and finally to a 0 95 after the
+[33:23] uh individualization finetuning. So this
+[33:26] means that we can simulate the brain in
+[33:30] a high fidelity with our model and this
+[33:33] progression shows that both stages uh
+[33:34] per training and the finetuning are
+[33:37] important and the prop the population
+[33:41] model provides a strong prior while the
+[33:44] patient specific adaptation captures the
+[33:47] uh individual dynamics. So this is how
+[33:49] we can build a personalized virtual
+[33:54] and once we have the indiv visualized
+[33:57] model we can perform some uh
+[33:59] counterfactual simulations. So we will
+[34:01] consider two kinds of simulation called
+[34:03] the what if healthy and what if
+[34:07] distorted. And like for our patient we
+[34:10] can use the portrained population level
+[34:13] model as a healthier virtual state
+[34:15] learned from the population to infer the
+[34:19] neuro state of the what if healthy
+[34:21] condition and then we can compare the
+[34:23] real patients activation with the
+[34:25] simulated one. And that difference
+[34:28] indicates uh something that uh we can
+[34:32] use to to to indicate why their brain is
+[34:35] different. And similarly we can also use
+[34:39] the personalized IBDM model to infer a
+[34:42] what if distorted condition of a healthy
+[34:44] brain dynamics and uh compare the
+[34:47] difference between the uh dynamics
+[34:50] generated by the uh individualized model
+[34:54] and the real healthy brain dynamics. So
+[34:56] the difference between these two uh
+[34:59] simulations is summarized as the
+[35:03] counterfactual brain mismatch. And this
+[35:06] is a a kind of uh biomarker that that
+[35:09] can be used to predict whether the
+[35:12] patient will respond to the neurom
+[35:16] modulation in certain areas. And uh we
+[35:19] we test this and the results show that
+[35:22] the um predicting response is um quite
+[35:25] high. The AOPr for the temporal
+[35:28] interference technique is
+[35:30] 0.853
+[35:33] and for the deep brain stimulation is uh
+[35:35] 0.915
+[35:37] and this indicates a quite strong um
+[35:39] discrimination on predicting the
+[35:42] response. So the important technical
+[35:46] idea here is that prediction comes from
+[35:47] a difference between the simulated
+[35:49] states and the real signals and
+[35:53] generative AI can actually create a form
+[35:55] of virtual intervention data that cannot
+[35:58] be directly observed before the
+[36:01] treatment. And this is how personalized
+[36:04] simulation can reduce dependency on
+[36:08] large real world intervention cohorts.
+[36:10] And we also evaluate whether this kind
+[36:13] of counterfacture biome has some
+[36:16] potential clinical utility. When we can
+[36:20] predict the response of the uh uh
+[36:23] patients to to a certain neuro uh
+[36:25] modulation uh we will need to
+[36:27] investigate whether it can improve the
+[36:29] clinical decision about whether we need
+[36:32] to take this treatment. So the decision
+[36:35] curve uh show this kind of net benefit
+[36:39] across relevant uh decisions. threshold.
+[36:41] And it shows that with the predicted
+[36:44] response, the net benefits um can be
+[36:47] improved for most conditions with with a
+[36:50] a threshold probability above zero as
+[36:52] this red line.
+[36:55] And also the responder and the
+[36:57] non-responders uh show a clear uh
+[37:01] separation uh with effect sizes of uh
+[37:05] one.01 01 for the temporal interference
+[37:09] and 1.92 for the the brains
+[37:11] stimulation.
+[37:14] So this suggests that the biome actually
+[37:16] cap captures a clinically meaningful
+[37:19] difference and the findings are further
+[37:22] tested at an external site and in a
+[37:24] prospective validation
+[37:27] with some other models as as
+[37:30] comparisons. And the this kind of
+[37:32] validation are important because uh
+[37:36] personalized uh simulation model must uh
+[37:39] generalize beyond the data used to to
+[37:41] train the foundation model and the
+[37:44] results show that our virtual uh
+[37:47] simulation based uh method can achieve
+[37:49] much better performance uh than the
+[37:52] baselines and uh also indicating a
+[37:54] promising generalization performance to
+[37:58] external and the prospective settings.
+[38:01] So the third direction to to the data
+[38:05] scarcity is is using generative AI. Uh
+[38:08] when real intervention outcomes are
+[38:11] difficult to collect uh learn population
+[38:13] dynamics uh personalize them to the
+[38:15] patient and generate meaningful
+[38:19] counterfactual states can be a very um
+[38:23] helpful mass AI techniques to help the
+[38:27] real world clinical uh applications.
+[38:31] Okay. So, uh we have now seen three ways
+[38:34] to deal with the uh problem of of
+[38:37] limited medical data and the next two
+[38:40] sections consider the limited expertise
+[38:43] problem. So the first question asks how
+[38:45] AI can broaden access to
+[38:47] multidisciplinary
+[38:50] medical expertise and I will use an
+[38:53] agentic system for multidisciplinary
+[38:57] team decision making as the case study.
+[39:01] Um so uh the background about the uh
+[39:03] multi-disiplinary
+[39:07] disciplinary team shortened as the MDT
+[39:10] uh is that uh because this kind of MDT
+[39:13] decision making uh is an important
+[39:15] process for real decision making in uh
+[39:18] real clinical applications. Uh this is
+[39:21] because for uh many diseases um they
+[39:24] require evidence and reasoning spanning
+[39:26] specialists from different
+[39:29] disciplinaries and need discussion and
+[39:32] evolving decisions across um di
+[39:35] diagnosis the staging the treatment and
+[39:38] the followup. Uh however there usually
+[39:42] exists an access gap for most patients
+[39:45] worldwide um because the specialists are
+[39:47] concentrated uh for example they are
+[39:49] concentrated in institutions in large
+[39:59] team for every case. So the limitation
+[40:02] here is not simply a lack of information
+[40:05] but a lack of expertise for the decision
+[40:07] making
+[40:09] and it is a lack of timely access to
+[40:12] coordinated expert judgment.
+[40:15] Um to solve this problem um a multi-
+[40:19] aent uh a system that uh reproduces the
+[40:21] structure of the this kind of expert
+[40:24] deliberation is is proposed called the
+[40:27] OMGs and the system will bring together
+[40:30] different specialist perspectives
+[40:32] connect them with evidence and make the
+[40:35] final reasoning transparent.
+[40:38] So specifically this kind of uh system
+[40:42] organize the decision process around
+[40:45] multiple specialist agents. The clinical
+[40:47] report here will enter the system
+[40:50] together with access to external medical
+[40:55] evidence and LM based agents take on
+[40:57] complimentary clinical roles uh like
+[41:00] this. Each five agents have will have
+[41:02] different roles and they will analyze
+[41:04] the case from different perspectives and
+[41:07] different context. They will then
+[41:09] exchange their findings through a
+[41:12] structured deliberation process and an
+[41:15] orchestrator coordination this process
+[41:18] and produce a final assessment and
+[41:20] treatment strategy.
+[41:22] So the value of the this architecture is
+[41:24] not simply that uh several agents
+[41:27] generate several answers and the value
+[41:29] comes from the role specialization
+[41:32] evidence retrieval communication and the
+[41:34] synthesize. This makes the reasoning
+[41:37] process closer to a multidisciplinary
+[41:40] meeting in in the real clinical
+[41:42] applications and are easier for human
+[41:44] experts to inspect.
+[41:47] Uh the technical response to the scars
+[41:49] experts is therefore to encode the
+[41:51] structure of the collaboration into the
+[41:54] AI system.
+[41:57] Um to examine whether this uh system is
+[42:00] useful in real uh clinical settings. Uh
+[42:03] the study used a a progressive force
+[42:06] phase evaluation with with data from
+[42:10] different hospitals. And it it starts by
+[42:14] comparing the multi-agent uh OMGs system
+[42:16] with the single agent systems under
+[42:19] increasingly rich uh information. And
+[42:22] the results show that the OMGs system
+[42:24] performs better much better than the uh
+[42:27] single agent baselines along the five
+[42:29] dimensions including the safety,
+[42:32] personalization, evidence, actionability
+[42:35] and robustness. This indicates that the
+[42:37] multi- aent system with expert
+[42:39] deliberation is is very important for
+[42:41] this kind of real world decision-
+[42:43] making.
+[42:46] And then the evaluation compares the
+[42:50] OMGs with the human MDT uh across
+[42:52] multiple centers.
+[42:57] So the overall the uh OMGs is highly
+[43:00] consistent with human expert as shown in
+[43:03] in this in these figures. And meanwhile
+[43:05] we can see that the OMGS is even
+[43:07] stronger in the evidence part compared
+[43:10] with human because it systematically
+[43:13] retrieves and links relevant guidelines,
+[43:15] trials and patient information. It shows
+[43:18] that the agentic deliberation can
+[43:20] provide an evidence grounded expert
+[43:23] level reference where complete
+[43:25] multid-disciplinary expertise is
+[43:28] difficult to excise.
+[43:30] And the next question is whether this
+[43:33] system can actually help human doctors
+[43:36] make better decisions. And then we we
+[43:37] investigate the human AI uh
+[43:40] collaboration. So the same doctors uh
+[43:43] will first make uh recommendation uh
+[43:46] independently.
+[43:48] This is the human only baseline and then
+[43:50] reconsider the same cases with
+[43:53] assistance from the OMGs. This is the
+[43:57] human with OMGs uh baseline. So this
+[43:59] comparison includes doctors uh both
+[44:02] doctors with more expertise as in
+[44:05] showing this figure and the doctors with
+[44:07] uh comparatively less expert as shown in
+[44:10] this figure. uh with the this OMGs
+[44:13] system both groups uh improve their
+[44:15] overall decision quality as shown
+[44:18] showning here and in each uh sub uh
+[44:21] category and the most consistent
+[44:24] improvements are in uh evidence and the
+[44:27] uh robustness. Uh therefore the system
+[44:30] can help doctors connect recommendations
+[44:32] with stronger evidence and makes the
+[44:34] reasoning more complete when information
+[44:37] is missing or uncertain. And the
+[44:39] improvement is particularly meaningful
+[44:42] for doctors who do not uh always have
+[44:44] access to a complete multid-disciplinary
+[44:48] team and especially in a small hospitals
+[44:51] which doctors have less expertise.
+[44:53] And this is how the multi- aent
+[44:56] deliberation can help to broaden the
+[44:59] access to medical expertise in real
+[45:06] and the above is about the medical
+[45:09] expertise. Then another question is
+[45:12] about the AI expertise. uh how can the
+[45:14] clinicians and the health care
+[45:17] researchers conduct advanced AI research
+[45:20] when they do not have specialized uh AI
+[45:22] engineering expertise. So the case study
+[45:25] here will be a clinician friendly auto
+[45:27] research agent.
+[45:31] Uh so a conventional uh medical AI
+[45:34] project requires a compact translation
+[45:37] between a clinician and a rare
+[45:41] researcher. The clinician begins with a
+[45:43] medical objective such as predicting the
+[45:46] survival after uh different treatments.
+[45:49] And then the technical researcher must
+[45:53] convert that objective into an outcome
+[45:57] definition uh a prediction window and uh
+[46:00] usable v variables uh model and an
+[46:02] evaluation strategy. And then the
+[46:05] clinician must then check whether uh
+[46:07] those choices still represent the
+[46:10] intended uh medical question. U missing
+[46:13] data, nuanced labels and care pathways
+[46:17] often require the loop to repeat again.
+[46:19] So the bottleneck is not only writing
+[46:22] code or selecting an algorithm. It it is
+[46:25] the repeated translation between the
+[46:27] clinical language and the technical
+[46:30] language. If agents can help to manage
+[46:32] this translation and execute the
+[46:35] resulting working flow then AI research
+[46:38] expertise becomes more accessible to the
+[46:40] clinicians.
+[46:43] Uh therefore we developed a clinician
+[46:46] friendly auto research agent. uh instead
+[46:48] of repeatedly translating the whole
+[46:52] project into uh an AI researcher, the
+[46:55] clinicians can directly discuss the
+[46:57] clinical requirements and research goals
+[46:59] with the agent and the system then
+[47:02] converts this goal into a research plan
+[47:05] and carries out the uh AI model
+[47:08] development process um in an automatic
+[47:12] way. So the key idea is to make advanced
+[47:14] medical AI research accessible through
+[47:17] natural language interaction.
+[47:20] Uh the system is uh organized through a
+[47:23] planning loop, a research loop, a coding
+[47:27] agent and a self evolution mechanism. Uh
+[47:29] the planning loop discusses with the
+[47:32] clinicians to clarify the requirement
+[47:35] and turn it into an approved research
+[47:38] plan. And the research loop then
+[47:40] construct and supervise the end-to-end
+[47:44] workflow. It can define the exploration
+[47:46] strategy uh or organize multiple
+[47:49] research loops uh monitor process uh
+[47:52] diagonal values and revise the strategy
+[47:55] when needed. And within each loop uh the
+[47:58] coding agent implements the technical
+[48:00] tasks uh including like data processing,
+[48:03] model training and evaluation. And the
+[48:06] self uh evolution component records the
+[48:09] research artifacts as well as successful
+[48:12] and failure cases. And this exper
+[48:14] experience are used to improve the
+[48:17] harness tools and future research loops.
+[48:19] So this is not a single model generating
+[48:23] an entire study in one response. uh it
+[48:26] is an iterative process of planning,
+[48:28] execution, observation, diagnosis and
+[48:31] refinement with the clinician continuing
+[48:34] to provide the medical objective and the
+[48:37] final judgment.
+[48:40] So the system have uh been evaluated on
+[48:43] uh several different uh uh medical tasks
+[48:45] such as the kidney cancer survival
+[48:49] analysis uh using uh different um um
+[48:52] modality data and also on like our
+[48:55] Hamilton uh diseases uh diagnosis and
+[48:58] progression analysis using multimodel
+[49:01] data. uh it is compared with the
+[49:03] academic and the commercial auto
+[49:06] research agent and also with some some
+[49:10] expert designed medical AI pipeline
+[49:14] and the the results shows that and uh
+[49:16] this system can achieve a very strong
+[49:20] performance across the uh both uni model
+[49:23] and multimodal settings as well as it
+[49:25] has a very competitive uh execution
+[49:27] efficiency
+[49:30] and the significant is that the system
+[49:33] can construct complex medical AI
+[49:35] workflows from a clinician's research
+[49:39] object objective. It reduces the
+[49:41] dependence on repeated manual
+[49:44] translation and specialist engineering.
+[49:47] Agents can make AI research capability
+[49:49] more accessible by translating clinical
+[49:53] goals into executable, iterative and
+[50:00] Uh so uh finally let me summarize what
+[50:02] have been discussed today. Uh
+[50:05] considering the two problems in the
+[50:07] medical domain when the medical data are
+[50:10] limited we have uh three technical
+[50:12] responses for for how to design AI in
+[50:15] healthcare focusing on understanding and
+[50:17] the generative uh foundation models for
+[50:21] the uh specific medical domain. uh we
+[50:23] can learn native representations and and
+[50:25] our lines of language to let large
+[50:27] language models better understand
+[50:30] certain medical domain and for the
+[50:32] specific diseases we can uh inject
+[50:35] medical knowledge into um uh the
+[50:37] multimodal foundation model per training
+[50:40] um to to better learn the disease
+[50:42] centric information even when there is
+[50:45] not enough data to to learn from data uh
+[50:49] alone and for the SCAS intervention
+[50:52] outcomes we can use patient specific uh
+[50:54] generative foundation models to simulate
+[50:58] the counterfacture uh states and when
+[51:01] the expertise is limited we have two uh
+[51:04] technical responses for the medical
+[51:07] expertise we can use the LM based uh
+[51:10] multi- aent deliberation to coordinate
+[51:13] specialist reasoning and for the AI
+[51:15] research expertise we can use the
+[51:17] research agent to translate clinical
+[51:21] goals into executable AI workflows. So
+[51:24] from foundation models to to agents, the
+[51:27] modern AI techniques can uh deeply help
+[51:29] healthy applications from various uh
+[51:31] perspectives.
+[51:34] So looking forward, we may expect a
+[51:37] progression from uh understanding to
+[51:40] orchestration and to transformation of
+[51:43] of human AI teams. uh foundation models
+[51:46] can uh expand what AI can understand
+[51:48] across medical signals, images,
+[51:51] languages and patient records and
+[51:53] agentic systems will connect these
+[51:56] models with evidence tools, workflows
+[51:59] and specialist roles. Um then the human
+[52:02] AI team can then use these capabilities
+[52:05] to improve the care and accelerate um
+[52:08] medical discovery. If we design these
+[52:11] layers around the realities of health
+[52:14] care, AI can help us build more data
+[52:16] efficient models, provide broader access
+[52:20] to expertise and enable faster research.
+[52:23] So this is the future suggested by the
+[52:26] explorations uh today.
+[52:28] And that's today's talk. Uh thank you.
+[52:32] And uh this is my uh contact email. Uh
+[52:34] we are also recruiting interns both in
+[52:36] Shanghai and Singapore. If you are
+[52:40] interested or have any questions uh free
+[52:43] feel free to email me and thank you.
+[52:45] &gt;&gt; Yeah, thank you very much uh Dr. Xiao.
+[52:48] Yeah, it is very very um eyeopening
+[52:51] right we saw uh quite a very broad
+[52:53] spectrum going from the foundation model
+[52:56] at the beginning EEG foundation model
+[52:59] and then the renal uh clip uh which is a
+[53:01] multi multimodel kind of foundation
+[53:04] model for disease uh um um
+[53:07] interpretation and actually uh Dr. also
+[53:10] show that it is very useful to generate
+[53:12] reports and then later on he moves to
+[53:15] towards the agent right which is the
+[53:19] most exciting part this year agentic AI
+[53:22] and we saw that it can be used for MDT
+[53:26] uh decision m u making and also for uh
+[53:28] doing research as a auto research agent
+[53:30] I think this is this is a very broad
+[53:33] spectrum and just to share with Dr.
+[53:35] our students right I think we have close
+[53:38] to 60 students who will be doing a rep
+[53:42] uh project mini project uh due end of uh
+[53:45] next month so I think uh your talk gives
+[53:47] them a lot of inspiration I would
+[53:49] strongly encourage them to look at those
+[53:53] papers um so we have your video and I
+[53:56] think your video has those uh references
+[53:58] I will encourage the students to look at
+[54:01] those references to find ideas and also
+[54:02] data sets
+[54:05] um for their mini projects. I think
+[54:07] that's a good thing to learn from this
+[54:10] kind of you know very high standard high
+[54:12] quality kind of research. In fact uh I I
+[54:14] just want to ask uh anyone has any
+[54:16] question.
+[54:19] &gt;&gt; Well yes please go ahead. Yeah
+[54:23] &gt;&gt; I have very small question about the OMG
+[54:25] system. I noticed that the system it can
+[54:28] identify the conflicts among different
+[54:31] uh specialist agents and may I ask how
+[54:33] these conflicts actually resolved before
+[54:36] generating the final recommendation. Is
+[54:40] the decision mainly made by the child
+[54:43] agent or some forms of evidence baiting
+[54:46] consensious among agents like the voting
+[54:48] or it are decided by the chair agent?
+[54:50] Thank you.
+[54:53] &gt;&gt; Oh yeah. Yeah. So, so each agent will
+[54:56] take a kind of expert role to to to
+[55:00] cover one aspect and then the uh this
+[55:03] kind of uh evidence from each agent can
+[55:06] be summarized to uh a chair agent and
+[55:09] can also be uh evaluated by human
+[55:12] experts in in real world and uh yeah
+[55:15] yeah yeah that that's how it's
+[55:18] &gt;&gt; so the final assessments by the uh tri
+[55:21] agent and the human to decide whether
+[55:24] can be whether the result can uh is
+[55:25] suitable or not.
+[55:26] &gt;&gt; Yes. Yes.
+[55:28] &gt;&gt; Okay. Thank you so much.
+[55:29] &gt;&gt; Thank you.

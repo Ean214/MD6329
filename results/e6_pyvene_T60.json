@@ -1,0 +1,54 @@
+{
+  "pyvene_template": [
+    {
+      "layer": 0,
+      "component": "attn",
+      "status": "template-see-fallback"
+    },
+    {
+      "layer": 0,
+      "component": "ffn",
+      "status": "template-see-fallback"
+    },
+    {
+      "layer": 1,
+      "component": "attn",
+      "status": "template-see-fallback"
+    },
+    {
+      "layer": 1,
+      "component": "ffn",
+      "status": "template-see-fallback"
+    }
+  ],
+  "manual_ablation": [
+    {
+      "layer": 0,
+      "component": "attn",
+      "mean_logit_drop": -8.915625571148666e-09,
+      "mean_prob_drop": -9.799315803249442e-10,
+      "frac_flipped": 0.0
+    },
+    {
+      "layer": 0,
+      "component": "ffn",
+      "mean_logit_drop": 0.04171639308333397,
+      "mean_prob_drop": 0.012719517573714256,
+      "frac_flipped": 0.08970411032266702
+    },
+    {
+      "layer": 1,
+      "component": "attn",
+      "mean_logit_drop": -1.8283465408330812e-08,
+      "mean_prob_drop": -2.000491772236046e-09,
+      "frac_flipped": 0.0
+    },
+    {
+      "layer": 1,
+      "component": "ffn",
+      "mean_logit_drop": 0.06746016442775726,
+      "mean_prob_drop": 0.0084876399487257,
+      "frac_flipped": 0.012049805864238854
+    }
+  ]
+}

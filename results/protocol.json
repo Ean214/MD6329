@@ -1,0 +1,39 @@
+{
+  "seed": 42,
+  "split_rule": "by pid 70/15/15",
+  "horizons": [
+    30,
+    60,
+    90,
+    120
+  ],
+  "L_MAX": 96,
+  "seq_feats": [
+    "sbp",
+    "dbp",
+    "uf",
+    "blood_flow",
+    "conductivity",
+    "dia_temp_value",
+    "dt_norm"
+  ],
+  "stat_feats": [
+    "T_min",
+    "age",
+    "gender_m",
+    "DM",
+    "weightstart",
+    "dryweight",
+    "idwg",
+    "first_sbp",
+    "nadir_so_far",
+    "slope_sbp",
+    "mean_uf_so_far",
+    "mean_bf_so_far",
+    "mean_cond_so_far",
+    "mean_temp_so_far",
+    "n_bp_so_far"
+  ],
+  "target": "nadir SBP<90 among readings with time>T",
+  "cleaning": "duration[60,480], weight[20,200], idwg[-2,10], ufr[0,20]; exclude already-hypotensive pre-T; require >=3 readings pre-T and >=1 post-T"
+}

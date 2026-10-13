@@ -1,0 +1,1158 @@
+[00:04] Welcome back. Lecture 5 of MD 6329.
+[00:06] We are pivoting away from medical
+[00:09] imaging today and into a very different
+[00:12] kind of clinical data, electronic health
+[00:15] records. The pivot is bigger than it
+[00:17] looks. For four lectures, we have been
+[00:20] in the world of images where the input
+[00:22] has spatial structure, where
+[00:23] convolutional networks are the natural
+[00:27] fit and where the data is by clinical
+[00:30] standards relatively clean. Today we
+[00:32] step into messier territory.
+[00:38] E H R data is heterogeneous, irregular,
+[00:40] partially missing, often coded in domain
+[00:43] specific vocabularies and structured as
+[00:45] time series rather than fixed shape
+[00:46] volumes.
+[00:49] We need a new family of architectures,
+[00:51] recurrent neural networks,
+[00:53] and we need to spend time understanding
+[00:56] the data itself. This lecture has three
+[01:01] parts. First we introduce Eigy Ehr data
+[01:04] what it is where it came from. Then we
+[01:07] look at the mimic 3 research data set
+[01:09] and the clinical prediction task we can
+[01:11] build from it. Third we introduce
+[01:16] recurrent networks vanilla RNN LSTM back
+[01:19] propagation through time. By the end of
+[01:21] the lecture, you should be able to read
+[01:23] a clinical prediction paper that uses an
+[01:25] LSTM
+[01:28] on mimic 3 data and understand the
+[01:30] pipeline
+[01:32] agenda. We will introduce electronic
+[01:35] health records as a data type, history,
+[01:39] adoption, the mimic 3 research data set,
+[01:41] the clinical prediction task we care
+[01:42] about.
+[01:45] We look at recurrent neural networks
+[01:49] vanilla RNN LSTM back propagation
+[01:51] through time and the Harutunium
+[01:54] benchmark applied to mimic 3
+[01:56] electronic health records the single
+[01:58] largest source of clinical data in
+[02:01] modern healthcare every encounter a
+[02:03] patient has with the health system
+[02:06] outpatient visits inpatient admissions
+[02:10] ED presentations ICU stays surgery
+[02:13] imaging laboratory test medication
+[02:15] dispensing produces records that in
+[02:19] modern hospitals live in an EHR
+[02:22] pabytes of data per major health system
+[02:25] mostly unlabeled an electronic health
+[02:27] record is a digital record of a patients
+[02:29] medical history maintained by a
+[02:32] healthcare provider. The record spans
+[02:34] encounters over time, integrating
+[02:37] structured data, diagnosis, medications,
+[02:41] lab results, vital signs, demographics
+[02:44] with unstructured data, clinical notes,
+[02:46] discharge summaries, imaging reports,
+[02:51] pathology reports. A modern EHR is also
+[02:54] a workflow tool. Ordering, scheduling,
+[02:57] billing, and clinical decision support
+[02:59] are built around the record. The data
+[03:01] store and the workflow are tightly
+[03:03] coupled.
+[03:07] History EHRs as a concept go back to the
+[03:10] 1960s. The Mayo Clinic, the LDS hospital
+[03:13] in Salt Lake City, and Beth Israel in
+[03:15] Boston ran some of the earliest
+[03:18] digitized medical record systems. For
+[03:21] decades, adoption was slow and uneven.
+[03:23] Paper records remained dominant in most
+[03:25] settings into the 2000s.
+[03:28] The major inflection point in the US was
+[03:31] the 2009 high-tech act which provided
+[03:33] substantial financial incentives for
+[03:36] hospitals and clinics to adopt certified
+[03:39] EHRs and to demonstrate meaningful use.
+[03:42] Within 5 years, US hospital adoption
+[03:44] went from a small minority to near
+[03:46] universal.
+[03:49] Walking through the structure of an EHR,
+[03:52] the fundamental unit is the encounter, a
+[03:54] single visit to a healthcare provider.
+[03:56] Each encounter has a timestamp, a
+[03:59] location, a set of clinicians involved,
+[04:01] and a bundle of recorded clinical
+[04:04] content. The patients full record is a
+[04:07] chronological sequence of encounters,
+[04:10] each with its own bundle. This temporal
+[04:12] structure is what makes Eayu HR's
+[04:16] natural inputs for recurrent networks.
+[04:19] Structured fields within an encounter.
+[04:21] Stores patient information over time.
+[04:23] Medications dispensed and administered.
+[04:25] Procedures like laboratory results
+[04:29] encoded. Vital signs. Heart rate. Blood
+[04:30] pressure. Temperature. Oxygen
+[04:33] saturation. Demographics.
+[04:35] Each of these is a typed field with a
+[04:37] defined vocabulary.
+[04:41] Unstructured content. Nursing flow. The
+[04:43] clinician's own writing. History and
+[04:45] physical examination notes. progress
+[04:48] notes, discharge summaries, radiology
+[04:51] and pathology reports. The structured
+[04:53] fields capture what was built and
+[04:56] ordered. The free text captures what was
+[04:58] taught and observed. Natural language
+[05:02] processing on clinical notes is common.
+[05:05] Medication, the record is irregular in
+[05:07] time. A healthy patient with one annual
+[05:10] physical produces a sparse long gap
+[05:13] record. An ICU patient produces hundreds
+[05:15] of data points per hour. The same vital
+[05:17] sign may be measured every 5 minutes in
+[05:20] the ICU and once a year in primary care.
+[05:23] This irregularity is a defining property
+[05:26] of EHR data and a challenge for any
+[05:29] model that assumes regular sampling.
+[05:31] Physician notes and diagnosis. The
+[05:33] hardest part of using EHR data for
+[05:35] supervised learning is constructing
+[05:38] labels. Most clinical outcomes are not
+[05:41] explicitly recorded in the EHR.
+[05:44] Phenotype labels. Does this patient have
+[05:46] diabetes are typically derived from
+[05:49] rule-based combinations of lab outcomes
+[05:52] and medication histories? Label noise is
+[05:54] substantial and varies across
+[05:55] phenotypes.
+[05:57] This is one of the recurring themes when
+[06:01] we evaluate EHR models.
+[06:03] Medical imaging and lab test results and
+[06:06] reports. Interoperability
+[06:08] a practical and political challenge.
+[06:10] Different hospitals use different EHR
+[06:14] vendors. Epic, Cerna, Meditech, all
+[06:16] scripts in the US with similar
+[06:19] fragmentation internationally.
+[06:21] Each system has its own data model.
+[06:23] Cross institutional research and care
+[06:27] coordination require translation layers.
+[06:30] The earliest ehr systems co-star at
+[06:32] Massachusetts General Hospital in the
+[06:36] late 1960s developed by October Bonnet
+[06:38] the Rian Stref medical record system at
+[06:42] Indiana University in the 1970s help at
+[06:45] LDS hospital in Salt Lake City. These
+[06:47] were research systems running on
+[06:49] mainframes with character terminals for
+[06:51] clinicians. They demonstrated that
+[06:54] digitized records were feasible. They
+[06:56] did not on their own change the wider
+[06:59] field. Adoption remained a tiny fraction
+[07:01] of US hospitals through the 1980s and
+[07:03] 1990s.
+[07:07] Adoption data. In 2008, the year before
+[07:10] the high-tech act about 9% of US
+[07:14] hospitals had a basic EHR. By 2015, that
+[07:17] figure was close to 96%.
+[07:20] A factor of 10 increase in 7 years. The
+[07:22] high-tech acts financial incentives,
+[07:24] billions of dollars in payments to
+[07:26] hospitals that demonstrated meaningful
+[07:29] use of certified EEHRs drove the
+[07:32] transition. Few public policies have
+[07:33] produced as rapid and complete an
+[07:36] adoption curve.
+[07:38] The political economy of that transition
+[07:40] matters. The high-tech money flowed
+[07:43] quickly. The certification criteria were
+[07:45] defined quickly. Vendors competed on
+[07:47] certification, compliance, and feature
+[07:50] checklist rather than on usability.
+[07:52] Many systems were deployed with
+[07:54] significant rush customization.
+[07:57] Physician burnout related to EHR
+[07:59] documentation burden has been a
+[08:01] persistent issue ever since with surveys
+[08:05] consistently identifying EHR usage as
+[08:07] one of the largest sources of physician
+[08:09] dissatisfaction. The adoption was
+[08:11] successful in technical terms and
+[08:14] contested in operational terms.
+[08:16] Office-based physician adoption followed
+[08:19] a similar trajectory, also driven by
+[08:22] high-tech incentives, also reaching near
+[08:25] universal adoption by the late 2000s.
+[08:28] Outpatient EHR use is now standard
+[08:31] across US primary care, specialy
+[08:33] practice, and ambulatory surgery
+[08:35] centers. The same software vendors
+[08:37] dominate both inpatient and outpatient
+[08:39] markets.
+[08:41] Singapore's hospital system is also
+[08:43] largely EHRbased.
+[08:45] Notably, Singapore enacted the Health
+[08:49] Information Act in 2026 to provide for a
+[08:51] national electronic record system for
+[08:53] the safe and secure contribution,
+[08:55] collection, storage, and disclosure of
+[08:58] health information about individuals to
+[09:00] facilitate the collection, disclosure,
+[09:02] and use of health and other information
+[09:04] about individuals to maintain and
+[09:05] improve their physical and mental health
+[09:09] and well-being.
+[09:11] Why is EHRbased deep learning suddenly
+[09:14] viable? Because three ingredients have
+[09:17] converged. One, massive label and
+[09:19] unlabeled clinical data made possible by
+[09:24] widespread eHr adoption. Two, powerful
+[09:27] compute, particularly GPU compute scaled
+[09:28] and commoditized through cloud
+[09:32] platforms. Three, algorithmic advances.
+[09:35] the deep learning revolution itself with
+[09:37] mature architectures for sequence and
+[09:39] tabular data, mature tooling and a
+[09:43] mature research community.
+[09:45] This pattern of convergence is not
+[09:47] unique to medicine. The same three
+[09:51] ingredients data compute algorithms
+[09:52] drove the breakthroughs in computer
+[09:54] vision and natural language processing
+[09:57] in roughly the same period. Today's
+[10:00] medical foundation models med palm
+[10:03] gatron rad FM are built on the same
+[10:05] recipe as their generalpurpose
+[10:07] counterparts.
+[10:10] Mimic 3, the single most important open
+[10:13] access ehr data set for research
+[10:15] maintained by the MIT lab for
+[10:17] computational physiology in partnership
+[10:19] with Beth Israel Deaconist Medical
+[10:23] Center in Boston. Contains deidentified
+[10:27] ICU stays over 40,000 patients over
+[10:31] 58,000 ICU admissions spanning 2001 to
+[10:33] 2012.
+[10:35] Free to access after a short training
+[10:38] course and a data use agreement. Mimic 4
+[10:40] extends the time range to more recent
+[10:42] data. The combination of richness,
+[10:45] scale, and open access has made mimic
+[10:57] adult patients in the ICU. 58,000
+[11:00] admissions across those patients. Many
+[11:03] patients have more than one ICU stay.
+[11:05] Per admission, hundreds to thousands of
+[11:07] structured data points across labs,
+[11:10] vitals, medications, procedures, and
+[11:13] diagnosis. Tens of thousands of free
+[11:15] text clinical notes. The full data set
+[11:17] is several hundred gigabytes.
+[11:19] Substantial computational infrastructure
+[11:22] is required to work with it at scale,
+[11:24] but smaller cohort extracts can be
+[11:26] analyzed on a workstation.
+[11:30] More on mimic 3. The data spans the full
+[11:32] clinical picture of ICU care,
+[11:35] demographics, admission and discharge
+[11:38] timestamps, ICU stay timestamps,
+[11:41] continuous monitoring data, vital signs
+[11:43] at minute level resolution, laboratory
+[11:46] results, medications administered,
+[11:49] procedures performed, diagnosis coded in
+[11:52] ICD9, mimic 3 predates the US transition
+[11:54] to ICD10,
+[11:56] free text discharge summaries, nursing
+[11:59] notes, radiology reports,
+[12:02] even waveform data, ECG and arterial
+[12:04] line traces for a substantial subset of
+[12:06] patients.
+[12:10] The reference paper Johnson at AL mimic
+[12:13] 3, a freely accessible critical care
+[12:17] database, scientific data 2016. Cite it
+[12:19] whenever you use mimic. The data use
+[12:22] agreement requires it. The paper itself
+[12:24] is short and worth reading. It walks
+[12:27] through the schema, the deidentification
+[12:31] process and the major use cases.
+[12:34] Diagnosis codes in mimic 3 are ICD9,
+[12:37] the international classification of
+[12:40] diseases ninth revision, a hierarchical
+[12:42] coding system maintained by the World
+[12:44] Health Organization.
+[12:46] Codes range from 3 to five digits with
+[12:48] parent child relationships that group
+[12:51] related conditions. Diabetes type 2 with
+[12:55] complications is 2550.4. 4 acute
+[12:57] myioardial inffection of the infrateral
+[13:00] wall is 410.2
+[13:04] the US transition to ICD10 in 2015
+[13:07] providing finer grain codes about 10
+[13:10] times as many and ICD11 was released by
+[13:15] the WH in 2018 but adoption is uneven.
+[13:18] DRGs, higher level codes describing
+[13:20] patient groups with similar hospital
+[13:22] resource use developed for hospital
+[13:25] payment systems but useful for cohort
+[13:27] definition. In research,
+[13:30] ADRG is assigned per hospitalization
+[13:33] based on the principal diagnosis,
+[13:35] secondary diagnosis, procedures
+[13:38] performed, and patient characteristics.
+[13:41] About 750 DRGs in the modern US Medicare
+[13:44] system. Each DRG corresponds to a
+[13:46] category of patients expected to consume
+[13:49] similar resources for research
+[13:52] stratification. DRGs are a useful course
+[13:54] grouping.
+[13:57] CPT codes for procedures and services
+[13:59] maintained by the American Medical
+[14:02] Association. About 10,000 codes
+[14:04] organized hierarchically, surgical
+[14:06] procedures, imaging studies, laboratory
+[14:10] tests, office visits. Each has a CPT
+[14:13] code. The codes drive billing in the US
+[14:15] system and provide structured
+[14:17] documentation of what was done.
+[14:20] International coding systems differ.
+[14:22] Singapore uses local procedure codes
+[14:25] that map approximately to CPT but with
+[14:28] adjustments for local clinical practice.
+[14:31] Free text data. Mimic 3 contains over
+[14:33] two million clinical notes spanning
+[14:36] radiology reports, discharge summaries,
+[14:39] nursing notes, ECG reports, and several
+[14:42] other categories. The notes are
+[14:44] deidentified. Names, dates, and
+[14:46] locations have been replaced with
+[14:48] placeholders, but otherwise the original
+[14:51] clinical language is preserved. Working
+[14:53] with these notes requires both natural
+[14:55] language processing skills and clinical
+[14:58] context. We will see later how clinical
+[15:00] bird models trained on mimic nodes have
+[15:04] become standard tools for clinical NLP.
+[15:06] More about mimic tre's role in the
+[15:09] field. As of the most recent counts, the
+[15:11] Johnson at AL paper has been cited well
+[15:15] over 5,000 times. Hundreds of follow-on
+[15:17] benchmarks have been built on mimic for
+[15:20] mortality prediction, length of stay,
+[15:22] decompensation, sepsis prediction, drug
+[15:26] response, and many more. The Harut Union
+[15:27] benchmark we will study today is one
+[15:30] such follow on mimic 4 released more
+[15:34] recently with patients from 2008 to 2019
+[15:36] extends the time range and adds new
+[15:38] tables. Many groups have migrated their
+[15:42] pipelines to mimic 4.
+[15:45] Singapore context we do not have a
+[15:48] public mimic equivalent ICU data set.
+[15:50] Health authorities provide restricted
+[15:53] access to deidentified ICU data for
+[15:55] internal projects under appropriate
+[15:57] institutional oversight, but external
+[16:00] research access is more limited.
+[16:02] Federated learning approaches can be a
+[16:04] way to validate mimic trained models on
+[16:06] local Singapore data without
+[16:09] centralizing the local data. Federated
+[16:12] learning is the topic we will see later.
+[16:14] With the data described, the natural
+[16:17] question is what do we want to predict
+[16:19] from it? The clinical prediction test
+[16:22] literature is enormous. The Harut Union
+[16:24] benchmark we will spend significant time
+[16:28] on defines four canonical tests on mimic
+[16:31] three phenotype classification in
+[16:34] hospital mortality, decompensation, and
+[16:36] length of stay. Each represents a
+[16:39] distinct kind of clinical question and a
+[16:41] distinct kind of modeling challenge.
+[16:44] The next four slides introduce each task
+[16:46] in turn.
+[16:48] Phenotype classification.
+[16:50] Given a patient's ICU stay record,
+[16:53] predict which of a set of chronic and
+[16:55] acute conditions the patient has. The
+[16:58] Harut Union benchmark uses 25 phenotype
+[17:01] labels. Diabetes, hypertension,
+[17:04] congestive heart failure, chronic kidney
+[17:08] disease, pneumonia, sepsis, and so on.
+[17:11] Multilabel classification. A patient can
+[17:14] have several phenotypes simultaneously.
+[17:16] The clinical use case is cohort
+[17:18] discovery and electronic phenotyping at
+[17:21] scale which feed downstream research and
+[17:23] quality improvement.
+[17:26] In hospital mortality given the first 48
+[17:29] hours of an ICU stay, predict whether
+[17:32] the patient will die before discharge.
+[17:34] Binary classification important
+[17:36] clinically as a triage and resource
+[17:38] allocation aid. Patients with high
+[17:40] predicted mortality may benefit from
+[17:43] intensified monitoring, palative
+[17:46] consultation or family discussion.
+[17:49] Severely class imbalance, most ICU
+[17:51] patients survive, which means evaluation
+[17:54] must use AU or precision recall rather
+[17:57] than raw accuracy.
+[17:59] Decompensation
+[18:01] at every hour during the ICU stay.
+[18:03] Predict whether the patient will
+[18:06] deteriorate, specifically die within the
+[18:09] next 24 hours. A moving target
+[18:11] classification
+[18:14] different from inhosp mortality because
+[18:16] it is repeated at every hour and the
+[18:19] prediction horizon is short. Clinically
+[18:22] motivated by early warning systems.
+[18:23] Alerting nursing and medical staff to
+[18:25] patients whose risk is rising in real
+[18:28] time so that intervention can happen
+[18:30] before clinical deterioration is
+[18:33] obvious.
+[18:35] Length of stay given the early hours of
+[18:37] an ICU stay. Predict how long the
+[18:40] patient will remain in the ICU.
+[18:42] Regression problem with a longtail
+[18:46] distribution. Most stays are short but a
+[18:48] small proportion are very long. The
+[18:50] clinical motivation is capacity planning
+[18:53] and discharge coordination. Hospitals
+[18:55] with reliable predicted lengths of stay
+[18:57] can coordinate downstream bed
+[19:00] assignments, family communication and
+[19:02] post-accute care planning. Both
+[19:03] regression and discretized
+[19:06] classification framings exist in the
+[19:08] literature.
+[19:10] How do we represent the EHR data as
+[19:13] input to a neural network? The simplest
+[19:15] approach, aggregate all clinical
+[19:18] variables over a fixed time window into
+[19:20] a single feature vector. Counts of
+[19:23] events, statistics like mean and
+[19:25] standard deviation of continuous values,
+[19:27] presence or absence indicators for
+[19:30] categorical events. Feed the resulting
+[19:32] fixed dimensional vector into a fully
+[19:35] connected network or a classifier.
+[19:37] This throws away temporal structure but
+[19:39] is computationally cheap and serves as a
+[19:43] strong baseline.
+[19:45] Remember from lecture two, a fully
+[19:47] connected neural network applied to a
+[19:50] feature vector. The input is a vector X
+[19:53] of dimension D. A weight matrix and bias
+[19:56] produce a hidden representation relu
+[19:58] nonlinearity,
+[20:01] possibly several stacked layers. A final
+[20:03] layer produces the prediction, a scala
+[20:06] for regression, a logit for binary
+[20:08] classification, a vector of logits for
+[20:10] multiclass.
+[20:12] The full network is trained end to end
+[20:14] with back propagation. We covered this
+[20:17] in detail in lecture two.
+[20:20] The limitation of this approach for EHR
+[20:23] data is the loss of temporal structure.
+[20:25] A patient's heart rate rising over the
+[20:27] last 6 hours is potentially the most
+[20:30] informative signal you have. A flattened
+[20:32] summary vector cannot easily encode
+[20:35] that. The same average heart rate could
+[20:37] correspond to a stable patient or to one
+[20:38] whose rate has been rising rapidly
+[20:41] toward instability.
+[20:43] A more expressive model is needed to
+[20:45] capture these temporal dynamics. Hence,
+[20:48] recurrent networks.
+[20:50] Family tree of neural network
+[20:52] architectures. Fully connected,
+[20:55] convolutional, recurrent, transformer.
+[20:57] Each is suited to a different kind of
+[20:59] input structure. Fully connected for
+[21:02] feature vectors. Convolutional for
+[21:05] spatial data, images and volumes,
+[21:07] recurrent for sequences, transformer for
+[21:10] sequences with long range dependencies.
+[21:11] We have covered the first two
+[21:13] extensively in the imaging lectures. Now
+[21:17] we turn to the third same family tree
+[21:19] now with the recurrent network branch
+[21:21] highlighted. The next few slides develop
+[21:23] the recurrent network machinery in
+[21:28] detail. vanilla RNN then LSTM with its
+[21:30] gating mechanism then back propagation
+[21:32] through time then the Harut Union
+[21:36] benchmark as the worked clinical example
+[21:38] after today you should be comfortable
+[21:41] reading any clinical RNN paper
+[21:44] recurrent neural networks the motivating
+[21:47] idea build a network whose architecture
+[21:49] matches the structure of the data when
+[21:52] the data is a sequence instead of
+[21:54] processing each element of the sequence
+[21:57] independently. The network maintains a
+[21:59] hidden state that is updated at each
+[22:02] step. The hidden state encodes a summary
+[22:04] of everything seen so far and the same
+[22:07] parameters are reused at every step.
+[22:10] This weight sharing across time steps is
+[22:12] what makes the architecture efficient
+[22:14] and what makes it generalized across
+[22:17] sequences of different lengths. An input
+[22:20] vector X at each time step. a hidden
+[22:23] state vector h that persists across time
+[22:26] steps. At each time step, the new hidden
+[22:28] state is a function of the previous
+[22:30] hidden state and the current input.
+[22:33] Optionally, an output vector y at each
+[22:35] time step computed from the current
+[22:38] hidden state. The function from previous
+[22:40] hidden state and current input to new
+[22:42] hidden state is the same. Same
+[22:45] parameters, same computation at every
+[22:47] time step. That is the recurrent in
+[22:50] recurrent neural network.
+[22:52] RNNs come in many configurations
+[22:54] depending on the input output structure
+[22:58] of the task. One to one, a single input
+[23:01] produces a single output. This is
+[23:02] essentially a standard feed forward
+[23:06] network. One to many, a single input
+[23:09] produces a sequence of outputs.
+[23:11] Image captioning is the canonical
+[23:14] example. Many to one, a sequence of
+[23:17] inputs produces a single output.
+[23:19] Sequence classification which is what we
+[23:22] will use for inhosp mortality.
+[23:25] Many to many a sequence of inputs
+[23:27] produces a sequence of outputs. Machine
+[23:30] translation decompensation prediction
+[23:32] named entity recognition. The
+[23:34] architecture adapts to the task
+[23:36] structure.
+[23:39] Let's visualize a RNN. At each time step
+[23:43] t and input x subt enters the recurrent
+[23:45] cell. The cell also receives the
+[23:48] previous hidden state H subt minus one.
+[23:51] The cell produces a new hidden state H
+[23:54] subt. That is the recurrence relation.
+[23:57] The arrow that connects H subt minus one
+[24:00] to H subt. The recurrent connection is
+[24:02] what gives the network its memory.
+[24:04] Without it, every time step would be
+[24:06] processed independently and the
+[24:08] architecture would collapse to a
+[24:10] standard feed forward network applied
+[24:13] separately to each time step. The cell's
+[24:16] computation new hidden state h subt
+[24:18] equals a nonlinear function of the
+[24:21] previous hidden state h subt minus one
+[24:25] and the current input x subt. In the
+[24:28] vanilla RNN, that function is tongue of
+[24:32] a weight matrix * h subt -1 + another
+[24:36] weight matrix * x subt plus a bias. Two
+[24:39] learnable weight matrices, one bias, one
+[24:42] time nonlinearity. output side. At each
+[24:44] time step, the hidden state can be used
+[24:47] to produce an output. For a regression
+[24:50] target, a linear layer from H subt to a
+[24:53] scalar. For a classification target, a
+[24:56] linear layer from H subt to a vector of
+[24:59] logits followed by a softmax.
+[25:01] The same output layer is reused at every
+[25:03] time step in a many to many
+[25:06] configuration. For a many to one task,
+[25:08] the output layer is applied only at the
+[25:11] final time step. We have a recurrence
+[25:14] formula unrolling the same computation
+[25:17] drawn across time. Three copies of the
+[25:20] cell, one for each of three time steps.
+[25:21] The recurrent connections become
+[25:25] explicit arrows from H subtle E minus
+[25:28] one to H subt. The weight matrices and
+[25:31] bias are shared. Same letters labeling
+[25:34] all three copies of the cell. The unroll
+[25:36] diagram is conceptually useful but does
+[25:38] not correspond to the actual
+[25:40] implementation which loops over time
+[25:44] steps using a single set of parameters.
+[25:46] Notice that the same function and the
+[25:48] same set of parameters are used at every
+[25:51] time step in the recurrence formula. One
+[25:53] more detail the initial hidden state h
+[25:57] sub0 has to be set somehow. The standard
+[25:59] choice is to initialize it to zeros.
+[26:01] Some implementations make it a learnable
+[26:04] parameter. Let the network learn the
+[26:06] best starting state, but the empirical
+[26:09] difference is usually small. For our
+[26:13] purposes, assume zero initialization.
+[26:17] The vanilla RNN cell formally h subtals
+[26:24] tan of w subh * h subtus 1 + w sub xh *
+[26:28] x subt + b. W subh is the recurrent
+[26:30] weight matrix mapping the old hidden
+[26:33] state to the new one. W subXH is the
+[26:35] input weight matrix mapping the current
+[26:38] input to the new hidden state. B is a
+[26:40] bias vector. Tan squashes the result
+[26:43] into the range minus1 to + 1. The
+[26:46] dimensionality of H is a hyperparameter.
+[26:49] Typical choices are 64
+[26:52] 128 256
+[27:01] The output formula y subt= w subhy * h
+[27:04] subt + a bias. A linear layer from the
+[27:06] hidden state to the output. For
+[27:09] classification, apply a softmax to y
+[27:12] subt. For regression, take wii subt
+[27:15] directly. The output weight matrix w
+[27:18] subhy is shared across time steps in the
+[27:20] many to many configuration just like the
+[27:24] recurrent and input weights.
+[27:27] parameter count. A vanilla RNN with
+[27:29] hidden dimension H and input dimension D
+[27:34] has W XH of size H by D, WHH of size H
+[27:38] by H, B of size H, and WHY of size O by
+[27:41] H plus a bias of size O total parameters
+[27:44] roughly H * D + H squar plus terms
+[27:47] linear in H and O. The H squar term
+[27:50] coming from WHHH dominates for large
+[27:53] hidden dimensions. This is part of why
+[27:57] we cannot push h arbitrarily large.
+[28:00] The computational graph view three time
+[28:03] steps drawn explicitly. At each step,
+[28:06] the inputs to the cell are x subt and h
+[28:09] subt minus one. The output of the cell
+[28:13] is h subt. The same cell meaning the
+[28:16] same weights is applied at each step.
+[28:18] Loss is computed against the desired
+[28:21] output at each step summed across time
+[28:23] steps and the gradient of this total
+[28:25] loss is what back propagation through
+[28:27] time computes.
+[28:30] Continuing the computational graph, the
+[28:32] forward pass moves from left to right.
+[28:36] Compute H1 from H0 and X1. Then H2 from
+[28:39] H1 and X2.
+[28:42] Then H sub3 from H sub2 and Xub3.
+[28:46] Outputs y sub 1, y sub 2, y sub3 are
+[28:49] computed from each h.
+[28:51] Reuse the same weight matrix at every
+[28:56] time step. Losses l 1 l 2 l3. Compare
+[28:59] each output to the target. The total
+[29:01] loss is the sum. So far this is just
+[29:04] notation for an r and n.
+[29:07] Many to many configuration. Three inputs
+[29:10] and three outputs with losses at every
+[29:13] time step. This is the configuration we
+[29:15] will use for the decompensation task.
+[29:18] Predict a deterioration probability at
+[29:21] every hour. Also the configuration used
+[29:23] for machine translation named entity
+[29:25] recognition and per frame video
+[29:27] classification. The same set of
+[29:29] architectural choices serves all of
+[29:30] them.
+[29:33] Continuing total loss in many to many is
+[29:36] the sum of per time step losses. Each
+[29:38] per time step loss has its own
+[29:40] contribution to the gradients of all the
+[29:42] shared parameters.
+[29:44] The total gradient for a parameter is
+[29:46] the sum of gradients flowing back from
+[29:49] every output. Back propagation through
+[29:51] time computes this sum implicitly by
+[29:53] accumulating gradients along the
+[29:55] unrolled graph.
+[29:57] A note on the input output alignment in
+[29:59] many to many. The simplest version has
+[30:02] one input per time step paired with one
+[30:05] output per time step.
+[30:07] Other versions are useful. Encoder
+[30:09] decoder architectures for machine
+[30:11] translation have a different structure
+[30:13] with an encoder reading the input
+[30:15] sequence and a decoder generating the
+[30:17] output sequence.
+[30:20] Many to one configuration. The network
+[30:22] reads a full input sequence and produces
+[30:25] a single output at the end. This is what
+[30:28] we use for inhosp mortality prediction
+[30:31] in the Harut Union benchmark. Read the
+[30:34] first 48 hours of the ICU stay. produce
+[30:37] a single binary prediction. Also used
+[30:38] for sequence classification more
+[30:41] generally sentiment analysis. Document
+[30:43] classification
+[30:46] can also have other configurations. Just
+[30:48] define the computational graph. Only the
+[30:51] final hidden state H subt is fed to the
+[30:53] output layer. The intermediate hidden
+[30:55] states still exist and still get
+[30:58] gradients during back propagation but
+[31:00] they do not have direct outputs. They
+[31:02] are useful only in so far as they
+[31:04] contribute to h subt through the
+[31:06] recurrent connections.
+[31:08] This is the appropriate configuration
+[31:09] when the prediction depends on the full
+[31:13] sequence and is made at a single point.
+[31:15] Back propagation through time. The
+[31:18] mechanism by which we train R and ends.
+[31:20] The algorithm is just back propagation
+[31:22] applied to the unrolled computational
+[31:28] graph. For each parameter whh we xh w
+[31:32] subhy biases the gradient is the sum of
+[31:35] contributions from every time step. The
+[31:37] gradient at one time step depends on
+[31:39] gradients flowing back from all later
+[31:41] time steps because the recurrent
+[31:44] connections couple time steps together.
+[31:46] Computing this sum for a sequence of
+[31:49] length takes O of T time and O of T
+[31:52] memory.
+[31:55] truncated BPTT. The memory cost of full
+[31:59] BPTT is linear in sequence length which
+[32:00] becomes prohibitive for very long
+[32:03] sequences. The fix rather than back
+[32:05] propagating through the entire sequence
+[32:08] at once break the sequence into chunks
+[32:11] of some manageable length say 50 time
+[32:15] steps and apply BPTT within each chunk.
+[32:17] The hidden state is carried across chunk
+[32:20] boundaries but gradients are not. The
+[32:22] result is approximate gradients that
+[32:25] nevertheless support effective training.
+[32:28] For truncated BPTT, the chunk length is
+[32:30] a hyperparameter.
+[32:31] Larger chunks give more accurate
+[32:34] gradients but cost more memory. Smaller
+[32:37] chunks cost less memory but may miss
+[32:39] long range dependencies.
+[32:42] For most clinical applications, chunks
+[32:43] of several hundred time steps are
+[32:46] tractable on modern GPUs and capture
+[32:49] sufficient temporal range. For multi-day
+[32:52] ICU stays at minute level resolution,
+[32:54] this can still be insufficient,
+[32:57] motivating either coarser temporal bin
+[33:00] or LSTM style gating that helps
+[33:03] gradients flow over long ranges.
+[33:06] Implementation detail. In practice,
+[33:08] frameworks like PyTorch and TensorFlow
+[33:10] handle the truncation transparently. If
+[33:12] you process sequence chunks in your
+[33:14] training loop, detaching the hidden
+[33:17] state between chunks, the hidden state
+[33:19] is preserved passed from one chunk to
+[33:22] the next, but its gradient history is
+[33:24] detached. So the autograph machinery
+[33:26] does not try to back propagate beyond
+[33:29] the current chunk. Standard pattern in
+[33:31] any recurrent network pipeline that
+[33:34] handles long sequences.
+[33:36] Next, we look at solving the vanishing
+[33:39] gradient problem in deep sequences.
+[33:43] LSTM long short-term memory introduced
+[33:46] by Hawkwriter and Schmidt Huber in 1997.
+[33:48] The paper predates the modern deep
+[33:50] learning era by over a decade. The
+[33:53] motivation, address the vanishing and
+[33:55] exploding gradient problems that limit
+[33:58] vanilla RNNs on long sequences. The
+[34:00] solution introduce a separate cell state
+[34:03] that runs alongside the hidden state
+[34:05] with multiplicative gates controlling
+[34:08] what gets written to read from and
+[34:10] forgotten in the cell state. Gradients
+[34:12] can flow through the cell state without
+[34:14] being multiplied by the recurrent weight
+[34:17] matrix at every step which is what gives
+[34:21] LSTMs their longrange memory.
+[34:25] Three key differences from vanilla RNN.
+[34:28] One, LSTM has a separate cell state in
+[34:31] addition to the hidden state, doubling
+[34:32] the memory footprint but enabling long
+[34:37] range information flow. Two, LSTM uses
+[34:39] gating mechanisms to control information
+[34:42] flow with the gates themselves learned
+[34:44] by gradient descent.
+[34:48] Three, empirically, LSTMs handle
+[34:50] sequences of hundreds or thousands of
+[34:52] time steps without the catastrophic
+[34:54] gradient degradation that hits vanilla
+[34:56] RNNs.
+[34:58] The architectural complexity pays off in
+[35:01] trainability.
+[35:05] On the left is unrolled vanilla RNN.
+[35:08] Let's visualize the unrolled LSTM
+[35:10] architecture which uses different
+[35:13] computation to obtain H subt.
+[35:16] Let's zoom in. The input gate decides
+[35:18] which entries of the candidate to add.
+[35:20] The contributions are summed to form the
+[35:23] new cell state. The hidden state update
+[35:26] new hidden state award H subt equals the
+[35:29] output gate element wise multiplied with
+[35:32] tan to H of the new cell state.
+[35:34] The output gate decides which entries of
+[35:37] the cell state to expose to downstream
+[35:40] computation. The cell state itself is
+[35:43] private to the LSTM cell across time.
+[35:45] The hidden state is what the rest of the
+[35:47] network sees.
+[35:50] This separation internal cell state
+[35:52] externally visible hidden state is
+[35:55] central to the design.
+[35:57] Three gates and a candidate cell state
+[35:59] all computed from the previous hidden
+[36:02] state and the current input. Forget gate
+[36:04] controls what to discard from the cell
+[36:08] state. Input gate controls what new
+[36:11] information to add. Output gate controls
+[36:13] what part of the cell state to expose as
+[36:16] the hidden state. Each gate is a sigmoid
+[36:18] that produces values between zero and
+[36:21] one used as element-wise multipliers on
+[36:23] the cell state.
+[36:25] The candidate is a tarn that produces
+[36:28] values between minus1 and one scaled by
+[36:30] the input gate before being added to the
+[36:32] cell state. Here is the forward
+[36:35] computation at each time step. Inputs X
+[36:40] subt H subt minus one C high subt minus
+[36:45] one. Outputs H subt C subt. The cell
+[36:47] does four parallel linear
+[36:49] transformations of the concatenation of
+[36:53] X subt and H subt minus one. These
+[36:55] become the four gates and the candidate.
+[36:57] Sigmoid, the forget gate, the input gate
+[37:00] and the output gate.
+[37:02] time the candidate. Combine these to
+[37:04] update the cell state and produce the
+[37:06] new hidden state.
+[37:08] From the current cell state, we have a
+[37:12] new LSTM layer output. Why does this
+[37:14] help with gradients? Because the cell
+[37:16] state update is approximately additive.
+[37:18] The new cell state is a gated copy of
+[37:21] the old cell state plus a gated copy of
+[37:23] the candidate with no multiplications by
+[37:26] a recurrent weight matrix. Gradients
+[37:28] flowing back through the cell state are
+[37:30] subject only to the gate values which
+[37:32] the network can choose to set near one
+[37:36] for paths it wants to preserve.
+[37:39] Now we zoom out. The vanilla RNN's
+[37:42] repeated multiplication by whh which
+[37:44] causes the vanishing or exploding
+[37:48] problem is sidestep
+[37:51] in LSTM. Usage of a cell state in the
+[37:54] LSTM that is modified through addition
+[37:56] allows improved gradient flow through
+[37:58] longer sequences.
+[38:00] Notice that the gates themselves are
+[38:03] computed from X subt and H subt minus
+[38:06] one. Both of which depend on earlier
+[38:08] time steps through the standard
+[38:10] recurrent path. So the gates can in
+[38:12] principle attenuate signals just as W
+[38:17] subhHH can in a vanilla RNN.
+[38:19] The reason LSTMs work better in practice
+[38:23] is empirical. The network can learn gate
+[38:25] behaviors that keep useful long range
+[38:27] information accessible. Parameter count
+[38:31] for an LSTM cell with hidden dimension H
+[38:34] and input dimension D. Each of the three
+[38:36] gates and the candidate has weights of
+[38:40] size H by D plus H by H plus a bias of
+[38:43] size H. Four such linear maps. Total
+[38:45] parameters roughly four times the
+[38:49] vanilla R andn count four * H ^ 2 plus 4
+[38:53] * H * D plus terms linear in H. LSTMs
+[38:55] are correspondingly four times more
+[38:57] expensive than vanilla RNN's per time
+[38:58] step.
+[39:02] Variants of the LSTM the standard LSTM
+[39:04] as described is the original hawk writer
+[39:07] and Schmidt Huber design. Several common
+[39:09] variants. Peep hole connections. Let the
+[39:12] gates also depend on the cell state.
+[39:15] Couple forget and input gates. Tie them
+[39:17] so that what is forgotten is exactly
+[39:20] what is replaced. The gated recurrent
+[39:25] unit GRU by Cho at al 2014 combines the
+[39:28] cell state and hidden state uses two
+[39:31] gates instead of three. Empirical
+[39:33] comparisons across varants show small
+[39:37] differences. The standard LSTM remains a
+[39:39] robust default.
+[39:43] Stacking multi-layer LSTMs.
+[39:46] The output hidden states of one LSTM
+[39:47] layer are used as the input to the next
+[39:51] LSTM layer. Each layer has its own set
+[39:54] of parameters. Two to four layer stacks
+[39:55] are common. Deeper stacks have
+[39:58] diminishing returns. The bottom layer
+[40:00] captures short range patterns. Deeper
+[40:02] layers capture longer range and more
+[40:04] abstract patterns. similar logic to
+[40:07] depth in feed forward networks with the
+[40:11] same caveats about training stability.
+[40:14] Closing on LSTMs, the architectural
+[40:17] family has been around since 1997, but
+[40:19] became the default sequence model only
+[40:22] in the 2014 to 2016 window when the
+[40:25] necessary compute libraries and large
+[40:28] data sets became available. From 2014 to
+[40:31] roughly 2018, LSTMs were the workhorse
+[40:33] for NLP and clinical time series
+[40:37] modeling. After 2018, transformers
+[40:40] gradually displays them in NLP with
+[40:42] mixed adoption in clinical time series.
+[40:45] For our purposes today, LSTMs are the
+[40:48] right tool for EHR sequence modeling.
+[40:51] Transformers come back later.
+[40:54] The case study Harut Yun and colleagues
+[40:57] 2019 in scientific data multitask
+[40:59] learning and benchmarking with clinical
+[41:02] time series data. The paper establishes
+[41:04] the four benchmark tests on mimic 3 that
+[41:07] we introduced earlier. Phenotyping
+[41:10] inhosp mortality, decompensation, and
+[41:13] length of state. Defines a standard data
+[41:15] prep-processing pipeline and reports
+[41:17] performance for several baseline
+[41:19] architectures including logistic
+[41:21] regression and LSTM.
+[41:23] The benchmark has become the canonical
+[41:25] reference for clinical time series
+[41:27] modeling on mimic.
+[41:31] Results overview. LSTMs outperform
+[41:33] logistic regression baselines on all
+[41:36] four task by modest margins. Multitask
+[41:39] learning training one network jointly on
+[41:42] all four task outperforms task specific
+[41:45] networks slightly. The improvements are
+[41:47] not dramatic. The paper's main
+[41:49] contribution is methodological
+[41:52] establishing a clean benchmark rather
+[41:55] than algorithmic novelty. We will go
+[41:57] through each task's results in detail.
+[42:01] Input encoding. The authors curate 17
+[42:03] clinical variables. Heart rate, systolic
+[42:05] and diastolic blood pressure,
+[42:08] respiratory rate, oxygen saturation,
+[42:11] temperature, glasco scale components,
+[42:14] glucose, and others. Each variable is
+[42:16] sampled at irregular times during the
+[42:19] ICU stay. The authors bin time into
+[42:21] 1-hour windows and aggregate
+[42:24] observations within each window. Missing
+[42:26] values are imputed with the last
+[42:28] observed value or with a normal range
+[42:32] value if no observation exists. A binary
+[42:34] mask is concatenated to indicate whether
+[42:37] each value was observed or imputed. This
+[42:39] missingness signal is itself informative
+[42:42] and the network can learn from it.
+[42:45] Baselines the authors compare against
+[42:47] logistic regression with handgineered
+[42:50] features per time series. min, max,
+[42:54] mean, standard deviation, skewess and
+[42:56] ktosis of each clinical variable over
+[42:58] various subsequences.
+[43:00] Categorical variables are one hot
+[43:03] encoded. The logistic regression
+[43:05] baseline is genuinely strong. Careful
+[43:07] feature engineering on clinical time
+[43:10] series can capture much of what an LSTM
+[43:15] Here is their neural network
+[43:18] architecture. A two-layer LSTM with
+[43:22] hidden dimension between 32 and 256
+[43:25] depending on the task trained on the bin
+[43:28] and imputed 17 variable input for
+[43:31] phenotyping and inhosp mortality. Many
+[43:34] to one configuration the final hidden
+[43:36] state predicts the outcome for
+[43:38] decompensation and length of stay. Many
+[43:41] to many configuration predictions at
+[43:43] every hour. Standard supervised training
+[43:46] with appropriate loss per task.
+[43:49] Inhos mortality task. Binary
+[43:52] classification severely imbalanced. Most
+[43:55] ICU patients survive. Input is a time
+[43:59] series data for first 48 hours of ICU
+[44:03] stay. Modest LSTM gain. The gain is real
+[44:05] but small enough that the choice between
+[44:08] LSTM and a careful logistic regression
+[44:09] depends largely on engineering
+[44:13] preference rather than raw performance.
+[44:16] Many to one LSTM architecture and the
+[44:19] interesting question is calibration. The
+[44:21] model's predicted probabilities should
+[44:23] match observed event rates. Patients
+[44:26] predicted to die at 20% risk should die
+[44:28] in 20% of cases.
+[44:30] Harut Yunyan reports calibrated and
+[44:33] unccalibrated numbers. The calibrated
+[44:35] numbers are what clinicians should rely
+[44:38] on for any deployment scenario.
+[44:40] Decompensation task binary
+[44:43] classification at every hour. The label
+[44:45] at each hour is whether the patient will
+[44:48] die within the next 24 hours. Many to
+[44:50] many configuration. Each hour's
+[44:52] prediction is a moving target
+[44:54] probability of imminent deterioration.
+[44:56] The labels are even more imbalanced than
+[44:59] mortality. Most hourby- hour predictions
+[45:02] correspond to no impending event. Class
+[45:05] weighted loss is essential
+[45:07] here. The LSTM model could be configured
+[45:10] using either many to one or many to many
+[45:12] LSTM.
+[45:14] LSTM clearly outperforms logistic
+[45:17] regression. Here the temporal dynamics
+[45:21] matter and the LSTM can capture them. A
+[45:22] UC-R
+[45:26] for LSTM around 90. Logistic regression
+[45:29] around 86. The gap is larger than for
+[45:32] inhos mortality, which makes sense.
+[45:34] Decompensation prediction at every hour
+[45:37] benefits from the LSTM's ability to
+[45:39] integrate recent trends in the patients
+[45:40] vitals.
+[45:43] Decompensation has clear clinical use.
+[45:45] An early warning system that alerts
+[45:48] clinicians to deteriorating patients
+[45:49] several hours before clinical
+[45:52] recognition would be is in principle
+[45:54] life-saving.
+[45:57] Length of stay task either regression or
+[45:59] discretetized classification depending
+[46:01] on framing. The authors use a
+[46:03] discretetized classification with 10
+[46:06] buckets under one day, one to two days,
+[46:10] 2 to 3 days and so on up to 2 weeks plus
+[46:13] many to many configuration at every hour
+[46:15] predict which length of stay bucket the
+[46:18] patient will fall into. The longtail
+[46:19] distribution of stays makes this
+[46:21] challenging.
+[46:25] results on length of stay. LSTMM
+[46:28] modestly outperforms logistic regression
+[46:30] with the absolute performance numbers
+[46:33] being moderate rather than impressive.
+[46:34] Length of stay is hard to predict
+[46:36] because many of the determinants are
+[46:39] outside the clinical record itself. Bet
+[46:42] availability downstream social work
+[46:44] coordination family decisions about
+[46:46] postacute care.
+[46:49] Phenotyping task. Multilel
+[46:51] classification across 25 phenotype
+[46:54] labels. Given the full ICU stay record,
+[46:56] predict which of the phenotypes apply to
+[47:00] this patient. Many to one configuration.
+[47:02] The LSTM reads the full sequence and
+[47:05] produces 25 sigmoid outputs at the final
+[47:08] time step. Each is trained with binary
+[47:11] cross entropy.
+[47:14] Phenotype labels are derived from ICD9
+[47:16] codes that were assigned during the
+[47:18] patient's stay. The label set was
+[47:20] curated to cover common chronic and
+[47:23] acute conditions. Some labels are
+[47:25] abundant. Hypertension appears in a
+[47:28] large fraction of patients and some are
+[47:32] rare. per class AU ranges from very high
+[47:35] above 0.95 for distinctive conditions
+[47:39] down to mediocre around 0.7 for harder
+[47:42] ones. Why do we formulate this as a
+[47:45] multi- label classification task
+[47:47] coorbidities which are co-occurring
+[47:51] conditions? NLSTMs achieve macro average
+[47:52] AU-R
+[47:57] around 0.77 across the 25 phenotypes.
+[48:00] Logistic regression achieves around 0.74
+[48:04] per class AU varies substantially. The
+[48:06] LSTM gains are largest for phenotypes
+[48:08] that are diagnosed based on temporal
+[48:11] patterns. For example, acute respiratory
+[48:14] failure where the trajectory of vital
+[48:15] signs matters more than any single
+[48:18] value. For phenotypes that can be
+[48:20] diagnosed from a snapshot, chronic
+[48:24] conditions, the LSTM gain over logistic
+[48:28] regression is smaller.
+[48:31] What loss function should we use?
+[48:34] Multiple binary cross entropy losses.
+[48:36] Phenotype discovery is also where
+[48:39] multitask learning helps most. Sharing
+[48:42] representations across the four tasks
+[48:43] gives the phenotype head additional
+[48:47] signal. For example, the mortality task
+[48:49] forces the shared layers to learn about
+[48:51] disease severity which transfers to
+[48:54] phenotype prediction. The multitask
+[48:55] gains are largest for the phenotype
+[48:59] labels where data is relatively scarce.
+[49:03] Cross task summary. LSTMs beat logistic
+[49:05] regression on all four tasks modestly
+[49:09] but consistently. The largest LSTM gains
+[49:11] are on task where temporal dynamics
+[49:14] matter most. Decompensation and acute
+[49:16] condition phenotyping.
+[49:18] The smallest gains are on task where
+[49:20] static patient information dominates.
+[49:23] chronic phenotypes in hospital mortality
+[49:26] at admission. The overall picture is
+[49:28] that LSTMs are worth using, but the
+[49:30] gains are smaller than naive
+[49:33] expectations would suggest.
+[49:35] The honest interpretation,
+[49:37] most of the predictive power on these
+[49:39] tests comes from a relatively small
+[49:41] number of well-gineered features applied
+[49:44] with a sensible model. Architectural
+[49:47] sophistication on top adds incremental
+[49:48] gains.
+[49:50] This is a recurring pattern in clinical
+[49:53] machine learning. Labeled clinical data
+[49:55] is the bottleneck. And given enough good
+[49:58] labels and features, the choice between
+[50:00] classical methods and modern deep
+[50:02] learning is less important than people
+[50:04] often assume.
+[50:07] Next lecture, we continue with EHR data
+[50:11] but go deeper. Part two of EHR data
+[50:15] standards OM O FHIR more on missing data
+[50:19] and the MIC algorithm and the Rajcom at
+[50:22] all 2018 paper on scalable deep learning
+[50:24] with EHRs.
+[50:26] Rajcom is the canonical industry scale
+[50:29] demonstration that deep learning on EHR
+[50:31] data can match or beat carefully
+[50:33] engineered baselines when the data and
+[50:36] the architecture are right. We will
+[50:39] spend significant time on it.
+[50:41] Summary. We covered the introduction to
+[50:45] EHR data, adoption history, mimic 3
+[50:48] clinical prediction tasks, the recurrent
+[50:52] network family, vanilla RNN, LSTM, back
+[50:54] propagation through time, and the Harut
+[50:58] Union benchmark applied to mimic 3. By
+[50:59] now, you should be comfortable reading
+[51:03] any clinical RNN paper. The next lecture
+[51:06] extends EHR work into industry scale
+[51:09] data and deep multitask models.
