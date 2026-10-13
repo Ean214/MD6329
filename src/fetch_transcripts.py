@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+MD6329 Deep Learning for Healthcare AI -- final course project.
+Generative AI assistance was used in writing this script, as disclosed in the
+report (Section 4, "Software 3.0") and on the project cover page. The author
+validated the implementation and the results, and remains responsible for both.
+"""
 """R2: fetch EN auto-captions for the 14 lectures via yt-dlp (more reliable
 than youtube-transcript-api which returns ParseError under bot-check).
 Outputs: results/transcripts/<videoId>.en.vtt + .txt (timestamped lines)

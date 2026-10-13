@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+MD6329 Deep Learning for Healthcare AI -- final course project.
+Generative AI assistance was used in writing this script, as disclosed in the
+report (Section 4, "Software 3.0") and on the project cover page. The author
+validated the implementation and the results, and remains responsible for both.
+"""
 """E2: compute budget (params / FLOPs / latency) for Edge-AI argument (C2).
 Outputs results/e2_compute.json + results/fig_e2_pareto.png
 """

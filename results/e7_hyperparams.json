@@ -1,0 +1,97 @@
+{
+  "e7a_xgb": {
+    "grid": {
+      "n200_d3": {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "auprc": 0.1858,
+        "auroc": 0.76
+      },
+      "n200_d6": {
+        "n_estimators": 200,
+        "max_depth": 6,
+        "auprc": 0.1734,
+        "auroc": 0.7462
+      },
+      "n200_d9": {
+        "n_estimators": 200,
+        "max_depth": 9,
+        "auprc": 0.1623,
+        "auroc": 0.7293
+      },
+      "n600_d3": {
+        "n_estimators": 600,
+        "max_depth": 3,
+        "auprc": 0.1904,
+        "auroc": 0.7524
+      },
+      "n600_d6": {
+        "n_estimators": 600,
+        "max_depth": 6,
+        "auprc": 0.1675,
+        "auroc": 0.733
+      },
+      "n600_d9": {
+        "n_estimators": 600,
+        "max_depth": 9,
+        "auprc": 0.1541,
+        "auroc": 0.7241
+      },
+      "n1200_d3": {
+        "n_estimators": 1200,
+        "max_depth": 3,
+        "auprc": 0.1853,
+        "auroc": 0.7453
+      },
+      "n1200_d6": {
+        "n_estimators": 1200,
+        "max_depth": 6,
+        "auprc": 0.152,
+        "auroc": 0.719
+      },
+      "n1200_d9": {
+        "n_estimators": 1200,
+        "max_depth": 9,
+        "auprc": 0.151,
+        "auroc": 0.7217
+      }
+    },
+    "best": {
+      "config": "n600_d3",
+      "n_estimators": 600,
+      "max_depth": 3,
+      "auprc": 0.1904,
+      "auroc": 0.7524
+    }
+  },
+  "e7b_cnnmlp": {
+    "lr0.0003_w1": {
+      "lr": 0.0003,
+      "pos_weight": true,
+      "auprc": 0.1926,
+      "auroc": 0.7719,
+      "val_auprc": 0.3418
+    },
+    "lr0.001_w1": {
+      "lr": 0.001,
+      "pos_weight": true,
+      "auprc": 0.1817,
+      "auroc": 0.7674,
+      "val_auprc": 0.3464
+    },
+    "lr0.003_w1": {
+      "lr": 0.003,
+      "pos_weight": true,
+      "auprc": 0.1696,
+      "auroc": 0.7594,
+      "val_auprc": 0.3452
+    },
+    "lr0.001_w0": {
+      "lr": 0.001,
+      "pos_weight": false,
+      "auprc": 0.1769,
+      "auroc": 0.762,
+      "val_auprc": 0.3361
+    }
+  }
+}

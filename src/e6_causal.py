@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+MD6329 Deep Learning for Healthcare AI -- final course project.
+Generative AI assistance was used in writing this script, as disclosed in the
+report (Section 4, "Software 3.0") and on the project cover page. The author
+validated the implementation and the results, and remains responsible for both.
+"""
 """E6: causal diagnosis (confounding-by-indication exposure).
 
 Two analyses on the dynamics model (E5):

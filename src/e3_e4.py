@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+MD6329 Deep Learning for Healthcare AI -- final course project.
+Generative AI assistance was used in writing this script, as disclosed in the
+report (Section 4, "Software 3.0") and on the project cover page. The author
+validated the implementation and the results, and remains responsible for both.
+"""
 """E3: prediction-horizon curve (C1) + E4: modality ablation (C3).
 E3 writes results/e3_horizon.json + results/fig_e3_horizon.png
 E4 writes results/e4_ablation.json + results/fig_e4_ablation.png

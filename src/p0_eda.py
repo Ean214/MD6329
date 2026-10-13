@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+MD6329 Deep Learning for Healthcare AI -- final course project.
+Generative AI assistance was used in writing this script, as disclosed in the
+report (Section 4, "Software 3.0") and on the project cover page. The author
+validated the implementation and the results, and remains responsible for both.
+"""
 """P0: HEMOBP session reconstruction + EDA.
 Session = contiguous readings per patient (gap > 6h starts new session).
 Dialysis day = (session_start - 8h).date  (d1.keyindate is stamped 08:00:00).
