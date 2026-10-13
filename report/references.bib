@@ -8,7 +8,7 @@
   journal = {Scientific Data},
   volume  = {6}, pages = {313}, year = {2019},
   doi     = {10.1038/s41597-019-0319-8},
-  note    = {HEMOBP dataset, figshare 6260654, CC BY 4.0 [OK]}
+% status: note    = {HEMOBP dataset, figshare 6260654, CC BY 4.0 [OK]}
 }
 
 % ---------- closed-loop UF control / biofeedback ----------
@@ -18,7 +18,7 @@
   journal = {American Journal of Kidney Diseases},
   volume  = {32}, number = {5}, pages = {739--746}, year = {1998},
   doi     = {10.1016/S0272-6386(98)70128-3},
-  note    = {First biofeedback closed-loop control of UF rate + dialysate conductivity; severe hypotensive episodes 26 -> 3 [OK]}
+% status: note    = {First biofeedback closed-loop control of UF rate + dialysate conductivity; severe hypotensive episodes 26 -> 3 [OK]}
 }
 @article{ronco2000biofeedback,
   author  = {Ronco, Claudio and Brendolan, Alessandra and Milan, Manuela and Rodeghiero, Maria Pia and Zanella, Monica and La Greca, Giuseppe},
@@ -26,7 +26,7 @@
   journal = {Kidney International},
   volume  = {58}, number = {2}, pages = {800--808}, year = {2000},
   doi     = {10.1046/j.1523-1755.2000.00229.x},
-  note    = {Biofeedback reduced hypotensive episodes 59->24 AND improved eKt/V [OK]}
+% status: note    = {Biofeedback reduced hypotensive episodes 59->24 AND improved eKt/V [OK]}
 }
 @article{dong2024closedloop,
   author  = {Dong, Zijun and Rivera Fuentes, Lemuel and Rao, Sharon and Kotanko, Peter},
@@ -34,7 +34,7 @@
   journal = {Toxins},
   volume  = {16}, number = {8}, pages = {351}, year = {2024},
   doi     = {10.3390/toxins16080351},
-  note    = {28 clinical studies, 23 effective, no adverse effects; evidence still needs RCTs. Renal Research Institute (Fresenius) [OK]}
+% status: note    = {28 clinical studies, 23 effective, no adverse effects; evidence still needs RCTs. Renal Research Institute (Fresenius) [OK]}
 }
 
 % ---------- IDH epidemiology / definitions / guidelines ----------
@@ -44,7 +44,7 @@
   journal = {American Journal of Nephrology},
   volume  = {49}, number = {6}, pages = {497--506}, year = {2019},
   doi     = {10.1159/000500877},
-  note    = {IDH prevalence meta-analysis [OK]}
+% status: note    = {IDH prevalence meta-analysis [OK]}
 }
 @article{flythe2015idh,
   author  = {Flythe, Jennifer E. and Xue, Hui and Lynch, Katherine E. and Curhan, Gary C. and Brunelli, Steven M.},
@@ -52,21 +52,21 @@
   journal = {Journal of the American Society of Nephrology},
   volume  = {26}, number = {3}, pages = {724--734}, year = {2015},
   doi     = {10.1681/ASN.2014020222},
-  note    = {IDH definition sensitivity with mortality [OK]}
+% status: note    = {IDH definition sensitivity with mortality [OK]}
 }
 @article{kdoqi2005cvd,
   author  = {{National Kidney Foundation}},
   title   = {K/DOQI Clinical Practice Guidelines for Cardiovascular Disease in Dialysis Patients},
   journal = {American Journal of Kidney Diseases},
   volume  = {45}, number = {4 Suppl 3}, year = {2005},
-  note    = {UFR < 13 mL/kg/h etc. [OK]}
+% status: note    = {UFR < 13 mL/kg/h etc. [OK]}
 }
 @misc{china2022consensus,
   author       = {{Chinese Society of Nephrology Expert Group}},
   title        = {Expert Consensus on the Prevention and Treatment of Intradialytic Hypotension},
   howpublished = {Chinese clinical guideline (published in Chinese)},
   year         = {2022},
-  note         = {UFR control <13 mL/kg/h; UF profiling + cool dialysate 35--36.5 C [CHK: journal/issue]}
+% status: note         = {UFR control <13 mL/kg/h; UF profiling + cool dialysate 35--36.5 C [CHK: journal/issue]}
 }
 
 % ---------- ML for IDH prediction ----------
@@ -76,7 +76,7 @@
   journal = {Journal of Reliable Intelligent Environments (Springer)},
   year    = {2025},
   doi     = {10.1007/s13721-025-00689-w},
-  note    = {IDH-MSTF; XGBoost 93.4\% acc / 98.1\% AUC on public dataset (HEMOBP); tests multiple IDH definitions [OK]}
+% status: note    = {IDH-MSTF; XGBoost 93.4\% acc / 98.1\% AUC on public dataset (HEMOBP); tests multiple IDH definitions [OK]}
 }
 @misc{bi2022lstm,
   author       = {{POS-640 study group}},
@@ -84,14 +84,7 @@
   howpublished = {Kidney International Reports, abstract supplement},
   year         = {2022},
   doi          = {10.1016/S2468-0249(22)00673-8},
-  note         = {Bi-LSTM 78.5\% acc / AUC 0.822; RF AUC 0.832; 73,323 sessions [CHK: find full paper if exists]}
-}
-@misc{tft2021,
-  author       = {[TO VERIFY]},
-  title        = {Temporal Fusion Transformer for severe hypotension prediction during hemodialysis (AUC 0.953)},
-  howpublished = {[source cited in user's undergrad thesis ref [9]]},
-  year         = {2021},
-  note         = {[CHK] locate exact paper before submission; thesis cited AUCROC 0.953, compute-heavy, cold-start issues}
+% status: note         = {Bi-LSTM 78.5\% acc / AUC 0.822; RF AUC 0.832; 73,323 sessions [CHK: find full paper if exists]}
 }
 
 % ---------- methods ----------
@@ -100,28 +93,28 @@
   title   = {Attention is All You Need},
   journal = {Advances in Neural Information Processing Systems},
   volume  = {30}, year = {2017},
-  note    = {Transformer [OK]}
+% status: note    = {Transformer [OK]}
 }
 @article{hochreiter1997lstm,
   author  = {Hochreiter, Sepp and Schmidhuber, J{\"u}rgen},
   title   = {Long Short-Term Memory},
   journal = {Neural Computation},
   volume  = {9}, number = {8}, pages = {1735--1780}, year = {1997},
-  note    = {[OK]}
+% status: note    = {[OK]}
 }
 @misc{wu2024pyvene,
   author       = {Wu, Zhengxuan and others},
   title        = {pyvene: A Library for Understanding and Improving PyTorch Models via Interventions},
   howpublished = {arXiv:2403.04640},
   year         = {2024},
-  note         = {[OK]}
+% status: note         = {[OK]}
 }
 @article{chen2016xgboost,
   author  = {Chen, Tianqi and Guestrin, Carlos},
   title   = {{XGBoost}: A Scalable Tree Boosting System},
   journal = {Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
   pages   = {785--794}, year = {2016},
-  note    = {[OK]}
+% status: note    = {[OK]}
 }
 
 % ---------- course lectures (timestamps to fill after lecture index) ----------
@@ -130,5 +123,13 @@
   title        = {MD6329 Deep Learning for Healthcare AI --- Lecture Recordings},
   howpublished = {YouTube playlist PLORG7zBQosxw; NTU Learn},
   year         = {2026},
-  note         = {L6 RNN/LSTM; L7 Transformer \& BERT; L8 Multimodal; L11 Interpretability; L12 Federated [timestamps: TODO]}
+% status: note         = {L6 RNN/LSTM; L7 Transformer \& BERT; L8 Multimodal; L11 Interpretability; L12 Federated [timestamps: TODO]}
+}
+
+% ---------- base code (course assignment) ----------
+@misc{md6329assignment,
+  author       = {Yeo, Si Yong},
+  title        = {MD6329 Assignment 2: Electronic Health Records --- Transformer Encoder and Intervention Analysis},
+  howpublished = {Course assignment, Nanyang Technological University},
+  year         = {2026}
 }

@@ -1,6 +1,7 @@
 \documentclass{article}
 
 % NeurIPS 2025 style, final copy (no line numbers)
+\PassOptionsToPackage{numbers,square,sort,compress}{natbib}
 \usepackage[main, final]{neurips_2025}
 
 \usepackage[utf8]{inputenc}
@@ -13,6 +14,7 @@
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\setcitestyle{numbers,square,comma,compress,sort}
 
 \title{Sensor-Light Closed-Loop Ultrafiltration Control in Haemodialysis:\\ An In-Silico Feasibility Study on Routine Machine Data}
 
@@ -41,7 +43,7 @@ The second generation works, but it pays for its sensor: optical relative-blood-
 
 We decompose this into three testable sub-questions, each mapped to a claim from an accompanying engineering design project: (i) how early and how accurately can IDH be predicted (claim C1/C2); (ii) is multi-modal sensing necessary, and which modality matters (C3); (iii) how much IDH reduction does a predictive policy buy, and at what price in fluid removal and session time (C4/C5) --- with a fourth, honest question about whether observational data can support causal claims at all (C6).
 
-The work is deliberately positioned against the course material: irregular EHR time series (Lecture~5, \textasciitilde 00:38), recurrent models (Lecture~6, \textasciitilde 02:14), the Transformer (Lecture~7, \textasciitilde 00:27 and \textasciitilde 27:16), multi-modal fusion (Lecture~8, \textasciitilde 00:11), the reinforcement-learning view of sequential decisions (Lecture~10, \textasciitilde 00:27), interpretability (Lecture~11, \textasciitilde 05:11) and privacy in federated deployments (Lecture~12, \textasciitilde 00:39).
+The work is deliberately positioned against the course material: irregular EHR time series (Lecture~5, \textasciitilde 00:38), recurrent models (Lecture~6, \textasciitilde 02:14), the Transformer (Lecture~7, \textasciitilde 00:27 and \textasciitilde 27:16), multi-modal fusion (Lecture~8, \textasciitilde 00:11), the reinforcement-learning view of sequential decisions (Lecture~10, \textasciitilde 00:27), interpretability (Lecture~11, \textasciitilde 05:11) and privacy in federated deployments (Lecture~12, \textasciitilde 00:39) \citep{md6329lectures}.
 
 \section{Related Work}
 
@@ -49,7 +51,7 @@ The work is deliberately positioned against the course material: irregular EHR t
 
 \paragraph{IDH definitions and epidemiology.} Prevalence depends heavily on definition \citep{kuipers2019prevalence}, and different definitions carry different mortality associations \citep{flythe2015idh}. Guidelines recommend keeping the ultrafiltration rate below roughly 13~mL/kg/h, alongside ultrafiltration profiling and cooler dialysate \citep{kdoqi2005cvd,china2022consensus}. We therefore report three definitions and justify the one we adopt.
 
-\paragraph{Machine learning for IDH.} Tree ensembles and recurrent networks dominate the recent literature; a bidirectional LSTM reached 78.5\% accuracy and AUC 0.822 on 73{,}323 sessions \citep{bi2022lstm}, and a multi-scale temporal feature model reported 98.1\% AUC with XGBoost on a public cohort \citep{idhmstf2025}. A Temporal Fusion Transformer reached AUC 0.953 but at high compute cost. Two gaps motivate our design: prediction is rarely coupled to a control evaluation, and the causal status of the ultrafiltration signal is rarely examined. We address both, and we quantify the fluid-removal price of acting on a prediction.
+\paragraph{Machine learning for IDH.} Tree ensembles and recurrent networks dominate the recent literature; a bidirectional LSTM reached 78.5\% accuracy and AUC 0.822 on 73{,}323 sessions \citep{bi2022lstm}, and a multi-scale temporal feature model reported 98.1\% AUC with XGBoost on a public cohort \citep{idhmstf2025}. A Temporal Fusion Transformer reached AUC 0.953 but at high compute cost. Two gaps motivate our design: prediction is rarely coupled to a control evaluation, and the causal status of the ultrafiltration signal is rarely examined. We address both, and we quantify the fluid-removal price of acting on a prediction. Our modelling choices also follow the course treatment of irregular clinical time series, recurrent gating, and attention over short sequences \citep{md6329lectures}.
 
 \section{Data}
 
@@ -92,14 +94,14 @@ max $-$ nadir $\ge$ 20~mmHg & 84.42\% & rejected (non-specific) \\
 
 \paragraph{Features and modalities.} Fifteen features fall into three groups, which we later ablate: (a) \emph{demographic/static} --- age, sex, diabetes, start weight, dry weight, interdialytic weight gain; (b) \emph{pre-$T$ physiology} --- first SBP, nadir so far, SBP slope, count of distinct readings; (c) \emph{machine settings} --- mean UFR, blood flow, dialysate conductivity and temperature up to $T$. Sequence models additionally consume up to 96 readings of seven channels (SBP, DBP, UFR, blood flow, conductivity, dialysate temperature, normalised elapsed time) with an explicit padding mask.
 
-\paragraph{Models.} Five models are compared. (1) XGBoost \citep{chen2016xgboost} on tabular features is the clinical baseline. (2) A multilayer perceptron consumes static features only. (3) A 1D-CNN+MLP fusion mirrors the architecture of the accompanying design project: a convolutional branch over the reading sequence, an MLP branch over static features, concatenated before a shared head. (4) An LSTM \citep{hochreiter1997lstm} reads the masked sequence and takes the last valid hidden state. (5) A Transformer encoder built from scratch follows our earlier coursework implementation: sinusoidal positional encoding, multi-head scaled dot-product attention with key-padding masks, GELU feed-forward blocks and mean pooling over valid positions \citep{vaswani2017attention}.
+\paragraph{Models.} Five models are compared. (1) XGBoost \citep{chen2016xgboost} on tabular features is the clinical baseline. (2) A multilayer perceptron consumes static features only. (3) A 1D-CNN+MLP fusion mirrors the architecture of the accompanying design project: a convolutional branch over the reading sequence, an MLP branch over static features, concatenated before a shared head. (4) An LSTM \citep{hochreiter1997lstm} reads the masked sequence and takes the last valid hidden state. (5) A Transformer encoder built from scratch reuses the encoder written for the course assignment on clinical sequences \citep{md6329assignment}: sinusoidal positional encoding, multi-head scaled dot-product attention with key-padding masks, GELU feed-forward blocks and mean pooling over valid positions \citep{vaswani2017attention}.
 
 \paragraph{Evaluation protocol.} Splits are by patient (70/15/15) with a fixed seed, because a patient contributes dozens of sessions and row-wise splitting would leak. AUPRC is the primary metric given class imbalance; AUROC, Brier score and sensitivity at 80\% specificity are secondary. Because AUPRC is prevalence-sensitive, we report test prevalence alongside every value.
 
 \paragraph{Control policies (in silico).}\label{sec:e5}
 We train a \emph{dynamics model} that adds two features to the tabular set: the mean UFR actually applied after $T$, and the remaining minutes. It is trained on clinicians' observed choices --- which is precisely why it is a simulator, not an estimator of causal effect. On the test set we then compare three policies at the decision point: \emph{constant} (keep the observed profile), \emph{reactive} (a rule-based proxy for biofeedback: cut UFR by 30\% if SBP has dropped $\ge$15~mmHg or nadir is below 100), and \emph{predictive} (choose from a candidate grid of $0.6$--$1.0\times$ the observed UFR, minimising predicted risk subject to a residual-fluid tolerance). For each policy we report mean predicted risk, mean unremoved fluid, and the extra minutes needed to still reach the prescribed fluid target.
 
-\paragraph{Causal diagnosis.} Two probes test whether the ultrafiltration signal is causally usable. First, a perturbation sweep: we vary the planned remaining UFR multiplier from 0.3 to 1.3 and record mean predicted risk, plus the crude observed association between actual UFR and IDH. Second, an intervention-style ablation on the Transformer: zeroing the attention output or the feed-forward output of each encoder block and measuring the change on the logit scale (not the probability scale, which saturates). Figure~\ref{fig:e6} shows the perturbation and association results.
+\paragraph{Causal diagnosis.} Two probes test whether the ultrafiltration signal is causally usable. First, a perturbation sweep: we vary the planned remaining UFR multiplier from 0.3 to 1.3 and record mean predicted risk, plus the crude observed association between actual UFR and IDH. Second, an intervention-style ablation on the Transformer: zeroing the attention output or the feed-forward output of each encoder block (the intervention tooling follows \citealp{wu2024pyvene}) and measuring the change on the logit scale (not the probability scale, which saturates). Figure~\ref{fig:e6} shows the perturbation and association results.
 
 \paragraph{Software 3.0.} Generative AI assistance was used throughout, under the course honour code, and is disclosed here. It was most valuable in three places: refactoring the session builder after pandas-groupby iteration failed on 160k sessions (a vectorised rewrite cut runtime from $>$20~min to 19~min for four horizons); diagnosing a misleading ablation result in an earlier assignment that turned out to be sigmoid saturation rather than a modelling failure; and localising a device-placement bug in a diagnostic model. It was least reliable on domain judgement --- choosing the IDH definition, deciding what the control comparison may legitimately claim, and recognising that the biofeedback literature makes ``predictive versus PID'' the wrong framing. All numerical results in this report were produced by scripts in the accompanying repository and can be regenerated.
 
