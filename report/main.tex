@@ -11,6 +11,7 @@
 \usepackage{booktabs}
 \usepackage{amsfonts}
 \usepackage{amsmath}
+\usepackage{array}
 \usepackage{nicefrac}
 \usepackage{microtype}
 \usepackage{graphicx}
@@ -376,11 +377,12 @@ our earlier coursework, and a caution anticipated by the attention variants disc
 \label{fig:e6}
 \end{figure}
 
-\paragraph{E7: hyperparameter sensitivity.} Hyperparameters are selected on the validation split; the test split is
-reported only for the selected configuration. For XGBoost, tree depth dominates validation AUPRC: depth 3 reaches 0.32 and
+\paragraph{E7: hyperparameter sensitivity.} Hyperparameters are selected on the validation split. Test scores are reported for every swept setting for transparency,
+but they were never used to choose one; in fact the two splits rank the settings differently. For XGBoost, tree depth dominates validation AUPRC: depth 3 reaches 0.32 and
 depth 9 falls to 0.18, with 200 trees preferred over 600 or 1200 (Figure~\ref{fig:e7}). The validation-selected configuration
-(n=200, depth 3) scores 0.186 on test, against 0.168 for the default (n=600, depth 6). For the 1D-CNN+MLP, the learning rate
-matters more than the class weight: $3\times10^{-4}$ is best on validation and gives 0.194 on test, against 0.188 at $10^{-3}$.
+(n=200, depth 3) scores 0.186 on test, against 0.168 for the default (n=600, depth 6). For the 1D-CNN+MLP, validation selects learning rate $10^{-3}$ (0.345), whose test score is 0.188; the setting with the
+best test score, $3\times10^{-4}$ (0.194), would not have been selected, and $3\times10^{-3}$ falls to 0.168. Disabling the
+positive-class weight costs about five relative percent (0.188 to 0.178).
 
 One caveat matters more than the numbers. Validation and test disagree about the \emph{ranking} of these configurations ---
 the configuration with the best test score (n=600, depth 3, 0.190) ranks below the best validation score (n=200, depth 3) ---
@@ -392,8 +394,9 @@ a tuning result, and E1 keeps identical defaults across models so that the compa
 \centering
 \includegraphics[width=0.49\linewidth]{figs/fig_e7_xgb_grid.png}
 \includegraphics[width=0.49\linewidth]{figs/fig_e7_nn_lr.png}
-\caption{E7: hyperparameter sensitivity. Left: XGBoost validation AUPRC over tree depth and ensemble size (selection split).
-Right: 1D-CNN+MLP learning-rate sweep with and without positive-class weighting.}
+\caption{E7: hyperparameter sensitivity. Left: XGBoost validation AUPRC over tree depth and ensemble size (the selection
+split). Right: 1D-CNN+MLP learning-rate sweep, with validation and test AUPRC shown side by side --- selection used validation
+only; the two splits do not rank the settings identically.}
 \label{fig:e7}
 \end{figure}
 
@@ -452,11 +455,33 @@ hypotensive episode versus a repeated false alarm. Neither cost is observable in
 no intervention logs and no workflow data. The threshold, the alarm burden per session or per hour, and the action that
 follows therefore remain design decisions to be settled in a prospective study, not quantities this analysis can supply.
 
+\begin{table}[t]
+\caption{What this report does and does not establish. ``Established'' here means internal validation on one cohort, nothing
+more; the remaining layers are listed so that the report's scope is explicit.}
+\label{tab:evidence}
+\centering
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\linewidth}>{\raggedright\arraybackslash}p{0.54\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}}
+\toprule
+Layer & What this report provides & Status \\
+\midrule
+Data and algorithm & Patient-level splits, five models, calibration, bootstrap intervals, one cohort & established \\[3pt]
+Clinical predictive value & One operating point: 0.587 sensitivity at 80\% specificity, $\mathrm{PPV}\approx15\%$, 18.8 false alarms per 100 sessions & quantified \\[3pt]
+Control algorithm & Exploratory action-conditioned simulation; paired risk differences; 65\% conditional support; action chosen and scored by the same model & exploratory \\[3pt]
+Closed loop and device & No pump response, no fault handling, no real-time behaviour & none \\[3pt]
+Clinical translation & No prospective evaluation, no workflow study & none \\[3pt]
+Product and business & Outside the scope of a technical report & out of scope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Boundaries we will not overstep.} Every control number here is in silico under a model trained on clinicians' own decisions; it is not clinical validation. The dose--response gradient is equally compatible with confounding by indication, so the simulated differences are neither
 estimates nor bounds of a treatment effect: the direction and magnitude of any real clinical benefit remain unidentified in
 these observational data. The attention-ablation result means explanation should not be read off attention weights. And the cohort is in-centre haemodialysis with a cuff measurement every 50.7 minutes: it cannot speak to the ambulatory wearable scenario, which lacks exactly the high-frequency modalities
 (photoplethysmography, inertial, pressure waveforms) whose value this dataset cannot measure --- the ablation says blood
-pressure history matters, not that a new sensor would help. Scaling from 4-hour supine sessions to 6--8-hour ambulatory therapy, and from sparse to continuous sensing, remains an extrapolation that this dataset cannot adjudicate.
+pressure history matters, not that a new sensor would help. Scaling from 4-hour supine sessions to 6--8-hour ambulatory therapy, and from sparse to continuous sensing, is not one
+limitation among several but the largest technical assumption in the programme: every number here is conditional on a setting
+the target product will not reproduce.
 
 \paragraph{Implications for the design project.} The results strengthen three claims and weaken one. Strengthened: physiological information is where the predictive signal sits within this dataset, which supports studying how
 it should be captured rather than settling a sensor budget (E4) --- the incremental gain, cost and practicality of continuous
@@ -478,6 +503,24 @@ treatment limits with independently enforced safety constraints, bounded rate ch
 logging, and a predefined fallback when signals are missing, stale, inconsistent or unavailable. The 5--15-minute warning
 requirement remains a target for future validation, not a capability established by this dataset, and the incremental value
 of continuous blood-pressure monitoring, photoplethysmography (PPG) or other sensors must be evaluated rather than assumed.
+
+\begin{table}[t]
+\caption{Design inputs that must be fixed before controller development can start. None is settled by this report, and none
+should be back-filled from the scores the model happens to reach.}
+\label{tab:design}
+\centering
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.26\linewidth}>{\raggedright\arraybackslash}p{0.46\linewidth}>{\raggedright\arraybackslash}p{0.20\linewidth}}
+\toprule
+Design input & Why it is still open & Who decides \\
+\midrule
+Intended use: population, modality, setting & In-centre supervised versus home ambulatory changes the sensor set, session length and regulatory route & clinical + product \\[3pt]
+Control authority: advise, prompt or actuate & Decides whether the model is decision support or a controller, and with it the evidence burden & clinical + regulatory \\[3pt]
+Hard safety constraints & Rate limits, fluid target, timeouts and signal-loss behaviour must come from hazard analysis, not from model behaviour & control engineering + clinical \\[3pt]
+Acceptable performance & Warning horizon, missed events, false alarms and added time must come from clinical need, not from AUPRC & clinical + risk analysis \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{What the present work contributes.} This study is a technical foundation for that programme. It establishes a
 reproducible retrospective pipeline, compares five modelling approaches under patient-level evaluation, identifies substantial
@@ -521,7 +564,11 @@ undergo software-in-the-loop testing and, where feasible, hardware-in-the-loop e
 covering rate limits, total fluid-removal constraints, delayed or missing measurements, model failure, actuator mismatch,
 communication loss and recovery from abnormal states. Computational latency should be measured on the intended hardware rather
 than inferred from laptop benchmarks. A shadow-mode evaluation should then generate recommendations without changing treatment,
-so that disagreements, unsuitable recommendations and potential safety issues can be characterised. Home deployment also raises data-governance questions --- on-device inference, or federated and privacy-preserving training
+so that disagreements, unsuitable recommendations and potential safety issues can be characterised. The engineering evidence for those stages is defined outside this report: software lifecycle to IEC~62304
+\citep{iec62304}, risk management to ISO~14971 \citep{iso14971}, and basic safety of haemodialysis equipment to
+IEC~60601-2-16 \citep{iec60601_2_16}; in Singapore the intended-use classification and clinical evaluation of software as a
+medical device would follow HSA guidance. We cite these as the standards that will govern the work, not as evidence that this
+prototype meets them. Home deployment also raises data-governance questions --- on-device inference, or federated and privacy-preserving training
 (Lecture~12, \textasciitilde 00:39) --- which fall outside this study but condition the design \citep{md6329lectures}. Only
 after technical, safety, ethical and regulatory review should a prospective supervised evaluation assess feasibility and
 safety, followed by
