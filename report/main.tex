@@ -10,6 +10,7 @@
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{amsfonts}
+\usepackage{amsmath}
 \usepackage{nicefrac}
 \usepackage{microtype}
 \usepackage{graphicx}
@@ -30,7 +31,26 @@
 \maketitle
 
 \begin{abstract}
-Intradialytic hypotension (IDH) is among the most frequent complications of haemodialysis. Clinical closed-loop systems that adjust the ultrafiltration rate (UFR) already exist, but they depend on optical relative-blood-volume sensors that a wearable or home device cannot easily carry. This project asks whether routinely recorded dialysis-machine data alone can support a predict-then-adjust control loop, and what that loop costs. Using HEMOBP (1{,}072 patients, 197{,}269 reconstructed sessions, 4.37M intra-session readings, CC~BY~4.0), we predict IDH in the remainder of a session from information available up to a decision point $T$, with patient-level group splits and AUPRC as the primary metric. Five models are compared (XGBoost, MLP, a 1D-CNN+MLP fusion, LSTM, and a from-scratch Transformer encoder). The best 60-minute model reaches AUPRC~0.2015 against a 0.0586 prevalence baseline (AUROC~0.774). A modality ablation shows that intra-session blood-pressure history is the only indispensable modality; removing it costs 44\% of AUPRC, while machine settings add almost no independent signal. Simulating three ultrafiltration policies in silico, a predictive policy lowers mean predicted IDH risk from 0.238 (constant UFR) to 0.192, but increases unremoved fluid from 699~mL to 957~mL and requires roughly 104 extra minutes. A perturbation analysis shows a monotone dose--response between UFR and risk, yet this gradient is equally consistent with confounding by indication, so all control gains must be read as upper bounds. We conclude that the software loop is buildable and evaluable offline, that sensor priority should go to continuous physiological monitoring, and that validating the control policy itself requires prospective data.
+Intradialytic hypotension (IDH) is among the most frequent complications of haemodialysis. Clinical
+closed-loop systems that adjust the ultrafiltration rate (UFR) already exist, but they rely on optical
+relative-blood-volume sensors that a wearable device cannot easily carry. This project asks whether
+routinely recorded dialysis-machine data alone can support a predict-then-adjust loop, and what such a
+loop would cost. Using HEMOBP (CC~BY~4.0; 1{,}072 patients recorded, 919 remaining after cleaning,
+160{,}069 analysable sessions), we predict IDH in the remainder of a session from information available
+at a decision point $T$, with patient-level splits and AUPRC as the primary metric. Five models are
+compared. The best 60-minute model reaches AUPRC 0.2015 against a 0.0586 prevalence baseline, but
+patient-level bootstrap intervals are wide (95\% CI 0.13--0.28) and the gap to the compact 1D-CNN+MLP
+is not established (difference 0.018, 95\% CI $-0.001$ to 0.033), so we do not rank architectures. Raw
+probabilities are unusable as risks: they over-predict by a factor of four to six and every Brier score
+is worse than the no-skill value, which Platt scaling on validation repairs (0.052 versus 0.055).
+Modality ablation shows that intra-session blood pressure is the only indispensable modality (removing
+it costs 44\% of AUPRC), while machine settings add no independent signal. In an in-silico simulation
+whose candidates use only decision-time information, holding the rate observed at $T$ implies a
+predicted risk of 7.3\%, and adapting down to about $0.75\times$ lowers it to 5.8\% at the cost of
+243~mL more unremoved fluid. The dynamics model is a conditional-risk model, not an identified
+counterfactual one, and candidate plans deviate from observed practice by 0.17~L/h; the control gains
+are therefore extrapolations, and validating the policy requires prospective data.
+
 \end{abstract}
 
 \section{Problem Formulation}
@@ -55,7 +75,10 @@ The work is deliberately positioned against the course material: irregular EHR t
 
 \section{Data}
 
-\paragraph{Cohort.} HEMOBP \citep{lin2019hemobp} contains dialysis-machine recordings linked to hospital demographic data, released under CC~BY~4.0: 1{,}072 patients, 4{,}366{,}298 intra-session readings. Sessions are not a calendar day --- the unit runs three shifts and the last crosses midnight --- so we reconstruct sessions as contiguous runs of readings separated by more than six hours, and assign each to a dialysis day beginning at 08:00. This yields 197{,}269 sessions (82.7\% of which match session-level weight records).
+\paragraph{Cohort.} HEMOBP \citep{lin2019hemobp} contains dialysis-machine recordings linked to hospital demographic data, released under CC~BY~4.0: 1{,}072 patients, 4{,}366{,}298 intra-session readings. Sessions are not a calendar day --- the unit runs three shifts and the last crosses midnight --- so we reconstruct sessions as contiguous runs of readings separated by more than six hours, and assign each to a dialysis day beginning at 08:00. This yields 197{,}269 sessions (82.7\% match session-level weight records). Applying the cleaning rules below leaves
+\textbf{919 patients and 160{,}069 sessions}: 197{,}269 $\rightarrow$ 196{,}457 (duration) $\rightarrow$ 162{,}563
+(start weight) $\rightarrow$ 160{,}673 (interdialytic gain) $\rightarrow$ 160{,}069 (UFR). The weight filter is the largest
+single loss and removes 153 patients, so every modelling result describes 919 patients, not the 1{,}072 recorded.
 
 \paragraph{Descriptive statistics.} Mean session duration is 236 $\pm$ 24.5 minutes; mean UFR is 8.26 $\pm$ 3.38~mL/kg/h (median 7.8), i.e.\ mostly below the guideline threshold of 13; median interdialytic weight gain is 2.32~kg. Crucially, blood pressure is sparse: the median within-session interval between distinct readings is 50.7 minutes, and only 32\% of intervals are at or below 20 minutes (Figure~\ref{fig:eda}).
 
@@ -109,25 +132,41 @@ We train a \emph{dynamics model} that adds two features to the tabular set: the 
 
 \section{Experiments}
 
-\paragraph{E1: five-model comparison.} Table~\ref{tab:e1} reports the 60-minute horizon on 22{,}407 test samples (prevalence 5.86\%). The from-scratch Transformer is best (AUPRC 0.2015, AUROC 0.774), but the design project's 1D-CNN+MLP reaches 91\% of that with roughly one quarter of the parameters, and beats both the MLP and the LSTM. XGBoost is weakest on ranking yet best calibrated (Brier 0.116). We note that validation AUPRC (0.30--0.35) is far above test AUPRC; patient-level splitting plus differing split prevalence explains this, and it is a reminder that AUPRC should never be compared across sets with different prevalence.
+\paragraph{E1: five-model comparison.} Table~\ref{tab:e1} reports the 60-minute horizon on 22{,}407 test samples
+(prevalence 5.86\%). The from-scratch Transformer has the highest point estimate, but patient-level bootstrap intervals are
+wide and overlap: it exceeds the 1D-CNN+MLP by 0.018 with a 95\% interval of $-0.001$ to 0.033
+(Figure~\ref{fig:e9ci}). We therefore \emph{do not} claim an architecture ranking; what the comparison supports is that a
+compact fused model is competitive at a quarter of the parameters. Two cautions follow. Validation AUPRC (0.30--0.35)
+exceeds test AUPRC because the best-validation checkpoint is chosen on validation, so that estimate is optimistically
+biased --- a winner's-curse effect rather than distribution shift. And every Brier score exceeds the no-skill value
+$p(1-p)=0.0552$, so they cannot be read as calibration quality; E8 diagnoses why and repairs it.
 
 \begin{table}[t]
-\caption{E1: five models at $T$=60~min (test $n$=22{,}407, prevalence 5.86\%).}
+\caption{E1: five models at $T$=60~min (test $n$=22{,}407, prevalence 5.86\%). Intervals are patient-level bootstrap
+($B$=1{,}000). Brier scores are raw and all exceed the no-skill 0.0552 (E8).}
 \label{tab:e1}
 \centering
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccccc}
 \toprule
-Model & AUPRC & AUROC & Sens@80\%spec & Brier & Params \\
+Model & AUPRC & 95\% CI & AUROC & Sens@80\%spec & Brier & Params \\
 \midrule
-XGBoost & 0.1675 & 0.733 & 0.548 & \textbf{0.116} & --- \\
-MLP & 0.1721 & 0.758 & 0.562 & 0.150 & 10{,}369 \\
-\textbf{1D-CNN+MLP} & 0.1837 & 0.768 & 0.573 & 0.136 & 24{,}961 \\
-LSTM & 0.1804 & 0.761 & 0.569 & 0.175 & 32{,}129 \\
-Transformer & \textbf{0.2015} & \textbf{0.774} & \textbf{0.587} & 0.164 & 107{,}265 \\
+XGBoost & 0.1675 & 0.118--0.221 & 0.733 & 0.548 & 0.116 & --- \\
+MLP & 0.1721 & 0.107--0.257 & 0.758 & 0.562 & 0.150 & 10{,}369 \\
+\textbf{1D-CNN+MLP} & 0.1837 & 0.117--0.268 & 0.768 & 0.573 & 0.136 & 24{,}961 \\
+LSTM & 0.1804 & 0.119--0.247 & 0.761 & 0.569 & 0.175 & 32{,}129 \\
+Transformer & 0.2015 & 0.131--0.282 & 0.774 & 0.587 & 0.164 & 107{,}265 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\linewidth]{figs/fig_e9_ci.png}
+\caption{E9: test AUPRC with patient-level 95\% bootstrap intervals. The intervals overlap across all five models, so the
+architecture ordering in Table~\ref{tab:e1} is not established.}
+\label{fig:e9ci}
+\end{figure}
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\linewidth]{figs/fig_e1_models.png}
@@ -179,7 +218,10 @@ XGBoost AUPRC & --- & 0.1675 & 0.1965 & --- \\
 \label{fig:e3e4}
 \end{figure}
 
-\paragraph{E4: modality ablation.} Table~\ref{tab:e4} answers the sensor question. Pre-$T$ blood-pressure history alone nearly matches the full feature set (0.1592 versus 0.1675), and removing it costs 44\% of AUPRC --- the largest single loss. Machine settings alone are weak (0.0751), and removing them slightly \emph{improves} the model (0.1740), indicating little independent signal at $T$=60; this is consistent with clinicians already reacting to blood pressure, so the UF setting partly encodes that reaction. Static demographics contribute a small but non-zero amount. The product implication is clear: sensor budget should go to continuous physiological monitoring, not to additional machine-side channels. Caveat: this ablation uses XGBoost; sequence models might extract more from the dense machine stream, which we leave as follow-up.
+\paragraph{E4: modality ablation.} Table~\ref{tab:e4} answers the sensor question. Pre-$T$ blood-pressure history alone nearly matches the full feature set (0.1592 versus 0.1675), and removing it costs 44\% of AUPRC --- the largest single loss. Machine settings alone are weak (0.0751), and removing them slightly \emph{improves} the model (0.1740), indicating little independent signal at $T$=60; this is consistent with clinicians already reacting to blood pressure, so the UF setting partly encodes that reaction. Static demographics contribute a small but non-zero amount. Within this data, then, physiological sensing carries the signal and additional machine-side channels do not. We stop short
+of the stronger claim that adding a high-frequency sensor such as photoplethysmography would improve prediction: the current
+data contain no such signal, so that remains a hypothesis for the next study rather than a result here. Caveat: this ablation
+uses XGBoost; sequence models might extract more from the dense machine stream, which we leave as follow-up.
 
 \begin{table}[t]
 \caption{E4: modality ablation (XGBoost AUPRC, $T$=60). ``Only'' uses one group; ``w/o'' drops one group.}
@@ -200,19 +242,40 @@ Without machine settings & 0.1740 \\
 \end{tabular}
 \end{table}
 
-\paragraph{E5: the price of prediction.} Table~\ref{tab:e5} is the core result. Switching from constant to predictive ultrafiltration lowers mean predicted IDH risk by 19.5\% in relative terms (0.238 to 0.192), but unremoved fluid rises from 699~mL to 957~mL and about 104 extra minutes are needed to still meet the fluid target. The reactive rule sits in between on both axes, which is the expected ordering if prediction adds information beyond reacting to a threshold. Figure~\ref{fig:e5} shows the same picture and its sensitivity to the residual-fluid tolerance: at a tight 0.25~L tolerance only 29\% of sessions admit any candidate that satisfies the fluid constraint, versus 75\% at 1.0~L. All values are in silico under a dynamics model trained on observed clinician behaviour.
+\paragraph{E5: the price of prediction.} An earlier version of this experiment anchored its candidate actions on the mean
+UFR \emph{actually delivered after} $T$ --- a quantity that does not exist at decision time --- and its numbers are withdrawn.
+The revised design generates candidates only from what a controller knows at $T$: the mean rate delivered so far,
+$\mathrm{anchor}$, with candidates $\{1.0,0.9,0.8,0.7,0.6\}\times\mathrm{anchor}$. Three arms share that anchor: \emph{hold}
+(keep it), \emph{reactive} (cut 30\% if SBP has fallen $\ge$15~mmHg or nadir is below 100), and \emph{predictive} (minimise
+predicted risk subject to a residual-fluid tolerance). The plan clinicians actually followed is a descriptive reference, not
+an arm, because it is not a choice available at $T$. Risks are Platt-recalibrated before any level is quoted.
+
+At $T$=60~min and 0.5~L tolerance (Table~\ref{tab:e5}), holding the observed rate leaves the least fluid (330~mL) but implies
+the highest predicted risk (7.3\%). The reactive rule reduces that to 7.1\% and leaves 428~mL. The predictive arm reaches
+5.8\% with 573~mL residual --- numerically the same risk as the clinicians' own plan, which instead left 699~mL. We do not
+read that as the model beating clinical practice: the observed plan is in-distribution while the candidate arms are partly
+extrapolated. Loosening the tolerance moves the predictive arm along the curve (5.9\% at 0.25~L, 5.5\% at 1.0~L), a monotone
+trade-off and the only feature of this table we would defend.
+
+Two limits bound the interpretation. First, the dynamics model is a conditional-risk model
+$P(\text{IDH}\mid\text{state},\text{plan})$ trained on clinicians' observed plans; nothing here identifies a counterfactual, so
+the risk differences are model extrapolations rather than causal effects. Second, the candidates sit 0.17~L/h from the mean
+observed plan --- a 43\% deviation --- and although 89\% of candidate values fall inside the observed support, that support is
+wide, so support alone does not establish credibility.
 
 \begin{table}[t]
-\caption{E5: three ultrafiltration policies at $T$=60~min, tolerance 0.5~L. All values in silico.}
+\caption{E5 (revised): decision-time arms at $T$=60~min, tolerance 0.5~L, with the observed plan as a descriptive
+reference. Risks are Platt-recalibrated, in silico, and conditional --- not causal.}
 \label{tab:e5}
 \centering
 \begin{tabular}{lccc}
 \toprule
-Policy & Predicted IDH risk & Residual fluid & Extra time \\
+Arm & Predicted IDH risk & Residual fluid & Extra time \\
 \midrule
-Constant UFR (current practice) & 0.238 & 699~mL & 120~min \\
-Reactive rule (biofeedback proxy) & 0.229 & 791~mL & 155~min \\
-Predictive (model-chosen UFR) & \textbf{0.192} & 957~mL & 224~min \\
+Observed plan (reference, not an arm) & 0.058 & 699~mL & 120~min \\
+Hold the rate observed at $T$ & 0.073 & 330~mL & 31~min \\
+Reactive rule (biofeedback proxy) & 0.071 & 428~mL & 74~min \\
+Predictive (model-chosen UFR) & 0.058 & 573~mL & 129~min \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -246,19 +309,52 @@ A second probe is more surprising. Zeroing the attention output of each Transfor
 \label{fig:e7}
 \end{figure}
 
+\paragraph{E8: are the probabilities usable as risks?} No, not before recalibration. Table~\ref{tab:e1} already shows that
+every Brier score exceeds the no-skill value $p(1-p)=0.0552$, and Figure~\ref{fig:e8} shows why: mean predicted probabilities
+are 0.24--0.35 against an observed 0.0586, an over-prediction of four to six times, with calibration slopes of 0.56--0.82
+rather than 1. The cause is the training recipe, not the architecture: \texttt{scale\_pos\_weight} (and
+\texttt{pos\_weight}) reweights the loss by 17:1, which shifts the effective prior, and no step maps the resulting scores
+back onto the observed event rate. Fitting a one-parameter Platt map on the validation split and applying it to test repairs
+the probabilities without touching the ranking: Brier falls to 0.0515--0.0525 for all five models, below the no-skill
+0.0552, while AUPRC is unchanged by construction. Two consequences follow. First, ``best Brier among five'' in E1 does not
+mean well calibrated --- it means least bad before repair. Second, every risk level quoted in E5 is recalibrated; raw scores
+would have overstated risk by roughly a factor of four, and a control policy optimising raw scores would be optimising a
+distorted objective.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figs/fig_e8_reliability.png}
+\caption{E8: reliability diagrams before (left) and after (right) Platt recalibration. Raw scores sit far above the diagonal;
+the one-parameter map restores them without changing the ranking.}
+\label{fig:e8}
+\end{figure}
+
+\paragraph{E9: is the model ordering real?} No. Bootstrap resampling by patient ($B$=1{,}000) gives 95\% intervals of
+0.118--0.221 (XGBoost), 0.117--0.268 (1D-CNN+MLP) and 0.131--0.282 (Transformer); the paired difference between the
+Transformer and the fusion model is 0.018 with an interval of $-0.001$ to 0.033, positive in 96.6\% of resamples. A 96.6\%
+one-sided figure is suggestive but the interval crosses zero, and after the hyperparameter sweep in E7 the gap narrows to
+0.009. We therefore report the comparison as ``competitive at a quarter of the parameters'' rather than ``better''. Any
+product decision that hinges on the ranking would need either far more patients or an external cohort.
+
 \paragraph{Software 3.0 in the experimental workflow.} Two of the seven experiments exist because of an AI-assisted check rather than a planned one: the probability-versus-logit diagnosis that produced the whole-test-set sanity check, and the suggestion to test attention against feed-forward ablation once the attention heatmaps looked uniform. In the other direction, the first session builder proposed for this project died on 160k sessions; the vectorised rewrite was suggested, but confirming that no patient crossed a split still had to be done by hand. The recurring pattern was that assistance shortened the distance from a symptom to a candidate cause, and contributed nothing to deciding which claim the evidence licenses.
 
 \section{Discussion and Conclusion}
 
-\paragraph{What we can now say.} Three questions were asked at the outset. First, how early and how accurately: with routine machine data and sparse cuff pressures, IDH is predictable at a 60-minute horizon with AUPRC 0.2015 against 0.0586 prevalence (AUROC 0.774), and a lightweight fused architecture captures 91\% of that at a quarter of the parameters and 44$\times$ less batch latency. Second, whether multi-modal sensing is necessary: only intra-session blood pressure is indispensable; machine settings contribute almost no independent signal at $T$=60. Third, what prediction buys and costs: 19.5\% relative risk reduction in silico, paid for with 258~mL more unremoved fluid and roughly 104 extra minutes.
+\paragraph{What we can now say.} Three questions were asked at the outset. First, how early and how accurately: with routine machine data and sparse cuff pressures, IDH is predictable at a
+60-minute horizon with AUPRC 0.2015 against 0.0586 prevalence (AUROC 0.774) --- but with an interval of 0.13--0.28, and no
+established advantage over a compact fused model at a quarter of the parameters. Second, whether multi-modal sensing is necessary: only intra-session blood pressure is indispensable; machine settings contribute almost no independent signal at $T$=60. Third, what prediction buys and costs: within the simulation, moving from holding the observed rate to a model-chosen
+reduction lowers predicted risk from 7.3\% to 5.8\% while leaving 243~mL more fluid behind --- a trade-off whose direction is
+robust but whose magnitude is not identified, because the model is conditional rather than counterfactual.
 
-\paragraph{Boundaries we will not overstep.} Every control number here is in silico under a model trained on clinicians' own decisions; it is not clinical validation. The dose--response gradient is equally compatible with confounding by indication, so the E5 gains are upper bounds. The attention-ablation result means explanation should not be read off attention weights. And the cohort is in-centre haemodialysis with a cuff measurement every 50.7 minutes: it cannot speak to the ambulatory wearable scenario, which lacks exactly the high-frequency modalities (photoplethysmography, inertial, pressure waveforms) whose value our ablation implies. Scaling from 4-hour supine sessions to 6--8-hour ambulatory therapy, and from sparse to continuous sensing, remains an extrapolation that this dataset cannot adjudicate.
+\paragraph{Boundaries we will not overstep.} Every control number here is in silico under a model trained on clinicians' own decisions; it is not clinical validation. The dose--response gradient is equally compatible with confounding by indication, so the E5 gains are upper bounds. The attention-ablation result means explanation should not be read off attention weights. And the cohort is in-centre haemodialysis with a cuff measurement every 50.7 minutes: it cannot speak to the ambulatory wearable scenario, which lacks exactly the high-frequency modalities
+(photoplethysmography, inertial, pressure waveforms) whose value this dataset cannot measure --- the ablation says blood
+pressure history matters, not that a new sensor would help. Scaling from 4-hour supine sessions to 6--8-hour ambulatory therapy, and from sparse to continuous sensing, remains an extrapolation that this dataset cannot adjudicate.
 
 \paragraph{Implications for the design project.} The results strengthen three claims and weaken one. Strengthened: continuous physiological sensing deserves the sensor budget (E4); a compact convolutional-plus-MLP model is the right deployment shape (E1/E2); and a clinician-set safety envelope with a hard physical override is not bureaucratic decoration but a necessary condition, precisely because the causal strength of ultrafiltration cannot be established retrospectively (E6). Weakened: the design project's framing of its contribution as ``prediction beats PID'' is historically inaccurate --- 28 clinical studies of closed-loop ultrafiltration biofeedback predate it \citep{dong2024closedloop}. The defensible framing is narrower and stronger: \emph{replacing the optical relative-blood-volume sensor with routine machine data and inference}. The five-to-fifteen-minute warning specification also needs restating, since it is not verifiable on routine data and depends on the continuous sensing the device is meant to provide.
 
 \paragraph{What the project taught me.} The value of a healthcare-AI contribution sits less in the highest AUPRC than in knowing which claim the data can carry. The most useful result here is a negative one --- that the control policy cannot be validated retrospectively --- and it took a controlled model comparison, a modality ablation and an intervention probe to establish it rather than assert it.
 
-\paragraph{Future work.} Four directions follow directly. External validation on a second centre, since all results here come from one cohort. A calibrated deployment of the fusion model, as XGBoost remains better calibrated and clinical thresholds need probabilities, not ranks. A targeted-causal analysis --- within-patient comparisons or instrumental variables --- to bound the causal share of the ultrafiltration gradient. And a high-frequency simulation arm, calibrated to the distributions reported here, to test whether the ambulatory scenario preserves or reverses the conclusions.
+\paragraph{Future work.} Four directions follow directly. External validation on a second centre, since all results here come from one cohort. A properly validated calibration step deployed with the model: Platt scaling works but was fitted on a single split, so it needs external confirmation before any threshold is used clinically. A targeted-causal analysis --- within-patient comparisons or instrumental variables --- to bound the causal share of the ultrafiltration gradient. And a high-frequency simulation arm, calibrated to the distributions reported here, to test whether the ambulatory scenario preserves or reverses the conclusions.
 
 \paragraph{Conclusion.} Sensor-light closed-loop ultrafiltration control is buildable as software and evaluable offline, and its central trade-off --- hypotension risk against fluid removal and session time --- can be quantified. What it cannot be, on retrospective routine data, is causally validated. Naming that boundary is not a weakness of the study; it is the finding that should shape the next experiment.
 

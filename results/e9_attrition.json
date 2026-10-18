@@ -1,0 +1,38 @@
+{
+  "steps": [
+    [
+      "sessions reconstructed",
+      197269
+    ],
+    [
+      "duration in [60, 480] min",
+      196457
+    ],
+    [
+      "start weight in [20, 200] kg",
+      162563
+    ],
+    [
+      "interdialytic gain in [-2, 10] kg",
+      160673
+    ],
+    [
+      "mean UFR in [0, 20] mL/kg/h",
+      160069
+    ],
+    [
+      "eligible after cleaning",
+      160069
+    ],
+    [
+      "d1 weight record matched (82.7% of reconstructed)",
+      163054
+    ]
+  ],
+  "n_patients": 919,
+  "modelling_samples_T30": 143575,
+  "modelling_samples_T60": 147044,
+  "modelling_samples_T90": 150761,
+  "modelling_samples_T120": 151182,
+  "note": "Per-horizon drops beyond cleaning are: sessions shorter than T+30 min, fewer than three readings before T, no readings after T, or already below 90 mmHg before T."
+}

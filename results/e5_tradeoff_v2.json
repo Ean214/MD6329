@@ -1,0 +1,290 @@
+{
+  "T60": {
+    "horizon_T": 60,
+    "dynamics": {
+      "auprc": 0.1925,
+      "auroc": 0.7501,
+      "mean_pred_raw": 0.238,
+      "mean_pred_calibrated": 0.0582,
+      "observed": 0.0586
+    },
+    "overlap": {
+      "support_lo": 0.145,
+      "support_hi": 0.844,
+      "frac_candidates_inside_support": 0.892,
+      "mean_abs_deviation_from_observed_plan_L_h": 0.174
+    },
+    "candidate_anchor": "mean UF delivered up to T (decision-time observable)",
+    "disclaimer": "IN-SILICO. The dynamics model is a conditional-risk model trained on clinicians' observed plans; treating it as a counterfactual model is an extrapolation whose support is quantified by the overlap diagnostic.",
+    "tol_0.25L": {
+      "reference_observed_plan": {
+        "risk": 0.058234233409166336,
+        "resid_mL": 698.8212890625,
+        "ext_min": 120.25337982177734,
+        "mean_uf": 0.40564998984336853
+      },
+      "hold": {
+        "risk": 0.0733175054192543,
+        "resid_mL": 329.5870056152344,
+        "ext_min": 52.35792541503906
+      },
+      "reactive": {
+        "risk": 0.07070315629243851,
+        "resid_mL": 427.5433654785156,
+        "ext_min": 73.9922103881836,
+        "triggered_frac": 0.2991475878073816
+      },
+      "predictive": {
+        "risk": 0.05927716940641403,
+        "resid_mL": 541.294340580461,
+        "ext_min": 105.4407859060406,
+        "feasible_frac": 0.6711741866381041,
+        "mean_chosen_multiplier": 0.7709064131744543
+      }
+    },
+    "tol_0.5L": {
+      "reference_observed_plan": {
+        "risk": 0.058234233409166336,
+        "resid_mL": 698.8212890625,
+        "ext_min": 120.25337982177734,
+        "mean_uf": 0.40564998984336853
+      },
+      "hold": {
+        "risk": 0.0733175054192543,
+        "resid_mL": 329.5870056152344,
+        "ext_min": 52.35792541503906
+      },
+      "reactive": {
+        "risk": 0.07070315629243851,
+        "resid_mL": 427.5433654785156,
+        "ext_min": 73.9922103881836,
+        "triggered_frac": 0.2991475878073816
+      },
+      "predictive": {
+        "risk": 0.057854410260915756,
+        "resid_mL": 573.3172128048935,
+        "ext_min": 108.77432904153825,
+        "feasible_frac": 0.7711429464006784,
+        "mean_chosen_multiplier": 0.7479850046860356
+      }
+    },
+    "tol_1.0L": {
+      "reference_observed_plan": {
+        "risk": 0.058234233409166336,
+        "resid_mL": 698.8212890625,
+        "ext_min": 120.25337982177734,
+        "mean_uf": 0.40564998984336853
+      },
+      "hold": {
+        "risk": 0.0733175054192543,
+        "resid_mL": 329.5870056152344,
+        "ext_min": 52.35792541503906
+      },
+      "reactive": {
+        "risk": 0.07070315629243851,
+        "resid_mL": 427.5433654785156,
+        "ext_min": 73.9922103881836,
+        "triggered_frac": 0.2991475878073816
+      },
+      "predictive": {
+        "risk": 0.05519043654203415,
+        "resid_mL": 637.3901401745971,
+        "ext_min": 119.21988099140894,
+        "feasible_frac": 0.887222742892846,
+        "mean_chosen_multiplier": 0.7104833311018878
+      }
+    }
+  },
+  "T90": {
+    "horizon_T": 90,
+    "dynamics": {
+      "auprc": 0.2284,
+      "auroc": 0.7847,
+      "mean_pred_raw": 0.2243,
+      "mean_pred_calibrated": 0.057,
+      "observed": 0.052
+    },
+    "overlap": {
+      "support_lo": 0.127,
+      "support_hi": 0.82,
+      "frac_candidates_inside_support": 0.902,
+      "mean_abs_deviation_from_observed_plan_L_h": 0.191
+    },
+    "candidate_anchor": "mean UF delivered up to T (decision-time observable)",
+    "disclaimer": "IN-SILICO. The dynamics model is a conditional-risk model trained on clinicians' observed plans; treating it as a counterfactual model is an extrapolation whose support is quantified by the overlap diagnostic.",
+    "tol_0.25L": {
+      "reference_observed_plan": {
+        "risk": 0.057042572647333145,
+        "resid_mL": 663.9813232421875,
+        "ext_min": 128.2630157470703,
+        "mean_uf": 0.3752997815608978
+      },
+      "hold": {
+        "risk": 0.07329655438661575,
+        "resid_mL": 287.9092102050781,
+        "ext_min": 39.138587951660156
+      },
+      "reactive": {
+        "risk": 0.06978017836809158,
+        "resid_mL": 397.2655029296875,
+        "ext_min": 61.184730529785156,
+        "triggered_frac": 0.4032104121475054
+      },
+      "predictive": {
+        "risk": 0.06026820093393326,
+        "resid_mL": 467.23846967816837,
+        "ext_min": 84.76697373173717,
+        "feasible_frac": 0.6966594360086767,
+        "mean_chosen_multiplier": 0.7585249457700651
+      }
+    },
+    "tol_0.5L": {
+      "reference_observed_plan": {
+        "risk": 0.057042572647333145,
+        "resid_mL": 663.9813232421875,
+        "ext_min": 128.2630157470703,
+        "mean_uf": 0.3752997815608978
+      },
+      "hold": {
+        "risk": 0.07329655438661575,
+        "resid_mL": 287.9092102050781,
+        "ext_min": 39.138587951660156
+      },
+      "reactive": {
+        "risk": 0.06978017836809158,
+        "resid_mL": 397.2655029296875,
+        "ext_min": 61.184730529785156,
+        "triggered_frac": 0.4032104121475054
+      },
+      "predictive": {
+        "risk": 0.05913779139518738,
+        "resid_mL": 494.59865623028236,
+        "ext_min": 87.73380344757759,
+        "feasible_frac": 0.7988286334056399,
+        "mean_chosen_multiplier": 0.7355357917570499
+      }
+    },
+    "tol_1.0L": {
+      "reference_observed_plan": {
+        "risk": 0.057042572647333145,
+        "resid_mL": 663.9813232421875,
+        "ext_min": 128.2630157470703,
+        "mean_uf": 0.3752997815608978
+      },
+      "hold": {
+        "risk": 0.07329655438661575,
+        "resid_mL": 287.9092102050781,
+        "ext_min": 39.138587951660156
+      },
+      "reactive": {
+        "risk": 0.06978017836809158,
+        "resid_mL": 397.2655029296875,
+        "ext_min": 61.184730529785156,
+        "triggered_frac": 0.4032104121475054
+      },
+      "predictive": {
+        "risk": 0.05730946362018585,
+        "resid_mL": 539.0589405749652,
+        "ext_min": 95.24130148646702,
+        "feasible_frac": 0.9067245119305857,
+        "mean_chosen_multiplier": 0.7042776572668112
+      }
+    }
+  },
+  "T120": {
+    "horizon_T": 120,
+    "dynamics": {
+      "auprc": 0.2156,
+      "auroc": 0.8001,
+      "mean_pred_raw": 0.2053,
+      "mean_pred_calibrated": 0.0489,
+      "observed": 0.0475
+    },
+    "overlap": {
+      "support_lo": 0.108,
+      "support_hi": 0.8,
+      "frac_candidates_inside_support": 0.902,
+      "mean_abs_deviation_from_observed_plan_L_h": 0.207
+    },
+    "candidate_anchor": "mean UF delivered up to T (decision-time observable)",
+    "disclaimer": "IN-SILICO. The dynamics model is a conditional-risk model trained on clinicians' observed plans; treating it as a counterfactual model is an extrapolation whose support is quantified by the overlap diagnostic.",
+    "tol_0.25L": {
+      "reference_observed_plan": {
+        "risk": 0.04894394800066948,
+        "resid_mL": 586.7677001953125,
+        "ext_min": 123.36915588378906,
+        "mean_uf": 0.3533286154270172
+      },
+      "hold": {
+        "risk": 0.06194964423775673,
+        "resid_mL": 268.4018249511719,
+        "ext_min": 34.419376373291016
+      },
+      "reactive": {
+        "risk": 0.060223765671253204,
+        "resid_mL": 357.87115478515625,
+        "ext_min": 53.12476348876953,
+        "triggered_frac": 0.43598167199792515
+      },
+      "predictive": {
+        "risk": 0.05163281783461571,
+        "resid_mL": 410.5269830393454,
+        "ext_min": 72.05000315584395,
+        "feasible_frac": 0.7099939483012017,
+        "mean_chosen_multiplier": 0.7496714792080921
+      }
+    },
+    "tol_0.5L": {
+      "reference_observed_plan": {
+        "risk": 0.04894394800066948,
+        "resid_mL": 586.7677001953125,
+        "ext_min": 123.36915588378906,
+        "mean_uf": 0.3533286154270172
+      },
+      "hold": {
+        "risk": 0.06194964423775673,
+        "resid_mL": 268.4018249511719,
+        "ext_min": 34.419376373291016
+      },
+      "reactive": {
+        "risk": 0.060223765671253204,
+        "resid_mL": 357.87115478515625,
+        "ext_min": 53.12476348876953,
+        "triggered_frac": 0.43598167199792515
+      },
+      "predictive": {
+        "risk": 0.050912294536828995,
+        "resid_mL": 431.749224839712,
+        "ext_min": 74.38099873810505,
+        "feasible_frac": 0.8112302239128555,
+        "mean_chosen_multiplier": 0.7290308636638712
+      }
+    },
+    "tol_1.0L": {
+      "reference_observed_plan": {
+        "risk": 0.04894394800066948,
+        "resid_mL": 586.7677001953125,
+        "ext_min": 123.36915588378906,
+        "mean_uf": 0.3533286154270172
+      },
+      "hold": {
+        "risk": 0.06194964423775673,
+        "resid_mL": 268.4018249511719,
+        "ext_min": 34.419376373291016
+      },
+      "reactive": {
+        "risk": 0.060223765671253204,
+        "resid_mL": 357.87115478515625,
+        "ext_min": 53.12476348876953,
+        "triggered_frac": 0.43598167199792515
+      },
+      "predictive": {
+        "risk": 0.04985211417078972,
+        "resid_mL": 456.9145134613752,
+        "ext_min": 78.90860315577216,
+        "feasible_frac": 0.9152329904037347,
+        "mean_chosen_multiplier": 0.706388864874211
+      }
+    }
+  }
+}
