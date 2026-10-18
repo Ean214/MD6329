@@ -171,6 +171,16 @@ def main():
                          "resid_ci95": boot_ci(a["resid"], pid),
                          "ext_min": round(float(a["ext"].mean()), 1),
                          "mean_uf": round(float(a["uf"].mean()), 3)}
+    # paired patient-level bootstrap on risk DIFFERENCES (overlap of marginal CIs
+    # does not test a difference; the reviewer was right to ask for this)
+    pairs = [("hold", "predictive_tol0.5"), ("reactive", "predictive_tol0.5"), ("hold", "reactive")]
+    summary["paired_differences"] = {}
+    for a, b in pairs:
+        d = arms[a]["risk"] - arms[b]["risk"]
+        summary["paired_differences"][f"{a}_minus_{b}"] = {
+            "point_pp": round(float(d.mean()) * 100, 2),
+            "ci95_pp": [round(v * 100, 2) for v in boot_ci(d, pid)],
+            "note": "positive = first arm has higher predicted risk"}
     # cross-model check: does a second, independently seeded model agree on the chosen actions?
     clf2, platt2, _ = fit(tab, depth=3, seed=7, use_weight=False)
     X = te[feats].to_numpy(); ui = feats.index("planned_uf")

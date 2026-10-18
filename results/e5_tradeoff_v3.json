@@ -112,5 +112,31 @@
     ],
     "ext_min": 64.4,
     "mean_uf": 0.511
+  },
+  "paired_differences": {
+    "hold_minus_predictive_tol0.5": {
+      "point_pp": 1.41,
+      "ci95_pp": [
+        1.12,
+        1.74
+      ],
+      "note": "positive = first arm has higher predicted risk"
+    },
+    "reactive_minus_predictive_tol0.5": {
+      "point_pp": 1.3,
+      "ci95_pp": [
+        1.06,
+        1.6
+      ],
+      "note": "positive = first arm has higher predicted risk"
+    },
+    "hold_minus_reactive": {
+      "point_pp": 0.11,
+      "ci95_pp": [
+        -0.06,
+        0.25
+      ],
+      "note": "positive = first arm has higher predicted risk"
+    }
   }
 }

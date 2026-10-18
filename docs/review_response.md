@@ -111,3 +111,41 @@
 ## 四、报告当前状态
 
 14 页（封面 2 + 正文 12）；E5 明确标注 exploratory action-conditioned risk simulation；E1/E9 撤回架构排序；E8 说明校准边界；Table 3 给出四视野完整排除链；封面无失效链接；ZIP 含全部代码与结果。
+
+
+---
+
+# 第三轮审稿（01:10）的核验与处理
+
+审稿人这次是逐页读 PDF 而非修订记录，指出的问题**全部成立**，且其中一条揭出一个我自己写错的技术表述。
+
+## 一、P0 四项
+
+| # | 问题 | 判定 | 处理 |
+|---|---|---|---|
+| 1 | 第 4 节仍描述旧版 E5（用 T 之后实际 UFR、候选为实际值的 0.6–1.0 倍、constant=实际曲线），与第 5 节矛盾 | **成立** | 重写整节：明确"动作条件风险模型，非识别出的反事实模型"；锚点=T 时刻泵设定值；临床实际方案仅为描述性参照；标注为敏感性分析 |
+| 2 | E3 把 PPG 规格说成研究直接支持的结论 | **成立** | 替换为"5–15 min 无法用本采样频率验证；连续传感（含 PPG）属待验证假设" |
+| 3 | 讨论仍写"生理传感值得获得传感器预算" | **成立** | 改为"支持研究如何采集生理信息，而非确定传感器预算"；PPG 增益/成本需独立数据验证 |
+| 4 | "one-parameter Platt map" 与代码不符 | **成立，是我写错** | 代码是 `LogisticRegression` 作用于 logit → **拟合斜率+截距=两参数**。已改为 two-parameter，并补充"原始斜率 0.56–0.82≠1，说明斜率项在起作用，只调截距修不好" |
+
+## 二、一致性问题（全部采纳）
+
+| 位置 | 处理 |
+|---|---|
+| 页 3 NeurIPS 会议页脚 | 改为 `Course project report, MD6329 ..., NTU LKCMedicine, 2026`，PDF 中已无 "Conference on Neural Information Processing Systems" |
+| Table 1 表题称含会话级清洗但未列出 | 补 197,269→196,457→162,563→160,673→160,069 五行，表题改为"Rows 1–5" |
+| E2 "91% of the ranking quality" | 改为 "remains competitive under the default comparison settings (E1/E9)"，保留延迟数字 |
+| E7 "Figure ??" | 原因：重写 E7 段落时把图环境一起删了。已重新插入，PDF 中 `??` 计数为 0 |
+| E1 把 val/test 差距单一归因 winner's curse | 补验证集事件比例：val 24,665 例 / 6.29% vs test 22,407 / 5.86%；两因并列，不单一归因 |
+| Figure 2 prevalence 注记与标题挤压 | 重画：注记移到左下并加引线，标题缩短 |
+
+## 三、统计与解释三项（其中一项推翻了我原来的写法）
+
+1. **不能用边际区间重叠判断无差异** —— 审稿人正确。补做**配对**患者级 bootstrap（B=500）：
+   - hold − predictive = **+1.41 pp，95% CI [1.12, 1.74]**（排除零）
+   - reactive − predictive = **+1.30 pp，[1.06, 1.60]**
+   - hold − reactive = +0.11 pp，[−0.06, 0.25]（不区分）
+   
+   **结论因此改变**：模型确实对三臂给出稳定排序，但这是同一模型的内部一致性，且动作由该模型选出 → 不能当作治疗效应。原稿"所有区间重叠 → 无差异"的说法已删除，改为配对差值 + 三条限制。
+2. E6 "licenses the simulation" → 改为"内部一致性检查，不验证反事实预测，也不确立因果"。
+3. 摘要模态结论 → 限定为"In the XGBoost ablation… under the evaluated feature set"。
