@@ -17,7 +17,7 @@
 \usepackage{xcolor}
 \setcitestyle{numbers,square,comma,compress,sort}
 
-\title{Sensor-Light Closed-Loop Ultrafiltration Control in Haemodialysis:\\ An In-Silico Feasibility Study on Routine Machine Data}
+\title{Toward Sensor-Light Closed-Loop Ultrafiltration Control in Haemodialysis: Retrospective Risk Modelling and Exploratory Action-Conditioned Simulation}
 
 \author{%
   LE YI \\
@@ -60,7 +60,9 @@ prospective data.
 
 \section{Problem Formulation}
 
-Haemodialysis replaces kidney function intermittently. Between sessions, patients accumulate fluid; during a four-hour session a machine must remove that fluid at a rate the cardiovascular system can tolerate. When the ultrafiltration rate (UFR) exceeds the capillary refill rate, effective circulating volume falls and intradialytic hypotension (IDH) follows. In our cohort, 11.2\% of sessions reach a nadir systolic blood pressure (SBP) below 90~mmHg.
+Haemodialysis replaces kidney function intermittently. Between sessions, patients accumulate fluid; during a four-hour session a machine must remove that fluid at a rate the cardiovascular system can tolerate. When the ultrafiltration rate (UFR) exceeds the capillary refill rate, effective circulating volume falls and intradialytic hypotension (IDH) follows. In our cohort, 11.2\% of sessions reach a nadir systolic blood pressure (SBP) below 90~mmHg. This is the kind of
+clinical prediction problem the course frames as a healthcare-AI task (Lecture~1, \textasciitilde 00:40)
+\citep{md6329lectures}.
 
 Three generations of countermeasures exist. First, reactive control: a proportional--integral--derivative (PID) controller, or nursing judgement, reacts only after blood pressure has already fallen. Second, blood-volume biofeedback: commercial systems such as Hemocontrol (Baxter) and the BVM/BTM-based feedback of Fresenius adjust UFR and dialysate conductivity in closed loop, guided by an optical sensor that measures relative blood volume \citep{santoro1998biofeedback,ronco2000biofeedback,dong2024closedloop}. Third, machine-learning prediction, which forecasts IDH from clinical variables but has rarely been evaluated as a component of a control loop \citep{bi2022lstm,idhmstf2025}.
 
@@ -80,7 +82,9 @@ The work is deliberately positioned against the course material: irregular EHR t
 
 \paragraph{IDH definitions and epidemiology.} Prevalence depends heavily on definition \citep{kuipers2019prevalence}, and different definitions carry different mortality associations \citep{flythe2015idh}. Guidelines recommend keeping the ultrafiltration rate below roughly 13~mL/kg/h, alongside ultrafiltration profiling and cooler dialysate \citep{kdoqi2005cvd,china2022consensus}. We therefore report three definitions and justify the one we adopt.
 
-\paragraph{Machine learning for IDH.} Tree ensembles and recurrent networks dominate the recent literature; a bidirectional LSTM reached 78.5\% accuracy and AUC 0.822 on 73{,}323 sessions \citep{bi2022lstm}, and a multi-scale temporal feature model reported 98.1\% AUC with XGBoost on a public cohort \citep{idhmstf2025}. A Temporal Fusion Transformer reached AUC 0.953 but at high compute cost. Two gaps motivate our design: prediction is rarely coupled to a control evaluation, and the causal status of the ultrafiltration signal is rarely examined. We address both, and we quantify the fluid-removal price of acting on a prediction. Our modelling choices also follow the course treatment of irregular clinical time series, recurrent gating, and attention over short sequences \citep{md6329lectures}.
+\paragraph{Machine learning for IDH.} Tree ensembles and recurrent networks dominate the recent literature; a bidirectional LSTM reached 78.5\% accuracy and AUC 0.822 on 73{,}323 sessions \citep{bi2022lstm}, and a multi-scale temporal feature model reported 98.1\% AUC with XGBoost on a public cohort \citep{idhmstf2025}. A Temporal Fusion Transformer reached AUC 0.953 but at high compute cost. Two gaps motivate our design: prediction is rarely coupled to a control evaluation, and the causal status of the ultrafiltration signal is rarely examined. We address both, and we quantify the fluid-removal price of acting on a prediction. Our modelling choices also follow the course treatment of irregular clinical time series (Lecture~5, \textasciitilde 00:38),
+recurrent gating (Lecture~6, \textasciitilde 02:14) and attention over short sequences (Lecture~7, \textasciitilde 27:16)
+\citep{md6329lectures}.
 
 \section{Data}
 
@@ -150,11 +154,14 @@ max $-$ nadir $\ge$ 20~mmHg & 84.42\% & rejected (non-specific) \\
 
 \section{Approach}
 
-\paragraph{Framing.} The primary task is classification: given the state at $T$, will this session reach a nadir SBP below 90~mmHg afterwards? Trajectory prediction appears only \emph{inside} the control simulation (Section~\ref{sec:e5}), where a dynamics model must answer ``what if the remaining ultrafiltration profile were different?'' Reporting classification as the main result keeps the headline numbers interpretable and avoids over-claiming.
+\paragraph{Framing.} The primary task is classification: given the state at $T$, will this session reach a nadir SBP below 90~mmHg afterwards? A risk model conditioned on a proposed plan appears only \emph{inside} the control simulation (Section~\ref{sec:e5}),
+where it scores candidate plans; it does not identify the counterfactual outcome that would follow if a plan were imposed. Reporting classification as the main result keeps the headline numbers interpretable and avoids over-claiming.
 
 \paragraph{Features and modalities.} Fifteen features fall into three groups, which we later ablate: (a) \emph{demographic/static} --- age, sex, diabetes, start weight, dry weight, interdialytic weight gain; (b) \emph{pre-$T$ physiology} --- first SBP, nadir so far, SBP slope, count of distinct readings; (c) \emph{machine settings} --- mean UFR, blood flow, dialysate conductivity and temperature up to $T$. Sequence models additionally consume up to 96 readings of seven channels (SBP, DBP, UFR, blood flow, conductivity, dialysate temperature, normalised elapsed time) with an explicit padding mask.
 
-\paragraph{Models.} Five models are compared. (1) XGBoost \citep{chen2016xgboost} on tabular features is the clinical baseline. (2) A multilayer perceptron consumes static features only. (3) A 1D-CNN+MLP fusion mirrors the architecture of the accompanying design project: a convolutional branch over the reading sequence, an MLP branch over static features, concatenated before a shared head. (4) An LSTM \citep{hochreiter1997lstm} reads the masked sequence and takes the last valid hidden state. (5) A Transformer encoder built from scratch reuses the encoder written for the course assignment on clinical sequences \citep{md6329assignment}: sinusoidal positional encoding, multi-head scaled dot-product attention with key-padding masks, GELU feed-forward blocks and mean pooling over valid positions \citep{vaswani2017attention}.
+\paragraph{Models.} Five models are compared. (1) XGBoost \citep{chen2016xgboost} on tabular features is the clinical baseline. (2) A multilayer perceptron consumes static features only. (3) A 1D-CNN+MLP fusion mirrors the architecture of the accompanying design project: a convolutional branch over the reading
+sequence (convolutional feature extraction as developed for medical images in Lectures~2--3, \textasciitilde 00:45 and
+\textasciitilde 00:39) \citep{md6329lectures}, an MLP branch over static features, concatenated before a shared head. (4) An LSTM \citep{hochreiter1997lstm} reads the masked sequence and takes the last valid hidden state. (5) A Transformer encoder built from scratch reuses the encoder written for the course assignment on clinical sequences \citep{md6329assignment}: sinusoidal positional encoding, multi-head scaled dot-product attention with key-padding masks, GELU feed-forward blocks and mean pooling over valid positions \citep{vaswani2017attention}.
 
 \paragraph{Evaluation protocol.} Splits are by patient (70/15/15) with a fixed seed, because a patient contributes dozens of sessions and row-wise splitting would leak. AUPRC is the primary metric given class imbalance; AUROC, Brier score and sensitivity at 80\% specificity are secondary. Because AUPRC is prevalence-sensitive, we report test prevalence alongside every value.
 
@@ -310,7 +317,10 @@ The plan clinicians followed is a descriptive reference only. Risks are Platt-re
 
 Table~\ref{tab:e5} reports the arms at $T$=60~min with patient-level bootstrap intervals. The ordering is
 hold (7.3\%) $>$ reactive (7.2\%) $>$ predictive (5.9\%), and it costs fluid to move down that ordering: 131~mL residual for
-hold, 239~mL for reactive, 354~mL for predictive. Marginal intervals overlap, which on its own would be the wrong test; paired patient-level bootstraps
+hold, 239~mL for reactive, 354~mL for predictive. ``Extra time'' is the additional minutes at the chosen rate needed to remove
+the fluid the arm leaves behind, measured from the decision point: $\max(0,\,R-uh)/u \times 60$, where $R$ is the fluid still to
+remove at $T$ (litres), $u$ the chosen UFR (L/h) and $h$ the remaining hours. The reference duration is the observed remaining
+session time, not a fixed four hours. Marginal intervals overlap, which on its own would be the wrong test; paired patient-level bootstraps
 on the risk \emph{differences} put hold above predictive by 1.41 points (95\% CI 1.12--1.74) and reactive above predictive by
 1.30 (1.06--1.60), while hold and reactive are indistinguishable (0.11, $-0.06$ to 0.25). So the model does order the arms;
 what it cannot do is establish that the ordering would survive in patients, because the same model both chose and scored the
@@ -350,11 +360,13 @@ Predictive & 5.9\% (5.0--7.0) & 354~mL (288--453) & 50~min \\
 \label{fig:e5}
 \end{figure}
 
-\paragraph{E6: causal plausibility diagnostics.} Figure~\ref{fig:e6} reports both probes. The perturbation sweep is monotone and in the expected direction: raising the planned remaining UFR multiplier from 0.3 to 1.3 raises mean predicted risk from 0.183 to 0.265 (gradient $+0.089$). The crude association agrees: binned by actual post-decision UFR, observed IDH rises from 3.1\% to 11.8\%. This is necessary for the control simulation to make sense --- but it is not sufficient to establish causality, because confounding by indication predicts the same pattern: patients who are more fluid-overloaded, and therefore more fragile, receive higher ultrafiltration and are also more likely to become hypotensive. The monotone response is an internal consistency check for the model-based simulation --- it shows the model reacts to UFR
+\paragraph{E6: sensitivity and causal-plausibility diagnostics.} Figure~\ref{fig:e6} reports both probes. The perturbation sweep is monotone and in the expected direction: raising the planned remaining UFR multiplier from 0.3 to 1.3 raises mean predicted risk from 0.183 to 0.265 (gradient $+0.089$). The crude association agrees: binned by actual post-decision UFR, observed IDH rises from 3.1\% to 11.8\%. This is necessary for the control simulation to make sense --- but it is not sufficient to establish causality, because confounding by indication predicts the same pattern: patients who are more fluid-overloaded, and therefore more fragile, receive higher ultrafiltration and are also more likely to become hypotensive. The monotone response is an internal consistency check for the model-based simulation --- it shows the model reacts to UFR
 in the expected direction --- but it does not validate predictions for actions that were not taken, nor does it establish a
 causal effect; its magnitude cannot be decomposed into causal and confounded parts from this data.
 
-A second probe is more surprising. Zeroing the attention output of each Transformer encoder block changes the logit by about $10^{-8}$ --- effectively nothing --- whereas zeroing the feed-forward output changes it by 0.042 and 0.067 at layers 0 and 1. The predictive signal therefore flows through the feed-forward path, not through attention, over a sequence of roughly 22 readings with sparse blood pressure. Two consequences follow: attention-heavy architectures are hard to justify here (reinforcing E1/E2), and attention maps must not be presented as clinical explanations --- the same observation-versus-intervention lesson from our earlier coursework.
+A second probe is more surprising. Zeroing the attention output of each Transformer encoder block changes the logit by about $10^{-8}$ --- effectively nothing --- whereas zeroing the feed-forward output changes it by 0.042 and 0.067 at layers 0 and 1. The predictive signal therefore flows through the feed-forward path, not through attention, over a sequence of roughly 22 readings with sparse blood pressure. Two consequences follow: attention-heavy architectures are hard to justify here (reinforcing E1/E2), and attention maps must not be presented as clinical explanations --- the same observation-versus-intervention lesson from
+our earlier coursework, and a caution anticipated by the attention variants discussed in Lecture~9 (\textasciitilde 00:53)
+\citep{md6329lectures}.
 
 \begin{figure}[t]
 \centering
@@ -424,7 +436,10 @@ product decision that hinges on the ranking would need either far more patients 
 
 \paragraph{What we can now say.} Three questions were asked at the outset. First, how early and how accurately: with routine machine data and sparse cuff pressures, IDH is predictable at a
 60-minute horizon with AUPRC 0.2015 against 0.0586 prevalence (AUROC 0.774) --- but with an interval of 0.13--0.28, and no
-established advantage over a compact fused model at a quarter of the parameters. Second, whether multi-modal sensing is necessary: only intra-session blood pressure is indispensable; machine settings contribute almost no independent signal at $T$=60. Third, what prediction buys and costs: within the simulation, moving from holding the observed rate to a model-chosen
+established advantage over a compact fused model at a quarter of the parameters. Second, whether multi-modal sensing is necessary: in the XGBoost ablation at $T$=60, and within the evaluated feature set,
+pre-decision blood pressure carried the largest share of predictive information while machine settings added little
+independent value. That is a statement about this model, these features and this horizon --- not about sensing requirements in
+general. Third, what prediction buys and costs: within the simulation, moving from holding the observed rate to a model-chosen
 reduction lowers predicted risk from 7.3\% to 5.9\% while leaving 223~mL more fluid behind, and the intervals overlap --- the model produces a consistent predicted-risk--fluid trade-off within this
 simulation, but neither its direction nor its magnitude is identified as a treatment effect, because the model is
 conditional rather than counterfactual.
@@ -454,7 +469,71 @@ data can replace the sensor, nor that adding photoplethysmography would improve 
 
 \paragraph{What the project taught me.} The value of a healthcare-AI contribution sits less in the highest AUPRC than in knowing which claim the data can carry. The most useful result here is a negative one --- that the control policy cannot be validated retrospectively --- and it took a controlled model comparison, a modality ablation and an intervention probe to establish it rather than assert it.
 
-\paragraph{Future work.} Four directions follow directly. External validation on a second centre, since all results here come from one cohort. A properly validated calibration step deployed with the model: Platt scaling works but was fitted on a single split, so it needs external confirmation before any threshold is used clinically. A targeted-causal analysis --- within-patient comparisons or instrumental variables --- to bound the causal share of the ultrafiltration gradient. And a high-frequency simulation arm, calibrated to the distributions reported here, to test whether the ambulatory scenario preserves or reverses the conclusions.
+\paragraph{Future work and intended control function.} The long-term objective is a closed-loop ultrafiltration (UF) control
+function for home or ambulatory haemodialysis. At each control update the intended system will acquire time-aligned,
+quality-checked physiological signals and machine state; estimate the risk of a clinically meaningful intradialytic hypotension
+(IDH) event over a validated warning horizon; and select a feasible UF-rate adjustment that balances predicted risk against
+prescribed fluid removal and acceptable treatment duration. The controller is intended to operate inside clinician-defined
+treatment limits with independently enforced safety constraints, bounded rate changes, verification of pump response, event
+logging, and a predefined fallback when signals are missing, stale, inconsistent or unavailable. The 5--15-minute warning
+requirement remains a target for future validation, not a capability established by this dataset, and the incremental value
+of continuous blood-pressure monitoring, photoplethysmography (PPG) or other sensors must be evaluated rather than assumed.
+
+\paragraph{What the present work contributes.} This study is a technical foundation for that programme. It establishes a
+reproducible retrospective pipeline, compares five modelling approaches under patient-level evaluation, identifies substantial
+probability distortion caused by class-weighted training, and shows why recalibration and uncertainty analysis are not optional.
+The modality ablation identifies pre-decision blood-pressure history as a major source of predictive information within the
+evaluated XGBoost feature set. The exploratory action-conditioned simulation makes the trade-off between model-predicted risk,
+residual fluid and treatment time explicit, while exposing the limits created by incomplete treatment overlap and by selecting
+and scoring an action with the same model. These findings narrow the questions for the next stage --- which signals are needed,
+what evidence must precede using a risk estimate to guide treatment, and how safety constraints should govern automatic
+actions --- and provide a baseline against which later models and controllers can be measured. They do not establish that the
+simulated risk differences are treatment effects.
+
+\paragraph{Validation priorities.} First, predictive and clinical validation should be strengthened. The full preprocessing and
+evaluation pipeline should be reproduced on an independent cohort or a temporally separated dataset, keeping patients separate
+through model selection and evaluation, and should report discrimination, calibration, uncertainty and performance across
+clinically relevant subgroups. The operational endpoint used here --- post-decision nadir SBP below 90~mmHg --- should be
+compared with richer outcomes where available, including symptomatic episodes and events requiring intervention. Candidate
+operating thresholds should be reported with sensitivity, positive predictive value, false-alert burden and lead time; without
+those numbers it is impossible to say whether the model adds actionable information beyond routine monitoring rather than
+merely improving retrospective ranking.
+
+Second, the sensing and warning-horizon requirements should be tested directly. A dataset with sufficiently frequent,
+time-aligned physiological measurements is needed to evaluate detection within the intended 5--15-minute window. Candidate
+signals, including continuous blood pressure and PPG where feasible, should be compared with the machine-data baseline using
+prespecified ablation and incremental-value analyses, while characterising missingness, signal quality, motion artefact and
+the differences between in-centre and home treatment. The present ablation supports further investigation of physiological
+information; it does not establish that adding any particular sensor will improve prediction.
+
+Third, action-effect estimation and control-policy development should be separated. The current model estimates risk
+conditional on observed state and a proposed plan; it does not identify the counterfactual outcome of imposing that plan.
+Future work should define the treatment-effect estimand explicitly, assess conditional overlap using a broader set of
+pre-decision covariates, and quantify sensitivity to unmeasured confounding; where data and assumptions allow, causal or
+target-trial-style analyses could estimate the effect of alternative UF decisions. In parallel, the controller should be
+evaluated in an independently validated dynamic simulation, with an objective that balances IDH risk, residual fluid and
+treatment time under hard clinical constraints, rather than selecting the lowest score from the model used to evaluate it.
+Sensitivity analyses should ask whether a policy remains feasible and stable across plausible patient states, model
+uncertainty and treatment scenarios.
+
+\paragraph{Staged engineering and clinical verification.} Implementation should proceed in stages. The controller should first
+undergo software-in-the-loop testing and, where feasible, hardware-in-the-loop evaluation on representative pump hardware,
+covering rate limits, total fluid-removal constraints, delayed or missing measurements, model failure, actuator mismatch,
+communication loss and recovery from abnormal states. Computational latency should be measured on the intended hardware rather
+than inferred from laptop benchmarks. A shadow-mode evaluation should then generate recommendations without changing treatment,
+so that disagreements, unsuitable recommendations and potential safety issues can be characterised. Home deployment also raises data-governance questions --- on-device inference, or federated and privacy-preserving training
+(Lecture~12, \textasciitilde 00:39) --- which fall outside this study but condition the design \citep{md6329lectures}. Only
+after technical, safety, ethical and regulatory review should a prospective supervised evaluation assess feasibility and
+safety, followed by
+controlled studies of whether automatic adjustment improves outcomes without compromising fluid removal or treatment
+completion.
+
+\paragraph{Intended endpoint.} The programme aims at a verified control function that repeatedly senses patient and machine
+state, estimates near-term IDH risk, proposes and executes bounded UF-rate adjustments, checks the system response, and returns
+to a safe state when reliable control cannot be maintained. This study is a first step toward that endpoint: it establishes an
+empirical baseline, identifies limitations that would otherwise be carried into control development, and defines the questions
+that must be answered before the function can be considered effective or safe. Its contribution is not a claim of treatment
+benefit but a structured technical basis for building and independently evaluating the next controller.
 
 \paragraph{Conclusion.} What this study delivers is narrower than a closed-loop device: an offline risk-prediction pipeline
 and an exploratory action-conditioned sensitivity analysis, both reproducible on routine data, plus a quantified account of
