@@ -149,3 +149,43 @@
    **结论因此改变**：模型确实对三臂给出稳定排序，但这是同一模型的内部一致性，且动作由该模型选出 → 不能当作治疗效应。原稿"所有区间重叠 → 无差异"的说法已删除，改为配对差值 + 三条限制。
 2. E6 "licenses the simulation" → 改为"内部一致性检查，不验证反事实预测，也不确立因果"。
 3. 摘要模态结论 → 限定为"In the XGBoost ablation… under the evaluated feature set"。
+
+
+---
+
+# 第四轮审稿（01:21）的核验与处理
+
+## 一、P0 三项 + P1 一项
+
+| # | 问题 | 判定 | 处理 |
+|---|---|---|---|
+| 1 | E7 图 7 与正文数字对不上（图 0.151–0.190，正文 0.32/0.18） | **成立，是硬性不一致** | 根因：E7 改为验证集选参后**只重跑了数据、没把新图复制进 `report/figs/`**，PDF 用的是 19:12 的旧图。已复制 01:00 的新图；热图现为 val：0.3234/0.2684/0.2130/0.2771/0.2062/0.1813/0.2297/0.1842/0.1750，与正文 depth3≈0.32、depth9≈0.18、200 树优于 600/1200 一致；右图 0.194/0.188 亦一致 |
+| 2 | 图 8 图注方向说反 | **成立** | 改为 "Raw predictions fall below the diagonal, which denotes overprediction"；"restores" → "improves their alignment … though it does not make them coincide" |
+| 3 | E1 声称"isolates architecture" | **成立** | 改为共享训练配方只减少调参变异，但输入表示不同 → E1 比较的是**完整建模管线** |
+| 4 | E8 重复句 | **成立**（替换时产生） | 删除重复的 "and evaluating it on the untouched test split" |
+
+## 二、统计与解释收紧
+
+| 原表述 | 改为 |
+|---|---|
+| E5 收益是 "upper bounds" | "neither estimates nor bounds of a treatment effect；方向与大小均未被识别" |
+| "a trade-off whose direction is robust" | "the model produces a consistent predicted-risk–fluid trade-off within this simulation" |
+| 研究问题 "how much IDH reduction does a predictive policy buy" | "what predicted-risk, fluid-removal and session-time trade-offs appear under exploratory action-conditioned simulations" |
+| 标题 "Causal diagnosis" / "causally usable" | "Causal plausibility diagnostics"（明确不识别因果） |
+| "conditional support" | 明确为"以决策前 nadir 与 IDWG 分层的 10–90 百分位范围"，属**部分协变量分层**，非因果重叠证明 |
+| 候选动作映射 | 补一句：把候选作为"计划剩余 UFR"输入是简化假设（假设计划被保持），真实设备会持续反应 |
+
+## 三、新增：临床效用一层（审稿人建议）
+
+在讨论中加入操作点分析：80% 特异度下敏感度 0.587、流行率 5.86% → **PPV≈15%**，即每 100 次会话约 **3.4 次真事件 + 18.8 次假报警**；并说明阈值、报警负担与动作成本在本数据中不可观（无症状/干预/流程记录），属前瞻研究要定的设计决策。
+
+## 四、产品与背景表述降级
+
+| 原表述 | 改为 |
+|---|---|
+| "The second generation works" | "some studies report benefit while a recent review concludes evidence for clinical adoption is still under evaluation" |
+| 光学血容量传感器"笨重昂贵" | 明确为本项目**设计假设**（未核实规格），作为设计动机而非既定事实 |
+| "replacing the optical sensor is the defensible framing" | "testing whether routine data can reduce reliance on the sensor"；本研究只提供依据，未证明可替代，也未证明加 PPG 有益 |
+| 结论 "closed-loop is buildable as software" | 改为"已实现离线预测管线 + 探索性动作条件敏感性分析"，闭环仍是待验证假设，并列出证据阶梯 |
+
+最终 15 页（封面 2 + 正文 13），8 图 7 表。ZIP 已重建。

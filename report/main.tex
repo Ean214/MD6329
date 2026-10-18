@@ -41,7 +41,7 @@ routinely recorded dialysis-machine data alone can support a predict-then-adjust
 loop would cost. Using HEMOBP (CC~BY~4.0; 1{,}072 patients recorded, 919 remaining after cleaning,
 160{,}069 analysable sessions), we predict IDH in the remainder of a session from information available
 at a decision point $T$, with patient-level splits and AUPRC as the primary metric. Five models are
-compared. The best 60-minute model reaches AUPRC 0.2015 against a 0.0586 prevalence baseline, but
+compared. At the 60-minute decision point the best model reaches AUPRC 0.2015 against a 0.0586 prevalence baseline, but
 patient-level bootstrap intervals are wide (95\% CI 0.13--0.28) and the gap to the compact 1D-CNN+MLP
 is not established (difference 0.018, 95\% CI $-0.001$ to 0.033), so we do not rank architectures. Raw
 probabilities are unusable as risks: they over-predict by a factor of four to six and every Brier score
@@ -64,9 +64,13 @@ Haemodialysis replaces kidney function intermittently. Between sessions, patient
 
 Three generations of countermeasures exist. First, reactive control: a proportional--integral--derivative (PID) controller, or nursing judgement, reacts only after blood pressure has already fallen. Second, blood-volume biofeedback: commercial systems such as Hemocontrol (Baxter) and the BVM/BTM-based feedback of Fresenius adjust UFR and dialysate conductivity in closed loop, guided by an optical sensor that measures relative blood volume \citep{santoro1998biofeedback,ronco2000biofeedback,dong2024closedloop}. Third, machine-learning prediction, which forecasts IDH from clinical variables but has rarely been evaluated as a component of a control loop \citep{bi2022lstm,idhmstf2025}.
 
-The second generation works, but it pays for its sensor: optical relative-blood-volume hardware is bulky and expensive, and a wearable artificial kidney cannot easily host it. This motivates the question we study here: \emph{with routinely recorded machine data only --- pump settings, dialysate parameters, and the sparse blood-pressure readings nurses already take --- can a predict-then-adjust loop be built, and what does it cost?}
+For the second generation, some studies report benefit while a recent review concludes that evidence for clinical adoption
+is still under evaluation \citep{dong2024closedloop}. It also depends on an optical relative-blood-volume sensor; on the
+basis of the design project's own component assumptions that sensor is bulky and costly relative to a wearable envelope, but
+we did not verify those specifications here, so we treat this as a design motivation rather than an established fact. This motivates the question we study here: \emph{with routinely recorded machine data only --- pump settings, dialysate parameters, and the sparse blood-pressure readings nurses already take --- can a predict-then-adjust loop be built, and what does it cost?}
 
-We decompose this into three testable sub-questions, each mapped to a claim from an accompanying engineering design project: (i) how early and how accurately can IDH be predicted (claim C1/C2); (ii) is multi-modal sensing necessary, and which modality matters (C3); (iii) how much IDH reduction does a predictive policy buy, and at what price in fluid removal and session time (C4/C5) --- with a fourth, honest question about whether observational data can support causal claims at all (C6).
+We decompose this into three testable sub-questions, each mapped to a claim from an accompanying engineering design project: (i) how early and how accurately can IDH be predicted (claim C1/C2); (ii) is multi-modal sensing necessary, and which modality matters (C3); (iii) what predicted-risk, fluid-removal and session-time trade-offs appear under exploratory action-conditioned simulations
+(C4/C5) --- with a fourth question about whether observational data can support causal claims at all (C6).
 
 The work is deliberately positioned against the course material: irregular EHR time series (Lecture~5, \textasciitilde 00:38), recurrent models (Lecture~6, \textasciitilde 02:14), the Transformer (Lecture~7, \textasciitilde 00:27 and \textasciitilde 27:16), multi-modal fusion (Lecture~8, \textasciitilde 00:11), the reinforcement-learning view of sequential decisions (Lecture~10, \textasciitilde 00:27), interpretability (Lecture~11, \textasciitilde 05:11) and privacy in federated deployments (Lecture~12, \textasciitilde 00:39) \citep{md6329lectures}. Software 3.0 (generative AI) was used early here, to survey the closed-loop ultrafiltration literature and to test whether the design project's "prediction beats PID" framing was defensible. It was not (Section~2), and correcting that framing changed the research question rather than its wording.
 
@@ -154,7 +158,10 @@ max $-$ nadir $\ge$ 20~mmHg & 84.42\% & rejected (non-specific) \\
 
 \paragraph{Evaluation protocol.} Splits are by patient (70/15/15) with a fixed seed, because a patient contributes dozens of sessions and row-wise splitting would leak. AUPRC is the primary metric given class imbalance; AUROC, Brier score and sensitivity at 80\% specificity are secondary. Because AUPRC is prevalence-sensitive, we report test prevalence alongside every value.
 
-\paragraph{Training procedure.} All four neural models share one recipe, so that E1 isolates architecture rather than tuning. Inputs are standardised with training-split statistics only: each sequence channel is centred and scaled over valid (non-pad) training entries and re-zeroed at padded positions, and the fifteen static features are standardised with training-split mean and standard deviation. Training minimises binary cross-entropy with \texttt{pos\_weight} set to the training-split negative-to-positive ratio (17.1:1 at $T$=60); optimisation is Adam with learning rate $10^{-3}$ and batch size 256, for at most ten epochs, with early stopping of patience two epochs on validation AUPRC and restoration of the best-validation checkpoint before test evaluation. Dropout is 0.2 in the fusion and head layers and 0.1 inside the Transformer encoder, which uses $d$=64, four heads and two layers. Python, NumPy and PyTorch seeds are all fixed to 42. XGBoost uses the histogram tree method, 600 trees of depth 6, learning rate 0.05, 0.8 row and column subsampling, and \texttt{scale\_pos\_weight} equal to the same ratio. These defaults are revisited in E7.
+\paragraph{Training procedure.} All four neural models share one training recipe, which reduces tuning-related variation; the models nevertheless consume
+different inputs (static features only for the MLP, sequence plus static features for the fusion model, sequence-dominant
+inputs for the LSTM and the Transformer), so E1 compares complete modelling pipelines rather than isolating architecture
+alone. Inputs are standardised with training-split statistics only: each sequence channel is centred and scaled over valid (non-pad) training entries and re-zeroed at padded positions, and the fifteen static features are standardised with training-split mean and standard deviation. Training minimises binary cross-entropy with \texttt{pos\_weight} set to the training-split negative-to-positive ratio (17.1:1 at $T$=60); optimisation is Adam with learning rate $10^{-3}$ and batch size 256, for at most ten epochs, with early stopping of patience two epochs on validation AUPRC and restoration of the best-validation checkpoint before test evaluation. Dropout is 0.2 in the fusion and head layers and 0.1 inside the Transformer encoder, which uses $d$=64, four heads and two layers. Python, NumPy and PyTorch seeds are all fixed to 42. XGBoost uses the histogram tree method, 600 trees of depth 6, learning rate 0.05, 0.8 row and column subsampling, and \texttt{scale\_pos\_weight} equal to the same ratio. These defaults are revisited in E7.
 
 \paragraph{Control policies (in silico).}\label{sec:e5}
 The control analysis rests on an \emph{action-conditioned risk model}, not on an identified counterfactual model. It adds two
@@ -162,20 +169,24 @@ features to the tabular set --- a planned remaining UFR and the remaining minute
 the UFR clinicians actually went on to deliver). It therefore estimates $P(\text{IDH}\mid\text{state},\text{plan})$ on the
 distribution of plans clinicians chose; it does not identify what would happen under a plan that was rarely or never chosen.
 Arms are generated only from what a controller knows at $T$: the \emph{pump setting observed at $T$} (the last non-zero
-setting at or before $T$) is the anchor, and candidates are $\{1.0,0.9,0.8,0.7,0.6\}\times$ that setting. The arms are
+setting at or before $T$) is the anchor, and candidates are $\{1.0,0.9,0.8,0.7,0.6\}\times$ that setting. Each candidate is
+then entered into the model as the planned remaining UFR, which is a simplification: it assumes the plan would be held,
+whereas a real device would react continuously. The arms are
 \emph{hold} (keep the setting), \emph{reactive} (cut 30\% if SBP has fallen $\ge$15~mmHg or nadir is below 100), and
 \emph{predictive} (minimise predicted risk subject to a residual-fluid tolerance). The trajectory clinicians followed is
 reported only as a descriptive reference, because it was not a choice available at $T$. All quoted risks are Platt-recalibrated
 with parameters fitted on the validation split. This section is a sensitivity analysis of the trade-off; it is not a
 validation of a control policy.
 
-\paragraph{Causal diagnosis.} Two probes test whether the ultrafiltration signal is causally usable. First, a perturbation sweep: we vary the planned remaining UFR multiplier from 0.3 to 1.3 and record mean predicted risk, plus the crude observed association between actual UFR and IDH. Second, an intervention-style ablation on the Transformer: zeroing the attention output or the feed-forward output of each encoder block (the intervention tooling follows \citealp{wu2024pyvene}) and measuring the change on the logit scale (not the probability scale, which saturates). Figure~\ref{fig:e6} shows the perturbation and association results.
+\paragraph{Causal plausibility diagnostics.} Two probes examine the internal consistency of the ultrafiltration signal and
+its exposure to confounding; they do not identify a causal effect. First, a perturbation sweep: we vary the planned remaining UFR multiplier from 0.3 to 1.3 and record mean predicted risk, plus the crude observed association between actual UFR and IDH. Second, an intervention-style ablation on the Transformer: zeroing the attention output or the feed-forward output of each encoder block (the intervention tooling follows \citealp{wu2024pyvene}) and measuring the change on the logit scale (not the probability scale, which saturates). Figure~\ref{fig:e6} shows the perturbation and association results.
 
 \paragraph{Software 3.0.} Generative AI assistance was used throughout, under the course honour code, and is disclosed here. It was most valuable in three places: refactoring the session builder after pandas-groupby iteration failed on 160k sessions (a vectorised rewrite cut runtime from $>$20~min to 19~min for four horizons); diagnosing a misleading ablation result in an earlier assignment that turned out to be sigmoid saturation rather than a modelling failure; and localising a device-placement bug in a diagnostic model. It was least reliable on domain judgement --- choosing the IDH definition, deciding what the control comparison may legitimately claim, and recognising that the biofeedback literature makes ``predictive versus PID'' the wrong framing. All numerical results in this report were produced by scripts in the accompanying repository and can be regenerated.
 
 \section{Experiments}
 
-\paragraph{E1: five-model comparison.} Table~\ref{tab:e1} reports the 60-minute horizon on 22{,}407 test samples
+\paragraph{E1: five-model comparison.} Table~\ref{tab:e1} reports the 60-minute decision point on 22{,}407 test samples (the label covers the remainder of the
+session, not the following 60 minutes)
 (prevalence 5.86\%). The from-scratch Transformer has the highest point estimate, but patient-level bootstrap intervals are
 wide and overlap: it exceeds the 1D-CNN+MLP by 0.018 with a 95\% interval of $-0.001$ to 0.033
 (Figure~\ref{fig:e9ci}). We therefore \emph{do not} claim an architecture ranking; what the comparison supports is that a
@@ -307,7 +318,8 @@ action, and because 65\% conditional support leaves a third of the candidates ou
 
 Three further limits. (i) \emph{Conditional} overlap is weaker than marginal overlap: 88\% of candidates lie inside the
 overall observed range of post-$T$ plans, but only 65\% lie inside the 10--90 percentile of plans used for patients in the
-same pre-$T$ nadir and interdialytic-gain stratum, so most of the apparent support is between-patient heterogeneity. (ii) The
+same pre-$T$ nadir and interdialytic-gain stratum. That is a stratification on two pre-decision covariates, not a
+demonstration of causal overlap: most of the apparent marginal support is between-patient heterogeneity. (ii) The
 same model both selects and scores the action, which biases the selected arm optimistically; a second, independently seeded
 model (depth 3, no class weight) reproduces the ordering but shifts every level up by 0.6--1.3 points, with per-sample
 correlations of 0.85--0.87. (iii) Calibration is established on the factual distribution; it says nothing about calibration
@@ -338,7 +350,7 @@ Predictive & 5.9\% (5.0--7.0) & 354~mL (288--453) & 50~min \\
 \label{fig:e5}
 \end{figure}
 
-\paragraph{E6: is the ultrafiltration signal causally usable?} Figure~\ref{fig:e6} reports both probes. The perturbation sweep is monotone and in the expected direction: raising the planned remaining UFR multiplier from 0.3 to 1.3 raises mean predicted risk from 0.183 to 0.265 (gradient $+0.089$). The crude association agrees: binned by actual post-decision UFR, observed IDH rises from 3.1\% to 11.8\%. This is necessary for the control simulation to make sense --- but it is not sufficient to establish causality, because confounding by indication predicts the same pattern: patients who are more fluid-overloaded, and therefore more fragile, receive higher ultrafiltration and are also more likely to become hypotensive. The monotone response is an internal consistency check for the model-based simulation --- it shows the model reacts to UFR
+\paragraph{E6: causal plausibility diagnostics.} Figure~\ref{fig:e6} reports both probes. The perturbation sweep is monotone and in the expected direction: raising the planned remaining UFR multiplier from 0.3 to 1.3 raises mean predicted risk from 0.183 to 0.265 (gradient $+0.089$). The crude association agrees: binned by actual post-decision UFR, observed IDH rises from 3.1\% to 11.8\%. This is necessary for the control simulation to make sense --- but it is not sufficient to establish causality, because confounding by indication predicts the same pattern: patients who are more fluid-overloaded, and therefore more fragile, receive higher ultrafiltration and are also more likely to become hypotensive. The monotone response is an internal consistency check for the model-based simulation --- it shows the model reacts to UFR
 in the expected direction --- but it does not validate predictions for actions that were not taken, nor does it establish a
 causal effect; its magnitude cannot be decomposed into causal and confounded parts from this data.
 
@@ -379,8 +391,7 @@ are 0.24--0.35 against an observed 0.0586, an over-prediction of four to six tim
 rather than 1. The cause is the training recipe, not the architecture: \texttt{scale\_pos\_weight} (and
 \texttt{pos\_weight}) reweights the loss by 17:1, which shifts the effective prior, and no step maps the resulting scores
 back onto the observed event rate. Fitting standard two-parameter Platt scaling --- a slope and an intercept on the logit, both estimated on the validation
-split --- and evaluating it \emph{on the untouched test split} and evaluating it \emph{on the untouched test
-split} repairs the probabilities without touching the ranking: Brier falls to 0.0515--0.0525 for all five models, below the
+split --- and evaluating it \emph{on the untouched test split} repairs the probabilities without touching the ranking: Brier falls to 0.0515--0.0525 for all five models, below the
 no-skill 0.0552, while AUPRC is unchanged by construction. The improvement is real but modest --- a Brier skill score of only
 4.9--6.7\% relative to the no-skill forecast --- so the correct reading is that the probabilities carry some information, not
 that they are accurate enough to drive a clinical decision. Nor does calibration transfer to counterfactual actions: the map
@@ -393,9 +404,10 @@ distorted objective.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\linewidth]{figs/fig_e8_reliability.png}
-\caption{E8: reliability diagrams before (left) and after (right) Platt recalibration. Raw scores sit far above the diagonal;
-the two-parameter map restores them without changing the ranking. Because the raw slopes were 0.56--0.82 rather than 1, the
-slope term is doing real work: an intercept-only correction would not have fixed the compression.}
+\caption{E8: reliability diagrams before (left) and after (right) Platt recalibration. Raw predictions fall below the diagonal,
+which denotes overprediction; two-parameter Platt scaling improves their alignment with the diagonal on the held-out test set,
+though it does not make them coincide. Because the raw slopes were 0.56--0.82 rather than 1, the slope term is doing real work:
+an intercept-only correction would not have fixed the compression.}
 \label{fig:e8}
 \end{figure}
 
@@ -413,10 +425,21 @@ product decision that hinges on the ranking would need either far more patients 
 \paragraph{What we can now say.} Three questions were asked at the outset. First, how early and how accurately: with routine machine data and sparse cuff pressures, IDH is predictable at a
 60-minute horizon with AUPRC 0.2015 against 0.0586 prevalence (AUROC 0.774) --- but with an interval of 0.13--0.28, and no
 established advantage over a compact fused model at a quarter of the parameters. Second, whether multi-modal sensing is necessary: only intra-session blood pressure is indispensable; machine settings contribute almost no independent signal at $T$=60. Third, what prediction buys and costs: within the simulation, moving from holding the observed rate to a model-chosen
-reduction lowers predicted risk from 7.3\% to 5.9\% while leaving 223~mL more fluid behind, and the intervals overlap --- a trade-off whose direction is
-robust but whose magnitude is not identified, because the model is conditional rather than counterfactual.
+reduction lowers predicted risk from 7.3\% to 5.9\% while leaving 223~mL more fluid behind, and the intervals overlap --- the model produces a consistent predicted-risk--fluid trade-off within this
+simulation, but neither its direction nor its magnitude is identified as a treatment effect, because the model is
+conditional rather than counterfactual.
 
-\paragraph{Boundaries we will not overstep.} Every control number here is in silico under a model trained on clinicians' own decisions; it is not clinical validation. The dose--response gradient is equally compatible with confounding by indication, so the E5 gains are upper bounds. The attention-ablation result means explanation should not be read off attention weights. And the cohort is in-centre haemodialysis with a cuff measurement every 50.7 minutes: it cannot speak to the ambulatory wearable scenario, which lacks exactly the high-frequency modalities
+\paragraph{What the operating point would mean clinically.} AUPRC does not by itself establish clinical value. At 80\%
+specificity the Transformer reaches 0.587 sensitivity; at the test prevalence of 5.86\% this implies a positive predictive
+value of about 15\%, i.e.\ roughly 3.4 true events and 18.8 false alarms per 100 sessions. Whether that is usable depends on
+what an alarm triggers --- a nurse review, a patient prompt, an automatic reduction --- and on the relative cost of a missed
+hypotensive episode versus a repeated false alarm. Neither cost is observable in this dataset: there are no symptom records,
+no intervention logs and no workflow data. The threshold, the alarm burden per session or per hour, and the action that
+follows therefore remain design decisions to be settled in a prospective study, not quantities this analysis can supply.
+
+\paragraph{Boundaries we will not overstep.} Every control number here is in silico under a model trained on clinicians' own decisions; it is not clinical validation. The dose--response gradient is equally compatible with confounding by indication, so the simulated differences are neither
+estimates nor bounds of a treatment effect: the direction and magnitude of any real clinical benefit remain unidentified in
+these observational data. The attention-ablation result means explanation should not be read off attention weights. And the cohort is in-centre haemodialysis with a cuff measurement every 50.7 minutes: it cannot speak to the ambulatory wearable scenario, which lacks exactly the high-frequency modalities
 (photoplethysmography, inertial, pressure waveforms) whose value this dataset cannot measure --- the ablation says blood
 pressure history matters, not that a new sensor would help. Scaling from 4-hour supine sessions to 6--8-hour ambulatory therapy, and from sparse to continuous sensing, remains an extrapolation that this dataset cannot adjudicate.
 
@@ -425,13 +448,19 @@ it should be captured rather than settling a sensor budget (E4) --- the incremen
 monitoring or photoplethysmography need their own data and experiment; a compact convolutional-plus-MLP model is a credible
 deployment shape, since it is competitive under the default comparison while being far cheaper (E1/E2); and a clinician-set
 safety envelope with a hard physical override is not bureaucratic decoration but a necessary condition, precisely because the
-causal strength of ultrafiltration cannot be established retrospectively (E6). Weakened: the design project's framing of its contribution as ``prediction beats PID'' is historically inaccurate --- 28 clinical studies of closed-loop ultrafiltration biofeedback predate it \citep{dong2024closedloop}. The defensible framing is narrower and stronger: \emph{replacing the optical relative-blood-volume sensor with routine machine data and inference}. The five-to-fifteen-minute warning specification also needs restating, since it is not verifiable on routine data and depends on the continuous sensing the device is meant to provide.
+causal strength of ultrafiltration cannot be established retrospectively (E6). Weakened: the design project's framing of its contribution as ``prediction beats PID'' is historically inaccurate --- 28 clinical studies of closed-loop ultrafiltration biofeedback predate it \citep{dong2024closedloop}. The more defensible framing is narrower: \emph{testing whether routine machine data and inference can reduce reliance on an
+optical relative-blood-volume sensor}. This study provides grounds to research that question; it does not show that routine
+data can replace the sensor, nor that adding photoplethysmography would improve prediction. The five-to-fifteen-minute warning specification also needs restating, since it is not verifiable on routine data and depends on the continuous sensing the device is meant to provide.
 
 \paragraph{What the project taught me.} The value of a healthcare-AI contribution sits less in the highest AUPRC than in knowing which claim the data can carry. The most useful result here is a negative one --- that the control policy cannot be validated retrospectively --- and it took a controlled model comparison, a modality ablation and an intervention probe to establish it rather than assert it.
 
 \paragraph{Future work.} Four directions follow directly. External validation on a second centre, since all results here come from one cohort. A properly validated calibration step deployed with the model: Platt scaling works but was fitted on a single split, so it needs external confirmation before any threshold is used clinically. A targeted-causal analysis --- within-patient comparisons or instrumental variables --- to bound the causal share of the ultrafiltration gradient. And a high-frequency simulation arm, calibrated to the distributions reported here, to test whether the ambulatory scenario preserves or reverses the conclusions.
 
-\paragraph{Conclusion.} Sensor-light closed-loop ultrafiltration control is buildable as software and evaluable offline, and its central trade-off --- hypotension risk against fluid removal and session time --- can be quantified. What it cannot be, on retrospective routine data, is causally validated. Naming that boundary is not a weakness of the study; it is the finding that should shape the next experiment.
+\paragraph{Conclusion.} What this study delivers is narrower than a closed-loop device: an offline risk-prediction pipeline
+and an exploratory action-conditioned sensitivity analysis, both reproducible on routine data, plus a quantified account of
+the predicted-risk--fluid trade-off and of why the data cannot settle the causal question. Sensor-light closed-loop control
+remains a hypothesis for development --- one with a clear evidence ladder (external validation, alarm burden, target-device
+observation, clinician-in-the-loop decisions, and only then automated control), not a demonstrated capability.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
