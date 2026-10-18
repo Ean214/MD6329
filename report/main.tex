@@ -44,12 +44,14 @@ is not established (difference 0.018, 95\% CI $-0.001$ to 0.033), so we do not r
 probabilities are unusable as risks: they over-predict by a factor of four to six and every Brier score
 is worse than the no-skill value, which Platt scaling on validation repairs (0.052 versus 0.055).
 Modality ablation shows that intra-session blood pressure is the only indispensable modality (removing
-it costs 44\% of AUPRC), while machine settings add no independent signal. In an in-silico simulation
-whose candidates use only decision-time information, holding the rate observed at $T$ implies a
-predicted risk of 7.3\%, and adapting down to about $0.75\times$ lowers it to 5.8\% at the cost of
-243~mL more unremoved fluid. The dynamics model is a conditional-risk model, not an identified
-counterfactual one, and candidate plans deviate from observed practice by 0.17~L/h; the control gains
-are therefore extrapolations, and validating the policy requires prospective data.
+it costs 44\% of AUPRC), while machine settings add no independent signal. An exploratory action-conditioned
+simulation, with candidates generated only from the pump setting observed at $T$, illustrates the
+trade-off rather than validating a policy: holding that setting implies 7.3\% predicted risk with
+131~mL residual, while a model-chosen reduction gives 5.9\% with 354~mL --- yet every pairwise
+difference lies inside overlapping patient-bootstrap intervals, only 65\% of candidates have
+conditional support, and the risk model is conditional rather than identified. The control section is
+therefore reported as a sensitivity analysis; establishing an intervention effect requires
+prospective data.
 
 \end{abstract}
 
@@ -75,10 +77,32 @@ The work is deliberately positioned against the course material: irregular EHR t
 
 \section{Data}
 
-\paragraph{Cohort.} HEMOBP \citep{lin2019hemobp} contains dialysis-machine recordings linked to hospital demographic data, released under CC~BY~4.0: 1{,}072 patients, 4{,}366{,}298 intra-session readings. Sessions are not a calendar day --- the unit runs three shifts and the last crosses midnight --- so we reconstruct sessions as contiguous runs of readings separated by more than six hours, and assign each to a dialysis day beginning at 08:00. This yields 197{,}269 sessions (82.7\% match session-level weight records). Applying the cleaning rules below leaves
-\textbf{919 patients and 160{,}069 sessions}: 197{,}269 $\rightarrow$ 196{,}457 (duration) $\rightarrow$ 162{,}563
-(start weight) $\rightarrow$ 160{,}673 (interdialytic gain) $\rightarrow$ 160{,}069 (UFR). The weight filter is the largest
-single loss and removes 153 patients, so every modelling result describes 919 patients, not the 1{,}072 recorded.
+\paragraph{Cohort.} HEMOBP \citep{lin2019hemobp} contains dialysis-machine recordings linked to hospital demographic data, released under CC~BY~4.0: 1{,}072 patients, 4{,}366{,}298 intra-session readings. Sessions are not a calendar day --- the unit runs three shifts and the last crosses midnight --- so we reconstruct sessions as contiguous runs of readings separated by more than six hours, and assign each to a dialysis day beginning at 08:00. The source cohort thus contains 1{,}072 patients and 197{,}269 reconstructed sessions. Eligibility filtering
+(Table~\ref{tab:flow}) leaves 160{,}069 sessions from \textbf{919 patients} before the horizon-specific exclusions, and it is
+those 919 patients that every modelling result describes --- not the 1{,}072 recorded. The start-weight filter is the single
+largest loss and is what removes 153 of them.
+
+\begin{table}[t]
+\caption{Sample flow. The first block is session-level cleaning; the second is the horizon-specific exclusion that turns
+eligible sessions into modelling samples (\texttt{no readings} = 8 sessions present in the weight file but absent from the
+machine-reading file).}
+\label{tab:flow}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+& T=30 & T=60 & T=90 & T=120 \\
+\midrule
+eligible sessions & 160{,}069 & 160{,}069 & 160{,}069 & 160{,}069 \\
+$-$ session shorter than $T$+30~min & 0 & 244 & 567 & 1{,}160 \\
+$-$ fewer than 3 pre-$T$ readings & 12{,}798 & 8{,}468 & 3{,}192 & 1{,}071 \\
+$-$ no post-$T$ readings & 30 & 45 & 83 & 155 \\
+$-$ already below 90~mmHg before $T$ & 3{,}658 & 4{,}260 & 5{,}458 & 6{,}493 \\
+$-$ no machine readings & 8 & 8 & 8 & 8 \\
+\midrule
+modelling samples & 143{,}575 & 147{,}044 & 150{,}761 & 151{,}182 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Descriptive statistics.} Mean session duration is 236 $\pm$ 24.5 minutes; mean UFR is 8.26 $\pm$ 3.38~mL/kg/h (median 7.8), i.e.\ mostly below the guideline threshold of 13; median interdialytic weight gain is 2.32~kg. Crucially, blood pressure is sparse: the median within-session interval between distinct readings is 50.7 minutes, and only 32\% of intervals are at or below 20 minutes (Figure~\ref{fig:eda}).
 
@@ -242,40 +266,42 @@ Without machine settings & 0.1740 \\
 \end{tabular}
 \end{table}
 
-\paragraph{E5: the price of prediction.} An earlier version of this experiment anchored its candidate actions on the mean
-UFR \emph{actually delivered after} $T$ --- a quantity that does not exist at decision time --- and its numbers are withdrawn.
-The revised design generates candidates only from what a controller knows at $T$: the mean rate delivered so far,
-$\mathrm{anchor}$, with candidates $\{1.0,0.9,0.8,0.7,0.6\}\times\mathrm{anchor}$. Three arms share that anchor: \emph{hold}
-(keep it), \emph{reactive} (cut 30\% if SBP has fallen $\ge$15~mmHg or nadir is below 100), and \emph{predictive} (minimise
-predicted risk subject to a residual-fluid tolerance). The plan clinicians actually followed is a descriptive reference, not
-an arm, because it is not a choice available at $T$. Risks are Platt-recalibrated before any level is quoted.
+\paragraph{E5: exploratory action-conditioned risk simulation.} This section is a sensitivity analysis, not a test of a
+control policy, and we label it accordingly. Two earlier versions were withdrawn: the first anchored candidates on the UFR
+actually delivered \emph{after} $T$, which is unavailable at decision time; the second anchored them on the mean rate
+delivered so far, which is not the rate the machine is running. The current anchor is the \textbf{pump setting observed at
+$T$} (the last non-zero setting at or before $T$; mean 0.70 against 0.62 for the historical mean, correlation 0.80), with
+candidates $\{1.0,0.9,0.8,0.7,0.6\}\times$ that setting. Arms are \emph{hold}, \emph{reactive} (cut 30\% if SBP has fallen
+$\ge$15~mmHg or nadir is below 100), and \emph{predictive} (minimise predicted risk subject to a residual-fluid tolerance).
+The plan clinicians followed is a descriptive reference only. Risks are Platt-recalibrated, fitted on validation.
 
-At $T$=60~min and 0.5~L tolerance (Table~\ref{tab:e5}), holding the observed rate leaves the least fluid (330~mL) but implies
-the highest predicted risk (7.3\%). The reactive rule reduces that to 7.1\% and leaves 428~mL. The predictive arm reaches
-5.8\% with 573~mL residual --- numerically the same risk as the clinicians' own plan, which instead left 699~mL. We do not
-read that as the model beating clinical practice: the observed plan is in-distribution while the candidate arms are partly
-extrapolated. Loosening the tolerance moves the predictive arm along the curve (5.9\% at 0.25~L, 5.5\% at 1.0~L), a monotone
-trade-off and the only feature of this table we would defend.
+Table~\ref{tab:e5} reports the arms at $T$=60~min with patient-level bootstrap intervals. The ordering is
+hold (7.3\%) $>$ reactive (7.2\%) $>$ predictive (5.9\%), and it costs fluid to move down that ordering: 131~mL residual for
+hold, 239~mL for reactive, 354~mL for predictive. But \emph{every interval overlaps} --- predictive's 5.0--7.0\% covers
+hold's point estimate --- so the table does not establish that any arm is better. It establishes the shape of the trade-off.
 
-Two limits bound the interpretation. First, the dynamics model is a conditional-risk model
-$P(\text{IDH}\mid\text{state},\text{plan})$ trained on clinicians' observed plans; nothing here identifies a counterfactual, so
-the risk differences are model extrapolations rather than causal effects. Second, the candidates sit 0.17~L/h from the mean
-observed plan --- a 43\% deviation --- and although 89\% of candidate values fall inside the observed support, that support is
-wide, so support alone does not establish credibility.
+Three further limits. (i) \emph{Conditional} overlap is weaker than marginal overlap: 88\% of candidates lie inside the
+overall observed range of post-$T$ plans, but only 65\% lie inside the 10--90 percentile of plans used for patients in the
+same pre-$T$ nadir and interdialytic-gain stratum, so most of the apparent support is between-patient heterogeneity. (ii) The
+same model both selects and scores the action, which biases the selected arm optimistically; a second, independently seeded
+model (depth 3, no class weight) reproduces the ordering but shifts every level up by 0.6--1.3 points, with per-sample
+correlations of 0.85--0.87. (iii) Calibration is established on the factual distribution; it says nothing about calibration
+under counterfactual treatment, so the calibrated numbers remain conditional-risk estimates.
 
 \begin{table}[t]
-\caption{E5 (revised): decision-time arms at $T$=60~min, tolerance 0.5~L, with the observed plan as a descriptive
-reference. Risks are Platt-recalibrated, in silico, and conditional --- not causal.}
+\caption{E5: exploratory action-conditioned risk simulation at $T$=60~min (tolerance 0.5~L). Intervals are
+patient-level bootstrap ($B$=500). Arms are model outputs under a conditional-risk model; overlapping intervals mean no arm is
+established as superior.}
 \label{tab:e5}
 \centering
 \begin{tabular}{lccc}
 \toprule
-Arm & Predicted IDH risk & Residual fluid & Extra time \\
+Arm & Predicted risk (95\% CI) & Residual fluid (95\% CI) & Extra time \\
 \midrule
-Observed plan (reference, not an arm) & 0.058 & 699~mL & 120~min \\
-Hold the rate observed at $T$ & 0.073 & 330~mL & 31~min \\
-Reactive rule (biofeedback proxy) & 0.071 & 428~mL & 74~min \\
-Predictive (model-chosen UFR) & 0.058 & 573~mL & 129~min \\
+Observed plan (reference) & 5.8\% (4.9--7.0) & 699~mL (599--830) & 120~min \\
+Hold setting at $T$ & 7.3\% (6.2--8.6) & 131~mL (89--190) & 13~min \\
+Reactive rule & 7.2\% (6.1--8.5) & 239~mL (184--312) & 28~min \\
+Predictive & 5.9\% (5.0--7.0) & 354~mL (288--453) & 50~min \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -299,24 +325,30 @@ A second probe is more surprising. Zeroing the attention output of each Transfor
 \label{fig:e6}
 \end{figure}
 
-\paragraph{E7: hyperparameter selection.} The brief asks for training and hyperparameter selection, so we swept the two choices with the largest effect. For XGBoost, tree depth dominates: AUPRC peaks at depth 3 (0.1904 with 600 trees) and falls monotonically to 0.1675 at depth 6 and 0.1520 at depth 9, while adding trees beyond 600 does not help (Figure~\ref{fig:e7}). With roughly 100k training rows and a signal concentrated in a few physiological features, deeper trees overfit. For the 1D-CNN+MLP, the learning rate matters more than the class-weight correction: AUPRC rises from 0.1817 at $10^{-3}$ to 0.1926 at $3\times10^{-4}$ and falls to 0.1696 at $3\times10^{-3}$, while disabling the positive-class weight costs about five relative percent. Retuning therefore changes the E1 ordering at the margin: XGBoost moves from 0.1675 to 0.1904 and the fusion model from 0.1837 to 0.1926, leaving the from-scratch Transformer (0.2015) ahead by a much smaller margin than E1 suggests. We keep E1 on identical default settings because that comparison holds the pipeline constant, and report the tuned numbers as evidence that architecture ranking at this signal strength is sensitive to tuning --- a caution for anyone deploying these models.
+\paragraph{E7: hyperparameter sensitivity.} Hyperparameters are selected on the validation split; the test split is
+reported only for the selected configuration. For XGBoost, tree depth dominates validation AUPRC: depth 3 reaches 0.32 and
+depth 9 falls to 0.18, with 200 trees preferred over 600 or 1200 (Figure~\ref{fig:e7}). The validation-selected configuration
+(n=200, depth 3) scores 0.186 on test, against 0.168 for the default (n=600, depth 6). For the 1D-CNN+MLP, the learning rate
+matters more than the class weight: $3\times10^{-4}$ is best on validation and gives 0.194 on test, against 0.188 at $10^{-3}$.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.49\linewidth]{figs/fig_e7_xgb_grid.png}
-\includegraphics[width=0.49\linewidth]{figs/fig_e7_nn_lr.png}
-\caption{E7: hyperparameter selection. Left: XGBoost AUPRC over tree depth and ensemble size. Right: 1D-CNN+MLP learning-rate sweep with and without positive-class weighting.}
-\label{fig:e7}
-\end{figure}
+One caveat matters more than the numbers. Validation and test disagree about the \emph{ranking} of these configurations ---
+the configuration with the best test score (n=600, depth 3, 0.190) ranks below the best validation score (n=200, depth 3) ---
+which is the same instability that inflates validation AUPRC in E1. At this sample size, hyperparameter selection is not
+stable enough to support a claim that tuning improves the model; we therefore report E7 as a sensitivity analysis rather than
+a tuning result, and E1 keeps identical defaults across models so that the comparison holds the pipeline constant.
 
 \paragraph{E8: are the probabilities usable as risks?} No, not before recalibration. Table~\ref{tab:e1} already shows that
 every Brier score exceeds the no-skill value $p(1-p)=0.0552$, and Figure~\ref{fig:e8} shows why: mean predicted probabilities
 are 0.24--0.35 against an observed 0.0586, an over-prediction of four to six times, with calibration slopes of 0.56--0.82
 rather than 1. The cause is the training recipe, not the architecture: \texttt{scale\_pos\_weight} (and
 \texttt{pos\_weight}) reweights the loss by 17:1, which shifts the effective prior, and no step maps the resulting scores
-back onto the observed event rate. Fitting a one-parameter Platt map on the validation split and applying it to test repairs
-the probabilities without touching the ranking: Brier falls to 0.0515--0.0525 for all five models, below the no-skill
-0.0552, while AUPRC is unchanged by construction. Two consequences follow. First, ``best Brier among five'' in E1 does not
+back onto the observed event rate. Fitting a one-parameter Platt map \emph{on the validation split only} and evaluating it \emph{on the untouched test
+split} repairs the probabilities without touching the ranking: Brier falls to 0.0515--0.0525 for all five models, below the
+no-skill 0.0552, while AUPRC is unchanged by construction. The improvement is real but modest --- a Brier skill score of only
+4.9--6.7\% relative to the no-skill forecast --- so the correct reading is that the probabilities carry some information, not
+that they are accurate enough to drive a clinical decision. Nor does calibration transfer to counterfactual actions: the map
+is fitted on the distribution of treatments clinicians chose, so nothing here licenses calibrated risk under a treatment that
+was rarely or never given. Two consequences follow. First, ``best Brier among five'' in E1 does not
 mean well calibrated --- it means least bad before repair. Second, every risk level quoted in E5 is recalibrated; raw scores
 would have overstated risk by roughly a factor of four, and a control policy optimising raw scores would be optimising a
 distorted objective.
@@ -343,7 +375,7 @@ product decision that hinges on the ranking would need either far more patients 
 \paragraph{What we can now say.} Three questions were asked at the outset. First, how early and how accurately: with routine machine data and sparse cuff pressures, IDH is predictable at a
 60-minute horizon with AUPRC 0.2015 against 0.0586 prevalence (AUROC 0.774) --- but with an interval of 0.13--0.28, and no
 established advantage over a compact fused model at a quarter of the parameters. Second, whether multi-modal sensing is necessary: only intra-session blood pressure is indispensable; machine settings contribute almost no independent signal at $T$=60. Third, what prediction buys and costs: within the simulation, moving from holding the observed rate to a model-chosen
-reduction lowers predicted risk from 7.3\% to 5.8\% while leaving 243~mL more fluid behind --- a trade-off whose direction is
+reduction lowers predicted risk from 7.3\% to 5.9\% while leaving 223~mL more fluid behind, and the intervals overlap --- a trade-off whose direction is
 robust but whose magnitude is not identified, because the model is conditional rather than counterfactual.
 
 \paragraph{Boundaries we will not overstep.} Every control number here is in silico under a model trained on clinicians' own decisions; it is not clinical validation. The dose--response gradient is equally compatible with confounding by indication, so the E5 gains are upper bounds. The attention-ablation result means explanation should not be read off attention weights. And the cohort is in-centre haemodialysis with a cuff measurement every 50.7 minutes: it cannot speak to the ambulatory wearable scenario, which lacks exactly the high-frequency modalities

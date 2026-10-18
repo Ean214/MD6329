@@ -1,0 +1,116 @@
+{
+  "horizon_T": 60,
+  "n_test": 22407,
+  "label": "exploratory action-conditioned risk simulation (NOT policy validation)",
+  "anchor_definition": "UFR setting observed at T (last non-zero pump value <= T); mean-so-far as fallback",
+  "anchor_check": {
+    "mean_uf_set_at_T": 0.695,
+    "mean_uf_so_far": 0.615,
+    "corr": 0.795
+  },
+  "dynamics": {
+    "auprc": 0.1925,
+    "auroc": 0.7501,
+    "observed": 0.0586
+  },
+  "overlap": {
+    "support_p5_p95": [
+      0.145,
+      0.844
+    ],
+    "marginal_inside": 0.876,
+    "conditional_inside": 0.65,
+    "strata_used": 25,
+    "note": "conditional = candidates inside the 10-90 percentile of observed post-T plans within a (nadir SBP x IDWG) quintile stratum"
+  },
+  "reference_observed_plan": {
+    "risk": 0.0582,
+    "risk_ci95": [
+      0.0489,
+      0.0701
+    ],
+    "resid_mL": 698.8,
+    "resid_ci95": [
+      598.842,
+      829.5706
+    ],
+    "ext_min": 120.3,
+    "mean_uf": 0.406
+  },
+  "hold": {
+    "risk": 0.0729,
+    "risk_ci95": [
+      0.0618,
+      0.0859
+    ],
+    "resid_mL": 130.5,
+    "resid_ci95": [
+      89.2201,
+      190.4686
+    ],
+    "ext_min": 12.9,
+    "mean_uf": 0.682,
+    "risk_model2": 0.0784,
+    "model_agreement_corr": 0.852
+  },
+  "reactive": {
+    "risk": 0.0718,
+    "risk_ci95": [
+      0.0607,
+      0.0848
+    ],
+    "resid_mL": 239.2,
+    "resid_ci95": [
+      183.9466,
+      312.1236
+    ],
+    "ext_min": 27.7,
+    "mean_uf": 0.621,
+    "risk_model2": 0.0752,
+    "model_agreement_corr": 0.868
+  },
+  "predictive_tol0.25": {
+    "risk": 0.0613,
+    "risk_ci95": [
+      0.0522,
+      0.0726
+    ],
+    "resid_mL": 293.0,
+    "resid_ci95": [
+      214.0444,
+      401.5844
+    ],
+    "ext_min": 39.6,
+    "mean_uf": 0.569
+  },
+  "predictive_tol0.5": {
+    "risk": 0.0588,
+    "risk_ci95": [
+      0.0495,
+      0.0698
+    ],
+    "resid_mL": 353.7,
+    "resid_ci95": [
+      287.5478,
+      453.0684
+    ],
+    "ext_min": 49.7,
+    "mean_uf": 0.544,
+    "risk_model2": 0.0645,
+    "model_agreement_corr": 0.855
+  },
+  "predictive_tol1.0": {
+    "risk": 0.0556,
+    "risk_ci95": [
+      0.0465,
+      0.0667
+    ],
+    "resid_mL": 441.4,
+    "resid_ci95": [
+      383.249,
+      523.3405
+    ],
+    "ext_min": 64.4,
+    "mean_uf": 0.511
+  }
+}

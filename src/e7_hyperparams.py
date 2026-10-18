@@ -29,8 +29,11 @@ NN_EPOCHS = 6
 
 def e7a():
     tab = pd.read_pickle(os.path.join(DATA, f"tabular_T{T}.pkl"))
-    tr, te = tab[tab["split"] == "train"], tab[tab["split"] == "test"]
+    tr = tab[tab["split"] == "train"]
+    va = tab[tab["split"] == "val"]
+    te = tab[tab["split"] == "test"]
     Xtr, ytr = tr[STAT_FEATS].to_numpy(), tr["y"].to_numpy()
+    Xva, yva = va[STAT_FEATS].to_numpy(), va["y"].to_numpy()
     Xte, yte = te[STAT_FEATS].to_numpy(), te["y"].to_numpy()
     scale = float((ytr == 0).sum()) / max(1, int((ytr == 1).sum()))
     grid, t0 = {}, time.time()
@@ -41,25 +44,29 @@ def e7a():
                                   scale_pos_weight=scale, tree_method="hist",
                                   random_state=SEED, n_jobs=8, eval_metric="aucpr")
             m.fit(Xtr, ytr)
-            r = metrics(yte, m.predict_proba(Xte)[:, 1])
+            rv = metrics(yva, m.predict_proba(Xva)[:, 1])   # selection metric
+            rt = metrics(yte, m.predict_proba(Xte)[:, 1])   # reported only
             grid[f"n{n}_d{d}"] = {"n_estimators": n, "max_depth": d,
-                                  "auprc": r["auprc"], "auroc": r["auroc"]}
-            print(f"  xgb n={n} d={d}: AUPRC={r['auprc']:.4f}", flush=True)
-    best = max(grid.items(), key=lambda kv: kv[1]["auprc"])
+                                  "val_auprc": rv["auprc"],
+                                  "test_auprc": rt["auprc"], "test_auroc": rt["auroc"]}
+            print(f"  xgb n={n} d={d}: val={rv['auprc']:.4f} test={rt['auprc']:.4f}", flush=True)
+    best = max(grid.items(), key=lambda kv: kv[1]["val_auprc"])   # chosen on VALIDATION
     fig, ax = plt.subplots(figsize=(5.6, 3.6))
-    M = np.array([[grid[f"n{n}_d{d}"]["auprc"] for d in DEPTH] for n in N_EST])
+    M = np.array([[grid[f"n{n}_d{d}"]["val_auprc"] for d in DEPTH] for n in N_EST])
     im = ax.imshow(M, cmap="YlGn", aspect="auto")
     ax.set_xticks(range(len(DEPTH)), DEPTH); ax.set_yticks(range(len(N_EST)), N_EST)
     ax.set_xlabel("max_depth"); ax.set_ylabel("n_estimators")
     for i in range(len(N_EST)):
         for j in range(len(DEPTH)):
             ax.text(j, i, f"{M[i,j]:.4f}", ha="center", va="center", fontsize=9)
-    ax.set_title("E7a: XGBoost AUPRC grid (T=60)", fontsize=10)
+    ax.set_title("E7a: XGBoost validation AUPRC grid (T=60)", fontsize=10)
     fig.colorbar(im, ax=ax, shrink=0.85)
     fig.tight_layout(); fig.savefig(os.path.join(RESULTS, "fig_e7_xgb_grid.png"), dpi=130)
     plt.close(fig)
-    print(f"  best: {best[0]} AUPRC={best[1]['auprc']:.4f} ({time.time()-t0:.0f}s)", flush=True)
-    return {"grid": grid, "best": {"config": best[0], **best[1]}}
+    print(f"  best on val: {best[0]} val={best[1]['val_auprc']:.4f} "
+          f"test={best[1]['test_auprc']:.4f} ({time.time()-t0:.0f}s)", flush=True)
+    return {"grid": grid, "best_on_val": {"config": best[0], **best[1]},
+            "selection": "hyperparameters chosen by validation AUPRC; test reported only for the selected config"}
 
 def e7b():
     from d1_nn import MODELS, load_ds, standardize, DS, DEV, infer
@@ -117,6 +124,9 @@ def e7b():
     ax.legend(fontsize=8); ax.grid(alpha=0.3)
     fig.tight_layout(); fig.savefig(os.path.join(RESULTS, "fig_e7_nn_lr.png"), dpi=130)
     plt.close(fig)
+    best_lr = max([k for k in out if out[k]["pos_weight"]], key=lambda k: out[k]["val_auprc"])
+    out["_selection"] = {"criterion": "validation AUPRC", "selected": best_lr,
+                         "test_auprc_of_selected": out[best_lr]["auprc"]}
     return out
 
 def main():

@@ -4,94 +4,110 @@
       "n200_d3": {
         "n_estimators": 200,
         "max_depth": 3,
-        "auprc": 0.1858,
-        "auroc": 0.76
+        "val_auprc": 0.3234,
+        "test_auprc": 0.1858,
+        "test_auroc": 0.76
       },
       "n200_d6": {
         "n_estimators": 200,
         "max_depth": 6,
-        "auprc": 0.1734,
-        "auroc": 0.7462
+        "val_auprc": 0.2684,
+        "test_auprc": 0.1734,
+        "test_auroc": 0.7462
       },
       "n200_d9": {
         "n_estimators": 200,
         "max_depth": 9,
-        "auprc": 0.1623,
-        "auroc": 0.7293
+        "val_auprc": 0.213,
+        "test_auprc": 0.1623,
+        "test_auroc": 0.7293
       },
       "n600_d3": {
         "n_estimators": 600,
         "max_depth": 3,
-        "auprc": 0.1904,
-        "auroc": 0.7524
+        "val_auprc": 0.2771,
+        "test_auprc": 0.1904,
+        "test_auroc": 0.7524
       },
       "n600_d6": {
         "n_estimators": 600,
         "max_depth": 6,
-        "auprc": 0.1675,
-        "auroc": 0.733
+        "val_auprc": 0.2062,
+        "test_auprc": 0.1675,
+        "test_auroc": 0.733
       },
       "n600_d9": {
         "n_estimators": 600,
         "max_depth": 9,
-        "auprc": 0.1541,
-        "auroc": 0.7241
+        "val_auprc": 0.1813,
+        "test_auprc": 0.1541,
+        "test_auroc": 0.7241
       },
       "n1200_d3": {
         "n_estimators": 1200,
         "max_depth": 3,
-        "auprc": 0.1853,
-        "auroc": 0.7453
+        "val_auprc": 0.2297,
+        "test_auprc": 0.1853,
+        "test_auroc": 0.7453
       },
       "n1200_d6": {
         "n_estimators": 1200,
         "max_depth": 6,
-        "auprc": 0.152,
-        "auroc": 0.719
+        "val_auprc": 0.1842,
+        "test_auprc": 0.152,
+        "test_auroc": 0.719
       },
       "n1200_d9": {
         "n_estimators": 1200,
         "max_depth": 9,
-        "auprc": 0.151,
-        "auroc": 0.7217
+        "val_auprc": 0.175,
+        "test_auprc": 0.151,
+        "test_auroc": 0.7217
       }
     },
-    "best": {
-      "config": "n600_d3",
-      "n_estimators": 600,
+    "best_on_val": {
+      "config": "n200_d3",
+      "n_estimators": 200,
       "max_depth": 3,
-      "auprc": 0.1904,
-      "auroc": 0.7524
-    }
+      "val_auprc": 0.3234,
+      "test_auprc": 0.1858,
+      "test_auroc": 0.76
+    },
+    "selection": "hyperparameters chosen by validation AUPRC; test reported only for the selected config"
   },
   "e7b_cnnmlp": {
     "lr0.0003_w1": {
       "lr": 0.0003,
       "pos_weight": true,
-      "auprc": 0.1926,
-      "auroc": 0.7719,
-      "val_auprc": 0.3418
+      "auprc": 0.1937,
+      "auroc": 0.7722,
+      "val_auprc": 0.3419
     },
     "lr0.001_w1": {
       "lr": 0.001,
       "pos_weight": true,
-      "auprc": 0.1817,
-      "auroc": 0.7674,
-      "val_auprc": 0.3464
+      "auprc": 0.1883,
+      "auroc": 0.7701,
+      "val_auprc": 0.3453
     },
     "lr0.003_w1": {
       "lr": 0.003,
       "pos_weight": true,
-      "auprc": 0.1696,
-      "auroc": 0.7594,
-      "val_auprc": 0.3452
+      "auprc": 0.168,
+      "auroc": 0.7586,
+      "val_auprc": 0.3427
     },
     "lr0.001_w0": {
       "lr": 0.001,
       "pos_weight": false,
-      "auprc": 0.1769,
-      "auroc": 0.762,
-      "val_auprc": 0.3361
+      "auprc": 0.1779,
+      "auroc": 0.7629,
+      "val_auprc": 0.3379
+    },
+    "_selection": {
+      "criterion": "validation AUPRC",
+      "selected": "lr0.001_w1",
+      "test_auprc_of_selected": 0.1883
     }
   }
 }

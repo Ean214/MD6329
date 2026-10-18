@@ -1,0 +1,31 @@
+{
+  "eligible_sessions": 160069,
+  "T30": {
+    "short_session": 0,
+    "too_few_pre": 12798,
+    "no_post": 30,
+    "already_hypotensive": 3658,
+    "modelling_samples": 143575
+  },
+  "T60": {
+    "short_session": 244,
+    "too_few_pre": 8468,
+    "no_post": 45,
+    "already_hypotensive": 4260,
+    "modelling_samples": 147044
+  },
+  "T90": {
+    "short_session": 567,
+    "too_few_pre": 3192,
+    "no_post": 83,
+    "already_hypotensive": 5458,
+    "modelling_samples": 150761
+  },
+  "T120": {
+    "short_session": 1160,
+    "too_few_pre": 1071,
+    "no_post": 155,
+    "already_hypotensive": 6493,
+    "modelling_samples": 151182
+  }
+}
