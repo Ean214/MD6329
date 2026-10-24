@@ -45,20 +45,24 @@
 | 引用时刻画面 | p2 | Today's Agenda |
 | **建议截图** | **p38** | **Recurrent Neural Networks - Architecture / Why RNNs for EHR?** —— 页内原文：*"Lab results drawn at irregular intervals"、"FC networks require fixed-length input"*，正是报告 E5 前那句"不规则、部分缺失"的依据 |
 
-### L6–L12：按标题找页（本机无 PDF）
+### L6–L12（课件已在本地，页码逐页核对）
 
-| 讲次 | 在课件里 Ctrl+F 搜 | 要截的画面 |
-|---|---|---|
-| L6 | `LSTM cell` 或 `three gates` | 三个门：forget / input / output 的结构图 |
-| L7 | `Positional Encoding` | 正弦余弦公式 + "attention has no notion of position" |
-| L7（备选） | `Query` 或 `scaled dot` | QKV 注意力计算式 |
-| L8 | `Contrastive` | 正/负样本对 + 对比损失示意 |
-| L9 | `CLIP` | 图文双塔架构图 |
-| L10 | `Reinforcement` 或 `reward` | agent–action–reward 循环 |
-| L11 | `Saliency` | 显著性图示例（原图 / 热力图并排） |
-| L12 | `Federated` | 数据留在医院、模型下发的示意图 |
+| 讲次 | 报告引用 | **截这一页** | 页面标题 / 页内原文 | 匹配度 |
+|---|---|---|---|---|
+| **L6** | ~02:14 梯度消失→LSTM | **p3** | *RNN vs LSTM for EHR Prediction (REVIEW)*：页内明写 "Single tanh gate… Struggles with long-range dependencies / **Vanishing gradient problem** over long sequences" | ✅ 完全对应 |
+| L6（备选） | — | p9 | *Long Short-Term Memory (LSTM) Recurrent Networks*：Unrolled RNN 与 Unrolled LSTM 对照图 | ✅ 结构图 |
+| **L7** | ~27:16 位置编码 | **p56** | *BERT 输入表示*：原文 "Input = token embedding + **positional encoding (sine/cosine)** + segment embedding；Positional encodings convey token position" | ⚠️ **没有独立的"位置编码"页**，只有这一条 bullet |
+| **L7** | 注意力机制 | **p41** | *Query (Q) / Key (K) / Value (V) / Attention Weights*：`softmax(Q·Kᵀ/√d_c)` 公式 | ✅ 完全对应 |
+| **L8** | ~00:11 多模态融合 | **p17**（实例在 **p18**） | *More Different Data: May Want Some Layers Of Modality-Specific Processing*；p18 是 Wang et al. 胸片+报告联合建模 | ✅ 对应 |
+| **L9** | ~00:53 注意力变体 / CLIP | **p6**（CLIP 在 **p56**） | p6 *Transformer-Based Architectures: Three Variants*（Encoder-Only 等）；p56 *CLIP: Contrastive Language-Image Pre-Training (Revisited)* | ✅ 对应 |
+| **L10** | ~00:27 RL 视角 | **p69**（示意在 **p71**） | *Problems involving an agent interacting with an environment*；p71 *Agent / Reinforcement Learning* 循环图 | ✅ 对应 |
+| **L11** | ~00:56 可解释性词汇 | **p6** | *How Can We Try To Interpret a Trained Model?*（该节总起页） | ✅ 对应 |
+| **L11** | ~05:11 显著性图 | **p16**（p15 为遮挡法原理） | *Which Pixels Matter: Saliency Via Occlusion* | ✅ 完全对应 |
+| **L12** | ~00:39 联邦学习 | **p7**（例子在 **p8**，HIPAA 在 **p18**） | *Distributed Learning and Federated Learning*；p18 *HIPAA… "Privacy Rule"* | ✅ 对应 |
 
-> 把 L6–L12 的 PDF 放到 `docs/lecture_slides/`，我可以像 L1–L5 一样把页码逐页核出来补进这张表。
+**唯一的不匹配**：L7 的"位置编码"。视频约 27:16 确实在讲它，但课件里**没有专门的一页**，只在 p56 的 BERT 输入 bullet 里出现。所以两条路：
+- 截 **p56**，并在报告脚注里把引用改成"L7, BERT input representation"；
+- 或者保留时间戳，截**视频画面**（27:16）而不是课件。
 
 ## 二、如果只为"看过了"留证（每讲一张，够用）
 
