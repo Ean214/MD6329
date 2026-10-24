@@ -13,21 +13,16 @@
 
 ## 二、待你本人操作的四件事
 
-### ⬜ 1. NTU Learn 点开课程录像（考勤）
+### ✅ 1. 课程录像（已完成 11/11）
 
-课程明确要求观看 14 讲录像，**进度由 NTU Learn 记录**。注意：
+**课程要求的是"看"和"在报告里标注讲次/时间"，不是交截图。** 原文两处：
 
-- 必须从 **NTU Learn 的链接**进入（YouTube 直接看不会计入进度）；
-- 建议看完一讲就截一张图（含讲次标题 + 你的账号/进度条），存到 `docs/lecture_watch/`；
-- 14 讲清单与时间戳索引见 `docs/lecture_index.md`（L1–L12 + 两场客座）。
+- 必做清单：`Watch the Lecture Video Recordings`（进度由 NTU Learn 记录）
+- Related Work：`connect your discussions with one of the Lecture Recordings ... and highlight relevant Slides/Time in Video Recordings`
 
-如果你想留一份可核对的记录，可用下面的模板：
+报告已完成后者：**10 个讲次、18 处时间戳**，覆盖 Problem Formulation / Related Work / Approach / Experiments / Future Work 五节。
 
-```
-| 讲次 | 日期 | 时长 | 截图文件 |
-|---|---|---|---|
-| L1 | 2026-10-21 | 58 min | lecture_watch/L1.png |
-```
+截图属**自留凭证**，不进 ZIP、不计分。已存 `docs/lecture_watch/`：L1、L2、L3、L5、L6、L7、L8、L9、L10、L11、L12（11/11 被引用讲次）。L4 与两场客座未在报告引用，不要求。
 
 ### ⬜ 2. GitHub 上传（可选但建议）
 

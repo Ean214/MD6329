@@ -9,7 +9,9 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIR = os.path.join(ROOT, "docs", "lecture_watch")
-EXPECTED = [f"L{i}" for i in range(1, 13)] + ["GL1", "GL2"]
+CITED = ["L1","L2","L3","L5","L6","L7","L8","L9","L10","L11","L12"]  # lectures cited in the report
+OPTIONAL = ["L4", "GL1", "GL2"]                                        # not cited; evidence only
+EXPECTED = CITED + (OPTIONAL if "--all" in sys.argv else [])
 EXTS = (".png", ".jpg", ".jpeg")
 
 
@@ -37,7 +39,8 @@ def main():
         else:
             print(f"{name:<6}{'missing':<8}-")
     print("-" * 46)
-    print(f"完成 {len(found)}/{len(EXPECTED)}")
+    n_req = sum(1 for k in CITED if k in found)
+    print(f"引用讲次完成 {n_req}/{len(CITED)}" + (f" | 含可选 {len(found)}/{len(EXPECTED)}" if "--all" in sys.argv else ""))
 
     if missing:
         print("\n还差: " + ", ".join(missing))
