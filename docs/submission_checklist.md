@@ -24,25 +24,27 @@
 
 截图属**自留凭证**，不进 ZIP、不计分。已存 `docs/lecture_watch/`：L1、L2、L3、L5、L6、L7、L8、L9、L10、L11、L12（11/11 被引用讲次）。L4 与两场客座未在报告引用，不要求。
 
-### ⬜ 2. GitHub 上传（可选但建议）
+### ⚪ 2. GitHub 上传（**不是课程要求**，时间紧可跳过）
 
-仓库已初始化、已提交 6 次、远端已配好，**只差 push**（需要你的 GitHub 凭据，本机无 `gh` CLI）：
+已排查到确切阻塞点，不是命令写错：
+
+| 检查项 | 结果 |
+|---|---|
+| 本地分支 | 原为 `master`，**已改名为 `main`** |
+| 远端地址 | `https://github.com/Ean214/md6329-idh-uf-control.git` |
+| 凭据 | 未存（`cmdkey` 无 GitHub 条目，无 SSH key） |
+| `git push` | `remote: Repository not found` → **GitHub 上还没有这个仓库** |
+
+要 push，按这三步：
 
 ```bash
+# 1) 浏览器打开 github.com/new，仓库名 md6329-idh-uf-control，不要勾 README
+# 2) 回到终端
 cd "E:/WorkBuddy Data/2026-09-04-10-40-13/project"
-git push -u origin main
+git push -u origin main        # 会弹登录窗口，登录后自动完成
 ```
 
-如果远端仓库还没建：先在 GitHub 建一个**空**仓库 `md6329-idh-uf-control`（不要勾 README），再执行上面的命令。
-
-推送成功后，如果你想让 LecTrace 有可点开的在线版：
-
-```bash
-lectrace init      # 生成 GitHub Actions 工作流
-git add .github && git commit -m "Add Pages workflow" && git push
-```
-
-然后在仓库 Settings → Pages 选择 GitHub Actions。**注意**：`lectrace init` 会改写配置，执行前先确认它不会覆盖现有文件（它会提示）。
+封面已写"代码在补充 ZIP 中"，**不 push 完全合规**。
 
 ### ⬜ 3. 封面链接栏：二选一
 
